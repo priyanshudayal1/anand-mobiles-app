@@ -1,0 +1,27 @@
+## Packages and Uses (short)
+- expo: core runtime for React Native + web builds.
+- expo-router: file-based navigation.
+- @react-navigation/native|bottom-tabs|elements: navigation primitives and tab layout styling.
+- @expo/vector-icons: icon set for UI.
+- @gorhom/bottom-sheet: bottom sheet interactions.
+- @react-native-async-storage/async-storage: persistent key-value storage.
+- @shopify/flash-list: high-performance lists.
+- axios: HTTP client for API calls.
+- expo-constants: app config/meta access.
+- expo-font: custom font loading.
+- expo-haptics: haptic feedback.
+- expo-image: optimized images.
+- expo-linear-gradient: gradient backgrounds.
+- expo-linking: deep link handling.
+- expo-secure-store: encrypted key-value storage.
+- expo-splash-screen: native splash control.
+- expo-status-bar: status bar styling.
+- expo-symbols: SF Symbols support.
+- expo-system-ui: system UI adjustments (status/nav bars).
+- expo-web-browser: open external links in browser view.
+- lucide-react-native: icon set used in components.
+- moti: animations on Reanimated.
+- nativewind + tailwindcss + prettier-plugin-tailwindcss: utility-first styling with Tailwind and formatting.
+- react|react-native|react-dom|react-native-web: core UI stack across native/web.
+- react-native-gesture-handler|reanimated|safe-area-context|screens|worklets: gestures, animations, safe areas, screen containers, worklets.
+- zustand: lightweight global state store.
