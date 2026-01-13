@@ -30,6 +30,7 @@ export const useAuthStore = create((set, get) => ({
         try {
             const response = await api.post("/users/login", { email, password });
             const data = response.data;
+            console.log('data',data)
 
             const user = {
                 id: data.user_id,
