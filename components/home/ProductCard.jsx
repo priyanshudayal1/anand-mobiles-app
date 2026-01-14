@@ -1,11 +1,11 @@
 import React from "react";
-import {View, Text, TouchableOpacity, Dimensions} from "react-native";
-import {Image} from "expo-image";
-import {Star} from "lucide-react-native";
-import {useRouter} from "expo-router";
-import {useTheme} from "../../store/useTheme";
+import { View, Text, TouchableOpacity, Dimensions } from "react-native";
+import { Image } from "expo-image";
+import { Star } from "lucide-react-native";
+import { useRouter } from "expo-router";
+import { useTheme } from "../../store/useTheme";
 
-const {width} = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
 export default function ProductCard({
   product,
@@ -13,7 +13,7 @@ export default function ProductCard({
   showRating = true,
   onPress,
 }) {
-  const {colors} = useTheme();
+  const { colors } = useTheme();
   const router = useRouter();
 
   // Calculate dimensions based on size

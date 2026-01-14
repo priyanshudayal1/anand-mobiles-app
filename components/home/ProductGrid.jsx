@@ -1,12 +1,7 @@
 import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
-import {FlashList} from "@shopify/flash-list";
-import {useTheme} from "../../store/useTheme";
+import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import { FlashList } from "@shopify/flash-list";
+import { useTheme } from "../../store/useTheme";
 import ProductCard from "./ProductCard";
 
 export default function ProductGrid({
@@ -25,7 +20,7 @@ export default function ProductGrid({
   ListHeaderComponent,
   showHeader = true,
 }) {
-  const {colors} = useTheme();
+  const { colors } = useTheme();
 
   // Render header
   const renderHeader = () => {
@@ -135,7 +130,7 @@ export default function ProductGrid({
   };
 
   // Render product item
-  const renderItem = ({item, index}) => {
+  const renderItem = ({ item, index }) => {
     const isLeftColumn = index % 2 === 0;
 
     return (

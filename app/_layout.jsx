@@ -1,17 +1,21 @@
-import {Stack, useRouter, useSegments} from "expo-router";
-import {useEffect, useState} from "react";
-import {LogBox, View, ActivityIndicator} from "react-native";
+import { Stack, useRouter, useSegments } from "expo-router";
+import { useEffect, useState } from "react";
+import { LogBox, View, ActivityIndicator } from "react-native";
 import "../index.css";
-import {useAuthStore} from "../store/useAuth";
-import {useTheme} from "../store/useTheme";
+import { useAuthStore } from "../store/useAuth";
+import { useTheme } from "../store/useTheme";
 import ThemeProvider from "../components/ThemeProvider";
 
 // Suppress SafeAreaView deprecation warning from expo-router
 LogBox.ignoreLogs(["SafeAreaView has been deprecated"]);
 
 function RootLayoutNav() {
-  const {isAuthenticated, isInitialized: authInitialized, initialize: initAuth} = useAuthStore();
-  const {colors, isInitialized: themeInitialized} = useTheme();
+  const {
+    isAuthenticated,
+    isInitialized: authInitialized,
+    initialize: initAuth,
+  } = useAuthStore();
+  const { colors, isInitialized: themeInitialized } = useTheme();
   const segments = useSegments();
   const router = useRouter();
 
@@ -57,10 +61,10 @@ function RootLayoutNav() {
   }
 
   return (
-    <Stack screenOptions={{headerShown: false}}>
-      <Stack.Screen name="(auth)" options={{headerShown: false}} />
-      <Stack.Screen name="(tabs)" options={{headerShown: false}} />
-      <Stack.Screen name="index" options={{headerShown: false}} />
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="index" options={{ headerShown: false }} />
     </Stack>
   );
 }

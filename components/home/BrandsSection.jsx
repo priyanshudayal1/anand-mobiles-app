@@ -1,13 +1,13 @@
 import React from "react";
-import {View, Text, TouchableOpacity, ScrollView} from "react-native";
-import {Image} from "expo-image";
-import {useRouter} from "expo-router";
-import {useTheme} from "../../store/useTheme";
-import {useHome} from "../../store/useHome";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { Image } from "expo-image";
+import { useRouter } from "expo-router";
+import { useTheme } from "../../store/useTheme";
+import { useHome } from "../../store/useHome";
 
 export default function BrandsSection() {
-  const {colors} = useTheme();
-  const {brands} = useHome();
+  const { colors } = useTheme();
+  const { brands } = useHome();
   const router = useRouter();
 
   // Fallback brands if no data

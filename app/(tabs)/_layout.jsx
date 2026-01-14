@@ -1,11 +1,11 @@
-import {Tabs} from "expo-router";
-import {Platform} from "react-native";
-import {House, User, Layers, ShoppingCart, Menu} from "lucide-react-native";
-import {useSafeAreaInsets} from "react-native-safe-area-context";
-import {useTheme} from "../../store/useTheme";
+import { Tabs } from "expo-router";
+import { Platform } from "react-native";
+import { House, User, Layers, ShoppingCart, Menu } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTheme } from "../../store/useTheme";
 
 export default function TabLayout() {
-  const {colors} = useTheme();
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
   // Calculate bottom padding - use safe area insets for gesture phones, minimum for button phones
@@ -24,7 +24,7 @@ export default function TabLayout() {
           paddingTop: 8,
           elevation: 8,
           shadowColor: "#000",
-          shadowOffset: {width: 0, height: -2},
+          shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
           shadowRadius: 4,
         },
@@ -44,35 +44,37 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({color, size}) => <House size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <House size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: "You",
-          tabBarIcon: ({color, size}) => <User size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="more"
         options={{
           title: "More",
-          tabBarIcon: ({color, size}) => <Layers size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <Layers size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="cart"
         options={{
           title: "Cart",
-          tabBarIcon: ({color, size}) => <ShoppingCart size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => (
+            <ShoppingCart size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="menu"
         options={{
           title: "Menu",
-          tabBarIcon: ({color, size}) => <Menu size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <Menu size={size} color={color} />,
         }}
       />
     </Tabs>

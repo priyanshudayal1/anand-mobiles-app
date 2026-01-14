@@ -1,4 +1,4 @@
-import React, {useEffect, useCallback} from "react";
+import React, { useEffect, useCallback } from "react";
 import {
   View,
   ScrollView,
@@ -6,10 +6,13 @@ import {
   Text,
   RefreshControl,
 } from "react-native";
-import {SafeAreaView, useSafeAreaInsets} from "react-native-safe-area-context";
-import {MessageCircle, ChevronRight} from "lucide-react-native";
-import {StatusBar} from "expo-status-bar";
-import {useRouter} from "expo-router";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import { MessageCircle, ChevronRight } from "lucide-react-native";
+import { StatusBar } from "expo-status-bar";
+import { useRouter } from "expo-router";
 
 import HomeHeader from "../../components/home/HomeHeader";
 import BannerCarousel from "../../components/home/BannerCarousel";
@@ -17,12 +20,12 @@ import CategoryGrid from "../../components/home/CategoryGrid";
 import FeaturedSection from "../../components/home/FeaturedSection";
 import BrandsSection from "../../components/home/BrandsSection";
 import ProductCard from "../../components/home/ProductCard";
-import {useTheme} from "../../store/useTheme";
-import {useHome} from "../../store/useHome";
-import {useProducts} from "../../store/useProducts";
+import { useTheme } from "../../store/useTheme";
+import { useHome } from "../../store/useHome";
+import { useProducts } from "../../store/useProducts";
 
 // Section Header Component
-const SectionHeader = ({title, subtitle, onSeeAll, colors}) => (
+const SectionHeader = ({ title, subtitle, onSeeAll, colors }) => (
   <View
     style={{
       paddingHorizontal: 16,
@@ -40,7 +43,7 @@ const SectionHeader = ({title, subtitle, onSeeAll, colors}) => (
       }}
     >
       <View>
-        <Text style={{fontSize: 18, fontWeight: "bold", color: colors.text}}>
+        <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.text }}>
           {title}
         </Text>
         <View
@@ -56,9 +59,9 @@ const SectionHeader = ({title, subtitle, onSeeAll, colors}) => (
       {onSeeAll && (
         <TouchableOpacity
           onPress={onSeeAll}
-          style={{flexDirection: "row", alignItems: "center"}}
+          style={{ flexDirection: "row", alignItems: "center" }}
         >
-          <Text style={{fontWeight: "500", color: colors.primary}}>
+          <Text style={{ fontWeight: "500", color: colors.primary }}>
             See All
           </Text>
           <ChevronRight size={16} color={colors.primary} />
@@ -66,7 +69,7 @@ const SectionHeader = ({title, subtitle, onSeeAll, colors}) => (
       )}
     </View>
     {subtitle && (
-      <Text style={{fontSize: 12, color: colors.textSecondary}}>
+      <Text style={{ fontSize: 12, color: colors.textSecondary }}>
         {subtitle}
       </Text>
     )}
@@ -74,10 +77,10 @@ const SectionHeader = ({title, subtitle, onSeeAll, colors}) => (
 );
 
 export default function Home() {
-  const {colors, mode} = useTheme();
+  const { colors, mode } = useTheme();
   const insets = useSafeAreaInsets();
-  const {initializeHome, refreshHomeData, isRefreshing} = useHome();
-  const {products, fetchProducts} = useProducts();
+  const { initializeHome, refreshHomeData, isRefreshing } = useHome();
+  const { products, fetchProducts } = useProducts();
   const router = useRouter();
 
   // Initialize home data on mount
@@ -100,7 +103,7 @@ export default function Home() {
   const handleProductPress = (product) => {
     router.push({
       pathname: "/(tabs)/menu",
-      params: {productId: product.id},
+      params: { productId: product.id },
     });
   };
 
@@ -123,7 +126,7 @@ export default function Home() {
 
   return (
     <SafeAreaView
-      style={{flex: 1, backgroundColor: colors.backgroundSecondary}}
+      style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}
       edges={["top"]}
     >
       <StatusBar
@@ -133,8 +136,8 @@ export default function Home() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        style={{flex: 1}}
-        contentContainerStyle={{paddingBottom: bottomPadding}}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: bottomPadding }}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
@@ -162,7 +165,7 @@ export default function Home() {
 
         {/* All Products Section */}
         {allProducts.length > 0 && (
-          <View style={{backgroundColor: colors.cardBg, marginTop: 8}}>
+          <View style={{ backgroundColor: colors.cardBg, marginTop: 8 }}>
             <SectionHeader
               title="All Products"
               subtitle="Explore our complete collection"
@@ -210,7 +213,7 @@ export default function Home() {
                 alignItems: "center",
               }}
             >
-              <Text style={{color: colors.primary, fontWeight: "600"}}>
+              <Text style={{ color: colors.primary, fontWeight: "600" }}>
                 View All Products
               </Text>
             </TouchableOpacity>
@@ -232,7 +235,7 @@ export default function Home() {
           alignItems: "center",
           backgroundColor: colors.primary,
           shadowColor: "#000",
-          shadowOffset: {width: 0, height: 4},
+          shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.3,
           shadowRadius: 8,
           elevation: 8,

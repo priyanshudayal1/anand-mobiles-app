@@ -1,7 +1,7 @@
 import React from "react";
-import {View, Text, TouchableOpacity, ScrollView} from "react-native";
-import {Image} from "expo-image";
-import {useRouter} from "expo-router";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { Image } from "expo-image";
+import { useRouter } from "expo-router";
 import {
   Smartphone,
   Tablet,
@@ -23,8 +23,8 @@ import {
   Wifi,
   ChevronRight,
 } from "lucide-react-native";
-import {useTheme} from "../../store/useTheme";
-import {useHome} from "../../store/useHome";
+import { useTheme } from "../../store/useTheme";
+import { useHome } from "../../store/useHome";
 
 // Icon mapping for categories - matches backend icon names
 const categoryIcons = {
@@ -75,7 +75,7 @@ const getCategoryIcon = (category) => {
       return categoryIcons[iconName];
     }
   }
-  
+
   // Fallback to category name matching
   const name = (category.name || "").toLowerCase();
   for (const [key, Icon] of Object.entries(categoryIcons)) {
@@ -87,8 +87,8 @@ const getCategoryIcon = (category) => {
 };
 
 export default function CategoryGrid() {
-  const {colors} = useTheme();
-  const {categories} = useHome();
+  const { colors } = useTheme();
+  const { categories } = useHome();
   const router = useRouter();
 
   // Fallback categories if no data
@@ -96,16 +96,21 @@ export default function CategoryGrid() {
     categories.length > 0
       ? categories
       : [
-          {id: "1", name: "Smartphones", slug: "smartphones", icon: "smartphone"},
-          {id: "2", name: "Tablets", slug: "tablets", icon: "tablets"},
-          {id: "3", name: "Laptops", slug: "laptops", icon: "laptops"},
-          {id: "4", name: "Audio", slug: "audio", icon: "audio"},
+          {
+            id: "1",
+            name: "Smartphones",
+            slug: "smartphones",
+            icon: "smartphone",
+          },
+          { id: "2", name: "Tablets", slug: "tablets", icon: "tablets" },
+          { id: "3", name: "Laptops", slug: "laptops", icon: "laptops" },
+          { id: "4", name: "Audio", slug: "audio", icon: "audio" },
         ];
 
   const handleCategoryPress = (category) => {
     router.push({
       pathname: "/(tabs)/menu",
-      params: {category: category.slug || category.name},
+      params: { category: category.slug || category.name },
     });
   };
 
@@ -137,14 +142,15 @@ export default function CategoryGrid() {
             justifyContent: "center",
             alignItems: "center",
             borderRadius: 8,
-            backgroundColor: colors.surfaceSecondary || colors.backgroundSecondary,
+            backgroundColor:
+              colors.surfaceSecondary || colors.backgroundSecondary,
             overflow: "hidden",
           }}
         >
           {hasImage ? (
             <Image
-              source={{uri: category.image}}
-              style={{width: "100%", height: "100%"}}
+              source={{ uri: category.image }}
+              style={{ width: "100%", height: "100%" }}
               contentFit="contain"
               transition={200}
             />
@@ -169,7 +175,7 @@ export default function CategoryGrid() {
   };
 
   return (
-    <View style={{padding: 16, backgroundColor: colors.cardBg}}>
+    <View style={{ padding: 16, backgroundColor: colors.cardBg }}>
       {/* Header */}
       <View
         style={{
@@ -201,9 +207,9 @@ export default function CategoryGrid() {
         </View>
         <TouchableOpacity
           onPress={handleSeeAll}
-          style={{flexDirection: "row", alignItems: "center"}}
+          style={{ flexDirection: "row", alignItems: "center" }}
         >
-          <Text style={{fontWeight: "500", color: colors.primary}}>
+          <Text style={{ fontWeight: "500", color: colors.primary }}>
             See All
           </Text>
           <ChevronRight size={16} color={colors.primary} />
@@ -225,7 +231,7 @@ export default function CategoryGrid() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{paddingRight: 16}}
+        contentContainerStyle={{ paddingRight: 16 }}
       >
         {displayCategories.map(renderCategoryItem)}
       </ScrollView>

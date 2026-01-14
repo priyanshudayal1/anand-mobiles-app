@@ -1,13 +1,13 @@
-import React, {useState} from "react";
-import {View, Text, TouchableOpacity, TextInput} from "react-native";
-import {Search, MapPin, ShoppingCart, X, Bell} from "lucide-react-native";
-import {useRouter} from "expo-router";
-import {useTheme} from "../../store/useTheme";
-import {useProducts} from "../../store/useProducts";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, TextInput } from "react-native";
+import { Search, MapPin, ShoppingCart, X, Bell } from "lucide-react-native";
+import { useRouter } from "expo-router";
+import { useTheme } from "../../store/useTheme";
+import { useProducts } from "../../store/useProducts";
 
 export default function HomeHeader() {
-  const {colors} = useTheme();
-  const {setSearch} = useProducts();
+  const { colors } = useTheme();
+  const { setSearch } = useProducts();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [showWarning, setShowWarning] = useState(true);
@@ -27,7 +27,7 @@ export default function HomeHeader() {
   };
 
   return (
-    <View style={{width: "100%"}}>
+    <View style={{ width: "100%" }}>
       {/* Top Warning Strip */}
       {showWarning && (
         <View
@@ -41,10 +41,10 @@ export default function HomeHeader() {
           }}
         >
           <Text
-            style={{color: colors.white, fontSize: 12, fontWeight: "500"}}
+            style={{ color: colors.white, fontSize: 12, fontWeight: "500" }}
           >
             Website is under development!!!
-            <Text style={{textDecorationLine: "underline"}}> Shop Now</Text>
+            <Text style={{ textDecorationLine: "underline" }}> Shop Now</Text>
           </Text>
           <TouchableOpacity onPress={() => setShowWarning(false)}>
             <X size={14} color={colors.white} />

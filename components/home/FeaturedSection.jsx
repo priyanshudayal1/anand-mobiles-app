@@ -6,17 +6,17 @@ import {
   FlatList,
   Dimensions,
 } from "react-native";
-import {Image} from "expo-image";
-import {useRouter} from "expo-router";
-import {Star, ChevronRight, ChevronLeft} from "lucide-react-native";
-import {useTheme} from "../../store/useTheme";
-import {useHome} from "../../store/useHome";
+import { Image } from "expo-image";
+import { useRouter } from "expo-router";
+import { Star, ChevronRight, ChevronLeft } from "lucide-react-native";
+import { useTheme } from "../../store/useTheme";
+import { useHome } from "../../store/useHome";
 
-const {width} = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 const CARD_WIDTH = (width - 48) / 2; // 2 cards with padding
 
 // Product Card Component
-const ProductCard = ({product, colors, onPress}) => {
+const ProductCard = ({ product, colors, onPress }) => {
   const discountPrice =
     product.discount_price || product.discounted_price || product.price;
   const originalPrice = product.price;
@@ -147,8 +147,8 @@ const ProductCard = ({product, colors, onPress}) => {
 };
 
 export default function FeaturedSection() {
-  const {colors} = useTheme();
-  const {featuredProducts} = useHome();
+  const { colors } = useTheme();
+  const { featuredProducts } = useHome();
   const router = useRouter();
 
   // Fallback products if no data
@@ -249,7 +249,7 @@ export default function FeaturedSection() {
       {/* Products Horizontal Scroll */}
       <FlatList
         data={displayProducts}
-        renderItem={({item}) => (
+        renderItem={({ item }) => (
           <ProductCard
             product={item}
             colors={colors}

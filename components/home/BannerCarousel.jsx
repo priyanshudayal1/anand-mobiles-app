@@ -1,4 +1,4 @@
-import React, {useRef, useState, useEffect, useCallback} from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,17 +6,17 @@ import {
   TouchableOpacity,
   FlatList,
 } from "react-native";
-import {Image} from "expo-image";
-import {useTheme} from "../../store/useTheme";
-import {useHome} from "../../store/useHome";
+import { Image } from "expo-image";
+import { useTheme } from "../../store/useTheme";
+import { useHome } from "../../store/useHome";
 
-const {width} = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 const BANNER_HEIGHT = 180;
 const AUTO_SCROLL_INTERVAL = 4000;
 
 export default function BannerCarousel() {
-  const {colors} = useTheme();
-  const {banners} = useHome();
+  const { colors } = useTheme();
+  const { banners } = useHome();
   const flatListRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const autoScrollRef = useRef(null);
@@ -59,7 +59,7 @@ export default function BannerCarousel() {
     };
   }, [currentIndex, displayBanners.length]);
 
-  const onViewableItemsChanged = useCallback(({viewableItems}) => {
+  const onViewableItemsChanged = useCallback(({ viewableItems }) => {
     if (viewableItems.length > 0) {
       setCurrentIndex(viewableItems[0].index || 0);
     }
@@ -69,14 +69,14 @@ export default function BannerCarousel() {
     itemVisiblePercentThreshold: 50,
   };
 
-  const renderBannerItem = ({item}) => (
+  const renderBannerItem = ({ item }) => (
     <TouchableOpacity
       activeOpacity={0.9}
-      style={{width, height: BANNER_HEIGHT}}
+      style={{ width, height: BANNER_HEIGHT }}
     >
       <Image
-        source={{uri: item.image}}
-        style={{width: "100%", height: "100%"}}
+        source={{ uri: item.image }}
+        style={{ width: "100%", height: "100%" }}
         contentFit="cover"
         transition={300}
       />
