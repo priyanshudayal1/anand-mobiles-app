@@ -1,41 +1,266 @@
-import React from 'react';
-import { View, Text, Image, ScrollView } from 'react-native';
-import { ChevronRight, ChevronLeft } from 'lucide-react-native';
+import React from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  Dimensions,
+} from "react-native";
+import {Image} from "expo-image";
+import {useRouter} from "expo-router";
+import {Star, ChevronRight, ChevronLeft} from "lucide-react-native";
+import {useTheme} from "../../store/useTheme";
+import {useHome} from "../../store/useHome";
+
+const {width} = Dimensions.get("window");
+const CARD_WIDTH = (width - 48) / 2; // 2 cards with padding
+
+// Product Card Component
+const ProductCard = ({product, colors, onPress}) => {
+  const discountPrice =
+    product.discount_price || product.discounted_price || product.price;
+  const originalPrice = product.price;
+  const hasDiscount =
+    originalPrice && discountPrice && originalPrice > discountPrice;
+  const discountPercent = hasDiscount
+    ? Math.round(((originalPrice - discountPrice) / originalPrice) * 100)
+    : 0;
+
+  return (
+    <TouchableOpacity
+      onPress={() => onPress(product)}
+      style={{
+        width: CARD_WIDTH,
+        marginRight: 12,
+        backgroundColor: colors.cardBg,
+        borderRadius: 12,
+        overflow: "hidden",
+        borderWidth: 1,
+        borderColor: colors.border,
+      }}
+      activeOpacity={0.8}
+    >
+      {/* Product Image */}
+      <View
+        style={{
+          height: 120,
+          backgroundColor: colors.white,
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 8,
+        }}
+      >
+        <Image
+          source={{
+            uri:
+              product.image ||
+              product.images?.[0] ||
+              "https://via.placeholder.com/150",
+          }}
+          style={{ width: "100%", height: "100%" }}
+          contentFit="contain"
+          transition={200}
+        />
+        {/* Discount Badge */}
+        {discountPercent > 0 && (
+          <View
+            style={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              backgroundColor: colors.error,
+              paddingHorizontal: 6,
+              paddingVertical: 2,
+              borderRadius: 4,
+            }}
+          >
+            <Text
+              style={{ color: colors.white, fontSize: 10, fontWeight: "bold" }}
+            >
+              {discountPercent}% OFF
+            </Text>
+          </View>
+        )}
+      </View>
+
+      {/* Product Info */}
+      <View style={{ padding: 10 }}>
+        {/* Product Name */}
+        <Text
+          style={{
+            fontSize: 13,
+            fontWeight: "500",
+            color: colors.text,
+            marginBottom: 6,
+            lineHeight: 18,
+          }}
+          numberOfLines={2}
+        >
+          {product.name ||
+            `${product.brand || ""} ${product.model || ""}`.trim()}
+        </Text>
+
+        {/* Rating */}
+        {product.rating > 0 && (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: 6,
+            }}
+          >
+            <Star size={12} color={colors.warning} fill={colors.warning} />
+            <Text
+              style={{
+                fontSize: 11,
+                color: colors.textSecondary,
+                marginLeft: 4,
+              }}
+            >
+              {product.rating.toFixed(1)}
+            </Text>
+          </View>
+        )}
+
+        {/* Price */}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <Text
+            style={{ fontSize: 15, fontWeight: "bold", color: colors.text }}
+          >
+            ₹{(discountPrice || 0).toLocaleString()}
+          </Text>
+          {hasDiscount && (
+            <Text
+              style={{
+                fontSize: 11,
+                color: colors.textSecondary,
+                textDecorationLine: "line-through",
+              }}
+            >
+              ₹{originalPrice.toLocaleString()}
+            </Text>
+          )}
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+};
 
 export default function FeaturedSection() {
-    return (
-        <View className="mt-2 h-40 bg-black relative justify-center">
-            <Image
-                source={{ uri: 'https://via.placeholder.com/400x160' }}
-                className="absolute w-full h-full opacity-50"
-            />
+  const {colors} = useTheme();
+  const {featuredProducts} = useHome();
+  const router = useRouter();
 
-            <View className="px-4">
-                <Text className="text-white text-2xl font-bold mb-1">TELEVISIONS</Text>
-                <View className="flex-row items-center gap-4">
-                    <Text className="text-white text-xs">SONY</Text>
-                    <Text className="text-white text-xs">SAMSUNG</Text>
-                </View>
+  // Fallback products if no data
+  const displayProducts =
+    featuredProducts.length > 0
+      ? featuredProducts
+      : [
+          {
+            id: "1",
+            name: "iPhone 15 Pro Max",
+            brand: "Apple",
+            price: 159900,
+            discount_price: 149900,
+            rating: 4.8,
+            image:
+              "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400",
+          },
+          {
+            id: "2",
+            name: "Samsung Galaxy S24 Ultra",
+            brand: "Samsung",
+            price: 134999,
+            discount_price: 124999,
+            rating: 4.7,
+            image:
+              "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400",
+          },
+        ];
 
-                <View className="mt-4 bg-orange-500 self-start px-4 py-1 rounded-full flex-row items-center">
-                    <Text className="text-white text-xs font-bold mr-1">SHOP NOW</Text>
-                </View>
-            </View>
+  const handleProductPress = (product) => {
+    // Navigate to product details
+    router.push({
+      pathname: "/(tabs)/menu",
+      params: { productId: product.id },
+    });
+  };
 
-            {/* Navigation Arrows */}
-            <View className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-1">
-                <ChevronLeft size={20} color="black" />
-            </View>
-            <View className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-1">
-                <ChevronRight size={20} color="black" />
-            </View>
+  const handleSeeAll = () => {
+    router.push({
+      pathname: "/(tabs)/menu",
+      params: { featured: "true" },
+    });
+  };
 
-            {/* Dots */}
-            <View className="absolute bottom-2 left-0 right-0 flex-row justify-center gap-2">
-                <View className="w-2 h-2 rounded-full bg-white" />
-                <View className="w-2 h-2 rounded-full border border-white" />
-                <View className="w-2 h-2 rounded-full border border-white" />
-            </View>
+  return (
+    <View
+      style={{
+        marginTop: 8,
+        backgroundColor: colors.cardBg,
+        paddingVertical: 16,
+      }}
+    >
+      {/* Header */}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          paddingHorizontal: 16,
+          marginBottom: 12,
+        }}
+      >
+        <View>
+          <Text
+            style={{ fontSize: 18, fontWeight: "bold", color: colors.text }}
+          >
+            Featured Products
+          </Text>
+          <View
+            style={{
+              height: 3,
+              width: 64,
+              marginTop: 4,
+              backgroundColor: colors.primary,
+              borderRadius: 2,
+            }}
+          />
         </View>
-    );
+        <TouchableOpacity onPress={handleSeeAll}>
+          <Text style={{ fontWeight: "500", color: colors.primary }}>
+            See All →
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Description */}
+      <Text
+        style={{
+          fontSize: 12,
+          color: colors.textSecondary,
+          paddingHorizontal: 16,
+          marginBottom: 16,
+        }}
+      >
+        Discover our best-selling items handpicked for you
+      </Text>
+
+      {/* Products Horizontal Scroll */}
+      <FlatList
+        data={displayProducts}
+        renderItem={({item}) => (
+          <ProductCard
+            product={item}
+            colors={colors}
+            onPress={handleProductPress}
+          />
+        )}
+        keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 16 }}
+      />
+    </View>
+  );
 }

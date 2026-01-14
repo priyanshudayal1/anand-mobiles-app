@@ -1,25 +1,32 @@
-import { Stack, useRouter, useSegments } from "expo-router";
-import { useEffect, useState } from "react";
-import { LogBox } from "react-native";
+import {Stack, useRouter, useSegments} from "expo-router";
+import {useEffect, useState} from "react";
+import {LogBox, View, ActivityIndicator} from "react-native";
 import "../index.css";
-import { useAuthStore } from "../store/useAuth";
+import {useAuthStore} from "../store/useAuth";
+import {useTheme} from "../store/useTheme";
+import ThemeProvider from "../components/ThemeProvider";
 
 // Suppress SafeAreaView deprecation warning from expo-router
 LogBox.ignoreLogs(["SafeAreaView has been deprecated"]);
 
-export default function RootLayout() {
-  const { isAuthenticated } = useAuthStore();
+function RootLayoutNav() {
+  const {isAuthenticated, isInitialized: authInitialized, initialize: initAuth} = useAuthStore();
+  const {colors, isInitialized: themeInitialized} = useTheme();
   const segments = useSegments();
   const router = useRouter();
 
   const [isMounted, setIsMounted] = useState(false);
 
+  // Initialize auth on mount
   useEffect(() => {
     setIsMounted(true);
+    initAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Handle navigation based on auth state
   useEffect(() => {
-    if (!isMounted) return;
+    if (!isMounted || !themeInitialized || !authInitialized) return;
 
     const inAuthGroup = segments[0] === "(auth)";
 
@@ -30,15 +37,38 @@ export default function RootLayout() {
       // Redirect to tabs if authenticated and in auth group
       router.replace("/(tabs)");
     }
-  }, [isAuthenticated, segments, isMounted]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, segments, isMounted, themeInitialized, authInitialized]);
 
-  if (!isMounted) return null;
+  // Show loading while theme or auth is initializing
+  if (!isMounted || !themeInitialized || !authInitialized) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: colors.background,
+        }}
+      >
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="index" options={{ headerShown: false }} />
+    <Stack screenOptions={{headerShown: false}}>
+      <Stack.Screen name="(auth)" options={{headerShown: false}} />
+      <Stack.Screen name="(tabs)" options={{headerShown: false}} />
+      <Stack.Screen name="index" options={{headerShown: false}} />
     </Stack>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <RootLayoutNav />
+    </ThemeProvider>
   );
 }
