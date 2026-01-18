@@ -38,12 +38,27 @@ export const API_ENDPOINTS = {
   mobileHome: "/products/mobile/home/",
   mobileFilters: "/products/mobile/filters/",
 
-  // Cart & Wishlist
+  // Addresses
+  addresses: "/users/addresses/",
+  addAddress: "/users/addresses/add/",
+  updateAddress: (id) => `/users/addresses/${id}/update/`,
+  deleteAddress: (id) => `/users/addresses/${id}/delete/`,
+
+  // Cart
   cart: "/users/cart/",
+  addToCart: "/users/cart/add/",
+  updateCartItem: "/users/cart/update/",
+  removeFromCart: "/users/cart/remove/",
+  clearCart: "/users/cart/clear/",
+
+  // Wishlist
   wishlist: "/users/wishlist/",
+  addToWishlist: "/users/wishlist/add/",
+  removeFromWishlist: "/users/wishlist/remove/",
 
   // Orders
   orders: "/users/orders/",
+  orderDetails: (id) => `/users/orders/${id}/`,
 
   // Banners
   banners: "/admin/banners/",

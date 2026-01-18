@@ -1,37 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { View, Text, FlatList, ActivityIndicator, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../store/useTheme";
-import api from "../services/api";
+import { useAddressStore } from "../store/useAddress";
 
 export default function Addresses() {
     const router = useRouter();
     const { colors, isDarkMode } = useTheme();
-    const [loading, setLoading] = useState(true);
-    const [addresses, setAddresses] = useState([]);
+    const { addresses, isLoading, fetchAddresses } = useAddressStore();
 
     useEffect(() => {
-        // Mock fetch or verify actual endpoint
-        // api.get("/users/addresses/")...
-        // Assuming endpoint exists but since I didn't see it, I'll simulate empty list or fetch if endpoint is valid
-        // From backend urls, endpoint is /addresses/ (under shop_users.urls incl)
-        // So /api/users/addresses/
         fetchAddresses();
     }, []);
-
-    const fetchAddresses = async () => {
-        try {
-            const response = await api.get("/users/addresses/");
-            setAddresses(response.data.addresses || []);
-        } catch (error) {
-            console.error("Failed to fetch addresses:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const renderAddress = ({ item }) => (
         <View
@@ -91,7 +74,7 @@ export default function Addresses() {
                 </TouchableOpacity>
             </View>
 
-            {loading ? (
+            {isLoading ? (
                 <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
                     <ActivityIndicator size="large" color={colors.primary} />
                 </View>

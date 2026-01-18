@@ -1,16 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, TextInput } from "react-native";
 import { Search, MapPin, ShoppingCart, X, Bell } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useTheme } from "../../store/useTheme";
 import { useProducts } from "../../store/useProducts";
+import { useCartStore } from "../../store/useCart";
 
 export default function HomeHeader() {
   const { colors } = useTheme();
   const { setSearch } = useProducts();
+  const { getCartCount, fetchCart } = useCartStore();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [showWarning, setShowWarning] = useState(true);
+  const cartCount = getCartCount();
+
+  useEffect(() => {
+    fetchCart();
+  }, []);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -169,7 +176,7 @@ export default function HomeHeader() {
                     color: colors.primary,
                   }}
                 >
-                  0
+                  {cartCount > 99 ? '99+' : cartCount}
                 </Text>
               </View>
             </TouchableOpacity>
