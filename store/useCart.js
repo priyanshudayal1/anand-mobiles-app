@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import api from "../services/api";
-import { API_ENDPOINTS } from "../constants/constants";
 
 export const useCartStore = create((set, get) => ({
     cartItems: [],
@@ -9,16 +8,23 @@ export const useCartStore = create((set, get) => ({
     isLoading: false,
     error: null,
 
-    // Fetch cart
+    // Fetch cart from server
     fetchCart: async () => {
         set({ isLoading: true, error: null });
         try {
-            const response = await api.get(API_ENDPOINTS.cart || "/users/cart/");
+            const response = await api.get("/users/cart/");
             const data = response.data;
 
-            const items = data.cart_items || data.items || data.cart || [];
-            const total = data.total || data.cart_total || 0;
-            const count = data.item_count || items.length || 0;
+            // Backend returns { cart: [...] }
+            const items = data.cart || data.cart_items || data.items || [];
+
+            // Calculate total from items
+            const total = items.reduce((sum, item) => {
+                const price = item.price || 0;
+                return sum + price * (item.quantity || 1);
+            }, 0);
+
+            const count = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
             set({
                 cartItems: items,
@@ -36,12 +42,12 @@ export const useCartStore = create((set, get) => ({
         }
     },
 
-    // Add to cart
+    // Add to cart - uses POST /users/cart/add/<product_id>/
+    // Backend ACCUMULATES quantity, not replaces
     addToCart: async (productId, quantity = 1, variantId = null) => {
         set({ isLoading: true, error: null });
         try {
             const payload = {
-                product_id: productId,
                 quantity: quantity,
             };
 
@@ -49,13 +55,13 @@ export const useCartStore = create((set, get) => ({
                 payload.variant_id = variantId;
             }
 
-            const response = await api.post(API_ENDPOINTS.addToCart || "/users/cart/add/", payload);
-            const data = response.data;
+            // Backend expects product_id in URL, quantity in body
+            await api.post(`/users/cart/add/${productId}/`, payload);
 
             // Refresh cart to get updated data
             await get().fetchCart();
 
-            return { success: true, data };
+            return { success: true };
         } catch (error) {
             const msg = error.response?.data?.error || error.response?.data?.detail || "Failed to add to cart";
             set({ error: msg, isLoading: false });
@@ -63,65 +69,66 @@ export const useCartStore = create((set, get) => ({
         }
     },
 
-    // Update cart item quantity
-    updateQuantity: async (itemId, quantity) => {
-        if (quantity < 1) {
+    // Update cart item quantity by removing and re-adding with new quantity
+    updateQuantity: async (itemId, newQuantity) => {
+        if (newQuantity <= 0) {
             return await get().removeFromCart(itemId);
         }
 
         set({ isLoading: true, error: null });
         try {
-            const response = await api.put(API_ENDPOINTS.updateCartItem || "/users/cart/update/", {
-                item_id: itemId,
-                quantity: quantity,
-            });
+            // Find the item to get product_id and current quantity
+            const { cartItems } = get();
+            const item = cartItems.find((i) => i.item_id === itemId);
 
-            // Update local state
-            set((state) => {
-                const updatedItems = state.cartItems.map((item) =>
-                    item.id === itemId ? { ...item, quantity } : item
-                );
+            if (!item) {
+                throw new Error("Item not found in cart");
+            }
 
-                // Recalculate total
-                const newTotal = updatedItems.reduce((sum, item) => {
-                    const price = item.discounted_price || item.price || 0;
-                    return sum + price * item.quantity;
-                }, 0);
+            // First remove the item
+            await api.delete(`/users/cart/remove/${itemId}/`);
 
-                return {
-                    cartItems: updatedItems,
-                    cartTotal: newTotal,
-                    isLoading: false,
-                };
-            });
+            // Then add it back with the new quantity
+            const payload = {
+                quantity: newQuantity,
+            };
+            if (item.variant_id) {
+                payload.variant_id = item.variant_id;
+            }
+            await api.post(`/users/cart/add/${item.product_id}/`, payload);
+
+            // Refresh cart to get accurate state from server
+            await get().fetchCart();
 
             return { success: true };
         } catch (error) {
             const msg = error.response?.data?.error || error.response?.data?.detail || "Failed to update quantity";
             set({ error: msg, isLoading: false });
+            // Refresh cart to get accurate state
+            await get().fetchCart();
             throw error;
         }
     },
 
-    // Remove from cart
+    // Remove from cart - uses DELETE /users/cart/remove/<item_id>/
     removeFromCart: async (itemId) => {
         set({ isLoading: true, error: null });
         try {
-            await api.delete(API_ENDPOINTS.removeFromCart || "/users/cart/remove/", {
-                data: { item_id: itemId },
-            });
+            // Backend expects item_id in URL path
+            await api.delete(`/users/cart/remove/${itemId}/`);
 
+            // Update local state
             set((state) => {
-                const updatedItems = state.cartItems.filter((item) => item.id !== itemId);
+                const updatedItems = state.cartItems.filter((item) => item.item_id !== itemId);
                 const newTotal = updatedItems.reduce((sum, item) => {
-                    const price = item.discounted_price || item.price || 0;
+                    const price = item.price || 0;
                     return sum + price * item.quantity;
                 }, 0);
 
                 return {
                     cartItems: updatedItems,
                     cartTotal: newTotal,
-                    itemCount: updatedItems.length,
+                    itemCount: updatedItems.reduce((sum, item) => sum + (item.quantity || 1), 0),
                     isLoading: false,
                 };
             });
@@ -134,11 +141,17 @@ export const useCartStore = create((set, get) => ({
         }
     },
 
-    // Clear cart
+    // Clear cart (remove all items one by one since there's no clear endpoint)
     clearCart: async () => {
         set({ isLoading: true, error: null });
         try {
-            await api.delete(API_ENDPOINTS.clearCart || "/users/cart/clear/");
+            const { cartItems } = get();
+
+            // Remove each item
+            for (const item of cartItems) {
+                await api.delete(`/users/cart/remove/${item.item_id}/`);
+            }
+
             set({
                 cartItems: [],
                 cartTotal: 0,
@@ -149,24 +162,51 @@ export const useCartStore = create((set, get) => ({
         } catch (error) {
             const msg = error.response?.data?.error || error.response?.data?.detail || "Failed to clear cart";
             set({ error: msg, isLoading: false });
+            // Refresh cart on error
+            await get().fetchCart();
             throw error;
         }
     },
 
-    // Increment item quantity
+    // Increment item quantity - adds 1 to current quantity
     incrementQuantity: async (itemId) => {
         const { cartItems } = get();
-        const item = cartItems.find((i) => i.id === itemId);
+        const item = cartItems.find((i) => i.item_id === itemId);
         if (item) {
-            return await get().updateQuantity(itemId, item.quantity + 1);
+            // Optimistically update local state first
+            set((state) => ({
+                cartItems: state.cartItems.map((i) =>
+                    i.item_id === itemId ? { ...i, quantity: (i.quantity || 1) + 1 } : i
+                ),
+                isLoading: true,
+            }));
+
+            try {
+                // Backend accumulates, so we just add 1
+                const payload = { quantity: 1 };
+                if (item.variant_id) {
+                    payload.variant_id = item.variant_id;
+                }
+                await api.post(`/users/cart/add/${item.product_id}/`, payload);
+
+                // Update totals
+                get().updateTotals();
+                set({ isLoading: false });
+                return { success: true };
+            } catch (error) {
+                // Revert on error
+                await get().fetchCart();
+                throw error;
+            }
         }
     },
 
     // Decrement item quantity
     decrementQuantity: async (itemId) => {
         const { cartItems } = get();
-        const item = cartItems.find((i) => i.id === itemId);
+        const item = cartItems.find((i) => i.item_id === itemId);
         if (item && item.quantity > 1) {
+            // Need to remove and re-add with new quantity since backend only accumulates
             return await get().updateQuantity(itemId, item.quantity - 1);
         } else if (item) {
             return await get().removeFromCart(itemId);
@@ -177,14 +217,32 @@ export const useCartStore = create((set, get) => ({
     isInCart: (productId) => {
         const { cartItems } = get();
         return cartItems.some(
-            (item) => item.product_id === productId || item.product?.id === productId
+            (item) => item.product_id === productId
         );
+    },
+
+    // Get cart item for a product
+    getCartItem: (productId) => {
+        const { cartItems } = get();
+        return cartItems.find((item) => item.product_id === productId);
     },
 
     // Get cart item count
     getCartCount: () => {
         const { cartItems } = get();
         return cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
+    },
+
+    // Update totals helper
+    updateTotals: () => {
+        set((state) => {
+            const total = state.cartItems.reduce((sum, item) => {
+                const price = item.price || 0;
+                return sum + price * (item.quantity || 1);
+            }, 0);
+            const count = state.cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
+            return { cartTotal: total, itemCount: count };
+        });
     },
 
     // Clear error
