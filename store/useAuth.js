@@ -178,4 +178,69 @@ export const useAuthStore = create((set, get) => ({
       console.error("Logout failed", error);
     }
   },
+
+  fetchUserProfile: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.get("/users/profile/");
+      const data = response.data;
+
+      // Update user state with fresh data
+      set((state) => {
+        const updatedUser = { ...state.user, ...data };
+        AsyncStorage.setItem("userData", JSON.stringify(updatedUser));
+        return { user: updatedUser, isLoading: false };
+      });
+
+      return data;
+    } catch (error) {
+      console.error("Fetch profile failed", error);
+      // Don't set global error for background fetches to avoid UI disruption
+      set({ isLoading: false });
+      throw error;
+    }
+  },
+
+  updateUserProfileAPI: async (profileData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.post("/users/profile/update/", profileData);
+      const data = response.data;
+
+      // Backend returns { message: "...", user: { ... } } on success
+      if (response.status === 200 && data.user) {
+         // Update user state with new data from backend
+         set((state) => {
+            const updatedUser = { 
+                ...state.user, 
+                firstName: data.user.first_name,
+                lastName: data.user.last_name,
+                phone: data.user.phone_number,
+                // Ensure email is preserved or updated if backend sends it
+                email: data.user.email || state.user.email, 
+            };
+            AsyncStorage.setItem("userData", JSON.stringify(updatedUser));
+            return { user: updatedUser, isLoading: false };
+          });
+          return { success: true, ...data };
+      } else if (response.status === 200) {
+          // Fallback if user object isn't returned exactly as expected but status is 200
+           set({ isLoading: false });
+           return { success: true, ...data };
+      }
+      
+      set({ isLoading: false });
+      return { success: false, ...data };
+    } catch (error) {
+      const msg =
+        error.response?.data?.error ||
+        error.response?.data?.detail ||
+        "Failed to update profile";
+      set({ error: msg, isLoading: false });
+      throw error;
+    }
+  },
+
+  clearError: () => set({ error: null }),
+
 }));

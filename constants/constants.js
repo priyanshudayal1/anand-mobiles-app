@@ -16,11 +16,11 @@ export const HOME_REFRESH_INTERVAL = 5 * 60 * 1000;
 // API endpoints
 export const API_ENDPOINTS = {
   // Auth
-  login: "/shop_users/login/",
-  register: "/shop_users/register/",
-  googleLogin: "/shop_users/google-login/",
-  logout: "/shop_users/logout/",
-  profile: "/shop_users/profile/",
+  login: "/users/login/",
+  register: "/users/register/",
+  googleLogin: "/users/google-login/",
+  logout: "/users/logout/",
+  profile: "/users/profile/",
 
   // Theme
   publicTheme: "/admin/theme/public/",
@@ -39,11 +39,11 @@ export const API_ENDPOINTS = {
   mobileFilters: "/products/mobile/filters/",
 
   // Cart & Wishlist
-  cart: "/shop_users/cart/",
-  wishlist: "/shop_users/wishlist/",
+  cart: "/users/cart/",
+  wishlist: "/users/wishlist/",
 
   // Orders
-  orders: "/shop_users/orders/",
+  orders: "/users/orders/",
 
   // Banners
   banners: "/admin/banners/",
