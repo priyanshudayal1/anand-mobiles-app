@@ -612,9 +612,12 @@ export default function Cart() {
                 <EmptyCart />
             ) : (
                 <>
-                    <ScrollView
-                        style={{ flex: 1 }}
-                        contentContainerStyle={{ paddingBottom: 280 }}
+                    <FlashList
+                        data={cartItems}
+                        renderItem={renderCartItem}
+                        keyExtractor={(item, index) => item.id?.toString() || item.product_id?.toString() || `cart-item-${index}`}
+                        estimatedItemSize={180}
+                        contentContainerStyle={{ paddingTop: 16, paddingBottom: 200 }}
                         refreshControl={
                             <RefreshControl
                                 refreshing={refreshing}

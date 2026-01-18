@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import api from "../services/api";
-import { API_ENDPOINTS } from "../constants/constants";
 
 export const useAddressStore = create((set, get) => ({
     addresses: [],
@@ -11,15 +10,30 @@ export const useAddressStore = create((set, get) => ({
     fetchAddresses: async () => {
         set({ isLoading: true, error: null });
         try {
-            const response = await api.get(API_ENDPOINTS.addresses || "/users/addresses/");
+            const response = await api.get("/users/addresses/");
             const addressList = response.data.addresses || response.data || [];
-            set({ addresses: addressList, isLoading: false });
-            return addressList;
+
+            // Transform to ensure consistent format
+            const transformedAddresses = addressList.map((addr) => ({
+                id: addr.id,
+                type: addr.type || "Home",
+                street_address: addr.street_address || addr.address || "",
+                city: addr.city || "",
+                state: addr.state || "",
+                postal_code: addr.postal_code || addr.pincode || "",
+                phone_number: addr.phone_number || addr.phone || "",
+                is_default: addr.is_default || false,
+                created_at: addr.created_at,
+                updated_at: addr.updated_at,
+            }));
+
+            set({ addresses: transformedAddresses, isLoading: false });
+            return transformedAddresses;
         } catch (error) {
-            const msg = error.response?.data?.error || error.response?.data?.detail || "Failed to fetch addresses";
-            set({ error: msg, isLoading: false });
+            const msg = error.response?.data?.error || "Failed to fetch addresses";
+            set({ error: msg, isLoading: false, addresses: [] });
             console.error("Failed to fetch addresses:", error);
-            throw error;
+            return [];
         }
     },
 
@@ -27,19 +41,45 @@ export const useAddressStore = create((set, get) => ({
     addAddress: async (addressData) => {
         set({ isLoading: true, error: null });
         try {
-            const response = await api.post(API_ENDPOINTS.addAddress || "/users/addresses/add/", addressData);
+            // Transform to API format
+            const apiData = {
+                type: addressData.type || addressData.name || "Home",
+                street_address: addressData.street_address || addressData.address,
+                city: addressData.city,
+                state: addressData.state,
+                postal_code: addressData.postal_code || addressData.pincode,
+                phone_number: addressData.phone_number || addressData.phone,
+                is_default: addressData.is_default || false,
+            };
+
+            const response = await api.post("/users/addresses/add/", apiData);
             const newAddress = response.data.address || response.data;
 
-            set((state) => ({
-                addresses: [...state.addresses, newAddress],
-                isLoading: false,
-            }));
+            // If this is set as default, update other addresses
+            set((state) => {
+                let updatedAddresses = state.addresses;
+                if (apiData.is_default) {
+                    updatedAddresses = state.addresses.map((addr) => ({
+                        ...addr,
+                        is_default: false,
+                    }));
+                }
+                return {
+                    addresses: [...updatedAddresses, {
+                        id: response.data.address_id || newAddress.id,
+                        ...newAddress,
+                        ...apiData,
+                    }],
+                    isLoading: false,
+                };
+            });
 
             return { success: true, address: newAddress };
         } catch (error) {
-            const msg = error.response?.data?.error || error.response?.data?.detail || "Failed to add address";
+            const msg = error.response?.data?.error || "Failed to add address";
             set({ error: msg, isLoading: false });
-            throw error;
+            console.error("Failed to add address:", error);
+            return { success: false, error: msg };
         }
     },
 
@@ -47,25 +87,49 @@ export const useAddressStore = create((set, get) => ({
     updateAddress: async (addressId, addressData) => {
         set({ isLoading: true, error: null });
         try {
-            const endpoint = typeof API_ENDPOINTS.updateAddress === 'function'
-                ? API_ENDPOINTS.updateAddress(addressId)
-                : `/users/addresses/${addressId}/update/`;
+            // Transform to API format
+            const apiData = {
+                type: addressData.type || addressData.name,
+                street_address: addressData.street_address || addressData.address,
+                city: addressData.city,
+                state: addressData.state,
+                postal_code: addressData.postal_code || addressData.pincode,
+                phone_number: addressData.phone_number || addressData.phone,
+                is_default: addressData.is_default || false,
+            };
 
-            const response = await api.put(endpoint, addressData);
+            const response = await api.put(`/users/addresses/update/${addressId}/`, apiData);
             const updatedAddress = response.data.address || response.data;
 
-            set((state) => ({
-                addresses: state.addresses.map((addr) =>
-                    addr.id === addressId ? { ...addr, ...updatedAddress } : addr
-                ),
-                isLoading: false,
-            }));
+            set((state) => {
+                let updatedAddresses = state.addresses;
+
+                // If this is set as default, update other addresses
+                if (apiData.is_default) {
+                    updatedAddresses = state.addresses.map((addr) => ({
+                        ...addr,
+                        is_default: addr.id === addressId,
+                    }));
+                } else {
+                    updatedAddresses = state.addresses.map((addr) =>
+                        addr.id === addressId
+                            ? { ...addr, ...apiData, ...updatedAddress }
+                            : addr
+                    );
+                }
+
+                return {
+                    addresses: updatedAddresses,
+                    isLoading: false,
+                };
+            });
 
             return { success: true, address: updatedAddress };
         } catch (error) {
-            const msg = error.response?.data?.error || error.response?.data?.detail || "Failed to update address";
+            const msg = error.response?.data?.error || "Failed to update address";
             set({ error: msg, isLoading: false });
-            throw error;
+            console.error("Failed to update address:", error);
+            return { success: false, error: msg };
         }
     },
 
@@ -73,11 +137,7 @@ export const useAddressStore = create((set, get) => ({
     deleteAddress: async (addressId) => {
         set({ isLoading: true, error: null });
         try {
-            const endpoint = typeof API_ENDPOINTS.deleteAddress === 'function'
-                ? API_ENDPOINTS.deleteAddress(addressId)
-                : `/users/addresses/${addressId}/delete/`;
-
-            await api.delete(endpoint);
+            await api.delete(`/users/addresses/delete/${addressId}/`);
 
             set((state) => ({
                 addresses: state.addresses.filter((addr) => addr.id !== addressId),
@@ -86,9 +146,10 @@ export const useAddressStore = create((set, get) => ({
 
             return { success: true };
         } catch (error) {
-            const msg = error.response?.data?.error || error.response?.data?.detail || "Failed to delete address";
+            const msg = error.response?.data?.error || "Failed to delete address";
             set({ error: msg, isLoading: false });
-            throw error;
+            console.error("Failed to delete address:", error);
+            return { success: false, error: msg };
         }
     },
 
@@ -96,8 +157,7 @@ export const useAddressStore = create((set, get) => ({
     setDefaultAddress: async (addressId) => {
         set({ isLoading: true, error: null });
         try {
-            const endpoint = `/users/addresses/${addressId}/set-default/`;
-            await api.post(endpoint);
+            await api.post(`/users/addresses/set-default/${addressId}/`);
 
             set((state) => ({
                 addresses: state.addresses.map((addr) => ({
@@ -109,10 +169,17 @@ export const useAddressStore = create((set, get) => ({
 
             return { success: true };
         } catch (error) {
-            const msg = error.response?.data?.error || error.response?.data?.detail || "Failed to set default address";
+            const msg = error.response?.data?.error || "Failed to set default address";
             set({ error: msg, isLoading: false });
-            throw error;
+            console.error("Failed to set default address:", error);
+            return { success: false, error: msg };
         }
+    },
+
+    // Get address by ID
+    getAddressById: (id) => {
+        const { addresses } = get();
+        return addresses.find((addr) => addr.id === id) || null;
     },
 
     // Get default address
