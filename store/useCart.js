@@ -41,7 +41,6 @@ export const useCartStore = create((set, get) => ({
         set({ isLoading: true, error: null });
         try {
             const payload = {
-                product_id: productId,
                 quantity: quantity,
             };
 
@@ -49,7 +48,9 @@ export const useCartStore = create((set, get) => ({
                 payload.variant_id = variantId;
             }
 
-            const response = await api.post(API_ENDPOINTS.addToCart || "/users/cart/add/", payload);
+            // Backend expects product_id in URL path: /users/cart/add/{productId}/
+            const endpoint = `/users/cart/add/${productId}/`;
+            const response = await api.post(endpoint, payload);
             const data = response.data;
 
             // Refresh cart to get updated data

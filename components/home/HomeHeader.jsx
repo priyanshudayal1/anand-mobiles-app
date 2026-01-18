@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, TextInput } from "react-native";
+import { Image } from "expo-image";
 import { Search, MapPin, ShoppingCart, X, Bell } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useTheme } from "../../store/useTheme";
 import { useProducts } from "../../store/useProducts";
 import { useCartStore } from "../../store/useCart";
+import { useSiteConfig } from "../../store/useSiteConfig";
 
 export default function HomeHeader() {
   const { colors } = useTheme();
   const { setSearch } = useProducts();
   const { getCartCount, fetchCart } = useCartStore();
+  const { logoUrl, shopName, fetchSiteConfig, isInitialized } = useSiteConfig();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [showWarning, setShowWarning] = useState(true);
@@ -17,6 +20,10 @@ export default function HomeHeader() {
 
   useEffect(() => {
     fetchCart();
+    // Fetch site config (logo) if not already initialized
+    if (!isInitialized) {
+      fetchSiteConfig();
+    }
   }, []);
 
   const handleSearch = () => {
@@ -78,24 +85,38 @@ export default function HomeHeader() {
         >
           {/* Brand */}
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            {/* Placeholder for Logo */}
-            <View
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 4,
-                marginRight: 8,
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: colors.black,
-              }}
-            >
-              <Text style={{ color: colors.white, fontWeight: "bold" }}>A</Text>
-            </View>
+            {/* Logo from Backend */}
+            {logoUrl ? (
+              <Image
+                source={{ uri: logoUrl }}
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 4,
+                  marginRight: 8,
+                }}
+                contentFit="contain"
+                transition={200}
+              />
+            ) : (
+              <View
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 4,
+                  marginRight: 8,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  backgroundColor: colors.black,
+                }}
+              >
+                <Text style={{ color: colors.white, fontWeight: "bold" }}>A</Text>
+              </View>
+            )}
             <Text
               style={{ fontSize: 18, fontWeight: "bold", color: colors.black }}
             >
-              ANAND MOBILES
+              {shopName || "ANAND MOBILES"}
             </Text>
           </View>
 
