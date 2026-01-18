@@ -229,6 +229,7 @@ export default function Orders() {
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     estimatedItemSize={80}
+                    keyExtractor={(item) => item}
                     contentContainerStyle={{ paddingHorizontal: 16 }}
                     renderItem={({ item }) => (
                         <TouchableOpacity
@@ -264,7 +265,7 @@ export default function Orders() {
                 <FlashList
                     data={filteredOrders}
                     renderItem={renderOrder}
-                    keyExtractor={(item) => item.order_id}
+                    keyExtractor={(item, index) => item.order_id || item.id || `order-${index}`}
                     estimatedItemSize={200}
                     contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
                     refreshControl={

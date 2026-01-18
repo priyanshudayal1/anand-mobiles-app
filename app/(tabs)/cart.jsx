@@ -372,7 +372,7 @@ export default function Cart() {
                     <FlashList
                         data={cartItems}
                         renderItem={renderCartItem}
-                        keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
+                        keyExtractor={(item, index) => item.id?.toString() || item.product_id?.toString() || `cart-item-${index}`}
                         estimatedItemSize={180}
                         contentContainerStyle={{ paddingTop: 16, paddingBottom: 200 }}
                         refreshControl={

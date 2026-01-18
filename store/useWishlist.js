@@ -1,114 +1,121 @@
 import { create } from "zustand";
 import api from "../services/api";
-import { API_ENDPOINTS } from "../constants/constants";
 
 export const useWishlistStore = create((set, get) => ({
-    wishlistItems: [],
+    items: [],
     isLoading: false,
     error: null,
 
-    // Fetch wishlist items
+    // Fetch wishlist items from API
     fetchWishlist: async () => {
         set({ isLoading: true, error: null });
         try {
-            const response = await api.get(API_ENDPOINTS.wishlist || "/users/wishlist/");
-            const items = response.data.wishlist || response.data.items || response.data || [];
-            set({ wishlistItems: items, isLoading: false });
-            return items;
+            const response = await api.get("/users/wishlist/");
+            const wishlistData = response.data.wishlist || response.data || [];
+
+            // Transform to consistent format
+            const transformedItems = wishlistData.map((item) => ({
+                id: item.product_id,
+                item_id: item.item_id, // The unique wishlist item identifier
+                name: item.name || "Product",
+                price: item.price || 0,
+                original_price: item.original_price || item.price,
+                image: item.image_url || item.image,
+                stock: item.stock ?? 1,
+                category: item.category || "Product",
+                brand: item.brand,
+                added_at: item.added_at,
+                variant_id: item.variant_id,
+                variant: item.variant,
+            }));
+
+            set({ items: transformedItems, isLoading: false });
+            return transformedItems;
         } catch (error) {
-            const msg = error.response?.data?.error || error.response?.data?.detail || "Failed to fetch wishlist";
-            set({ error: msg, isLoading: false });
+            const msg = error.response?.data?.error || "Failed to fetch wishlist";
+            set({ error: msg, isLoading: false, items: [] });
             console.error("Failed to fetch wishlist:", error);
-            throw error;
+            return [];
         }
     },
 
-    // Add to wishlist
-    addToWishlist: async (productId) => {
+    // Add product to wishlist
+    addToWishlist: async (productId, variantId = null) => {
+        const { items } = get();
+
+        // Check if already in wishlist
+        const existingItem = items.find((item) => item.id === productId);
+        if (existingItem) {
+            return { success: true, alreadyExists: true };
+        }
+
         set({ isLoading: true, error: null });
         try {
-            const response = await api.post(API_ENDPOINTS.addToWishlist || "/users/wishlist/add/", {
-                product_id: productId,
+            const response = await api.post(`/users/wishlist/add/${productId}/`, {
+                variant_id: variantId,
             });
 
-            const newItem = response.data.item || response.data;
+            // Refetch to get complete item data
+            await get().fetchWishlist();
 
-            set((state) => ({
-                wishlistItems: [...state.wishlistItems, newItem],
-                isLoading: false,
-            }));
-
-            return { success: true, item: newItem };
+            return { success: true, message: response.data.message };
         } catch (error) {
-            const msg = error.response?.data?.error || error.response?.data?.detail || "Failed to add to wishlist";
+            const msg = error.response?.data?.error || "Failed to add to wishlist";
             set({ error: msg, isLoading: false });
-            throw error;
+            console.error("Failed to add to wishlist:", error);
+            return { success: false, error: msg };
         }
     },
 
-    // Remove from wishlist
-    removeFromWishlist: async (productId) => {
-        set({ isLoading: true, error: null });
+    // Remove item from wishlist using item_id (not product_id)
+    removeFromWishlist: async (itemId) => {
+        const { items } = get();
+        const itemToRemove = items.find((item) => item.item_id === itemId);
+
+        if (!itemToRemove) {
+            return { success: false, error: "Item not found in wishlist" };
+        }
+
+        // Optimistic update
+        set({ items: items.filter((item) => item.item_id !== itemId) });
+
         try {
-            await api.post(API_ENDPOINTS.removeFromWishlist || "/users/wishlist/remove/", {
-                product_id: productId,
-            });
-
-            set((state) => ({
-                wishlistItems: state.wishlistItems.filter(
-                    (item) => item.product_id !== productId && item.id !== productId && item.product?.id !== productId
-                ),
-                isLoading: false,
-            }));
-
+            await api.delete(`/users/wishlist/remove/${itemId}/`);
             return { success: true };
         } catch (error) {
-            const msg = error.response?.data?.error || error.response?.data?.detail || "Failed to remove from wishlist";
-            set({ error: msg, isLoading: false });
-            throw error;
+            // Revert optimistic update on error
+            set({ items: [...items] });
+            const msg = error.response?.data?.error || "Failed to remove from wishlist";
+            console.error("Failed to remove from wishlist:", error);
+            return { success: false, error: msg };
         }
     },
 
     // Check if product is in wishlist
     isInWishlist: (productId) => {
-        const { wishlistItems } = get();
-        return wishlistItems.some(
-            (item) => item.product_id === productId || item.id === productId || item.product?.id === productId
-        );
+        const { items } = get();
+        return items.some((item) => item.id === productId);
     },
 
-    // Toggle wishlist (add if not present, remove if present)
-    toggleWishlist: async (productId) => {
+    // Toggle wishlist status
+    toggleWishlist: async (productId, variantId = null) => {
         const isInList = get().isInWishlist(productId);
         if (isInList) {
-            return await get().removeFromWishlist(productId);
+            const item = get().items.find((i) => i.id === productId);
+            return await get().removeFromWishlist(item?.item_id || productId);
         } else {
-            return await get().addToWishlist(productId);
-        }
-    },
-
-    // Clear wishlist
-    clearWishlist: async () => {
-        set({ isLoading: true, error: null });
-        try {
-            await api.delete("/users/wishlist/clear/");
-            set({ wishlistItems: [], isLoading: false });
-            return { success: true };
-        } catch (error) {
-            const msg = error.response?.data?.error || error.response?.data?.detail || "Failed to clear wishlist";
-            set({ error: msg, isLoading: false });
-            throw error;
+            return await get().addToWishlist(productId, variantId);
         }
     },
 
     // Get wishlist count
     getWishlistCount: () => {
-        return get().wishlistItems.length;
+        return get().items.length;
     },
 
     // Clear error
     clearError: () => set({ error: null }),
 
     // Reset store
-    reset: () => set({ wishlistItems: [], isLoading: false, error: null }),
+    reset: () => set({ items: [], isLoading: false, error: null }),
 }));
