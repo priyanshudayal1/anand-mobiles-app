@@ -47,7 +47,7 @@ const MoreBottomSheet = forwardRef(({ onClose }, ref) => {
         opacity={0.5}
       />
     ),
-    []
+    [],
   );
 
   // Handle sheet changes
@@ -57,7 +57,7 @@ const MoreBottomSheet = forwardRef(({ onClose }, ref) => {
         onClose?.();
       }
     },
-    [onClose]
+    [onClose],
   );
 
   // Navigation links
@@ -69,16 +69,16 @@ const MoreBottomSheet = forwardRef(({ onClose }, ref) => {
   ];
 
   const helpLinks = [
-    { name: "Track Your Order", icon: Package, route: "/track-order" },
+    { name: "Track Your Order", icon: Package, route: "/order-tracking" },
     { name: "Bulk Orders", icon: ShoppingBag, route: "/bulk-order" },
     { name: "FAQ", icon: HelpCircle, route: "/faq" },
   ];
 
   const policyLinks = [
-    { name: "Terms & Conditions", icon: FileText, route: "/terms" },
-    { name: "Privacy Policy", icon: Shield, route: "/privacy" },
-    { name: "Refund Policy", icon: FileText, route: "/refund" },
-    { name: "Shipping Policy", icon: Truck, route: "/shipping" },
+    { name: "Terms & Conditions", icon: FileText, route: "/policy/terms" },
+    { name: "Privacy Policy", icon: Shield, route: "/policy/privacy" },
+    { name: "Refund Policy", icon: FileText, route: "/policy/refund" },
+    { name: "Shipping Policy", icon: Truck, route: "/policy/shipping" },
   ];
 
   // Contact information

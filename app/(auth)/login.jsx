@@ -165,7 +165,7 @@ const Login = () => {
         />
 
         <View className="flex-row justify-end mb-6">
-          <TouchableOpacity onPress={() => console.log("Forgot password")}>
+          <TouchableOpacity>
             <Text className="font-medium" style={{ color: colors.primary }}>
               Forgot Password?
             </Text>

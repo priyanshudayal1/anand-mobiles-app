@@ -101,10 +101,7 @@ export default function Home() {
 
   // Handle product press
   const handleProductPress = (product) => {
-    router.push({
-      pathname: "/(tabs)/menu",
-      params: { productId: product.id },
-    });
+    router.push(`/product/${product.id || product.product_id}`);
   };
 
   // Handle see all products

@@ -2,7 +2,7 @@ import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
 import { auth } from "../services/firebaseConfig";
-import api from "../services/api";
+import api, { setUnauthorizedCallback } from "../services/api";
 
 export const useAuthStore = create((set, get) => ({
   user: null,
@@ -209,26 +209,26 @@ export const useAuthStore = create((set, get) => ({
 
       // Backend returns { message: "...", user: { ... } } on success
       if (response.status === 200 && data.user) {
-         // Update user state with new data from backend
-         set((state) => {
-            const updatedUser = { 
-                ...state.user, 
-                firstName: data.user.first_name,
-                lastName: data.user.last_name,
-                phone: data.user.phone_number,
-                // Ensure email is preserved or updated if backend sends it
-                email: data.user.email || state.user.email, 
-            };
-            AsyncStorage.setItem("userData", JSON.stringify(updatedUser));
-            return { user: updatedUser, isLoading: false };
-          });
-          return { success: true, ...data };
+        // Update user state with new data from backend
+        set((state) => {
+          const updatedUser = {
+            ...state.user,
+            firstName: data.user.first_name,
+            lastName: data.user.last_name,
+            phone: data.user.phone_number,
+            // Ensure email is preserved or updated if backend sends it
+            email: data.user.email || state.user.email,
+          };
+          AsyncStorage.setItem("userData", JSON.stringify(updatedUser));
+          return { user: updatedUser, isLoading: false };
+        });
+        return { success: true, ...data };
       } else if (response.status === 200) {
-          // Fallback if user object isn't returned exactly as expected but status is 200
-           set({ isLoading: false });
-           return { success: true, ...data };
+        // Fallback if user object isn't returned exactly as expected but status is 200
+        set({ isLoading: false });
+        return { success: true, ...data };
       }
-      
+
       set({ isLoading: false });
       return { success: false, ...data };
     } catch (error) {
@@ -242,5 +242,10 @@ export const useAuthStore = create((set, get) => ({
   },
 
   clearError: () => set({ error: null }),
-
 }));
+
+// Register callback to handle 401s from API
+setUnauthorizedCallback(() => {
+  console.log("Session expired or unauthorized. Logging out...");
+  useAuthStore.getState().logout();
+});
