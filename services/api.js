@@ -19,12 +19,8 @@ const api = axios.create({
 api.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem("userToken");
-    console.log(`[API] Request to ${config.url} - Token exists: ${!!token}`);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      // console.log(`[API] Token: ${token}`); // Uncomment for debugging
-    } else {
-      console.log("[API] No token found in storage");
     }
     return config;
   },

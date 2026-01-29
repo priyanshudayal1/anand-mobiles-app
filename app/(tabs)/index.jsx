@@ -20,6 +20,8 @@ import CategoryGrid from "../../components/home/CategoryGrid";
 import FeaturedSection from "../../components/home/FeaturedSection";
 import BrandsSection from "../../components/home/BrandsSection";
 import ProductCard from "../../components/home/ProductCard";
+import DynamicSection from "../../components/home/DynamicSection";
+import VideoCarousel from "../../components/home/VideoCarousel";
 import { useTheme } from "../../store/useTheme";
 import { useHome } from "../../store/useHome";
 import { useProducts } from "../../store/useProducts";
@@ -79,7 +81,7 @@ const SectionHeader = ({ title, subtitle, onSeeAll, colors }) => (
 export default function Home() {
   const { colors, mode } = useTheme();
   const insets = useSafeAreaInsets();
-  const { initializeHome, refreshHomeData, isRefreshing } = useHome();
+  const { initializeHome, refreshHomeData, isRefreshing, sections, promotionVideos } = useHome();
   const { products, fetchProducts } = useProducts();
   const router = useRouter();
 
@@ -151,14 +153,23 @@ export default function Home() {
         {/* Banner Carousel */}
         <BannerCarousel />
 
-        {/* Categories Section */}
-        <CategoryGrid />
-
-        {/* Featured Products Section */}
-        <FeaturedSection />
-
-        {/* Brands Section */}
-        <BrandsSection />
+        {sections && sections.length > 0 ? (
+          <>
+            <CategoryGrid />
+            <FeaturedSection />
+            {sections.map((section, index) => (
+              <DynamicSection key={section.id || index} section={section} />
+            ))}
+            <BrandsSection />
+            <VideoCarousel />
+          </>
+        ) : (
+          <>
+            <CategoryGrid />
+            <FeaturedSection />
+            <BrandsSection />
+          </>
+        )}
 
         {/* All Products Section */}
         {allProducts.length > 0 && (
