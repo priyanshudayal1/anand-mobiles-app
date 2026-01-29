@@ -1,4 +1,4 @@
-export const BACKEND_URL = "http://192.168.29.7:8000/api";
+export const BACKEND_URL = "http://10.31.119.186:8000/api";
 
 // App configuration
 export const APP_CONFIG = {

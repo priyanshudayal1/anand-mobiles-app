@@ -104,7 +104,7 @@ export default function ProductDetailScreen() {
     try {
       await Share.share({
         message: `Check out this product: ${currentProduct?.name}`,
-        url: `https://anandmobiles.com/product/${id}`, // Replace with actual URL structure
+        url: `192.168.29.7:8000/product/${id}`, // Replace with actual URL structure
       });
     } catch (error) {
       console.error(error.message);
