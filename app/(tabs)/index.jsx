@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Text,
   RefreshControl,
+  ActivityIndicator,
 } from "react-native";
 import {
   SafeAreaView,
@@ -78,10 +79,39 @@ const SectionHeader = ({ title, subtitle, onSeeAll, colors }) => (
   </View>
 );
 
+// Render a section based on its type
+const RenderSection = ({ section, colors }) => {
+  const sectionType = section.section_type;
+
+  // These types have dedicated components
+  switch (sectionType) {
+    case "hero_banner":
+    case "banner_carousel":
+      return <BannerCarousel key={section.section_id} />;
+
+    case "category_list":
+    case "categories":
+      return <CategoryGrid key={section.section_id} />;
+
+    case "featured_products":
+      return <FeaturedSection key={section.section_id} />;
+
+    case "brands":
+      return <BrandsSection key={section.section_id} />;
+
+    case "whats_trending":
+      return <VideoCarousel key={section.section_id} />;
+
+    default:
+      // All other section types go through DynamicSection
+      return <DynamicSection key={section.section_id} section={section} />;
+  }
+};
+
 export default function Home() {
   const { colors, mode } = useTheme();
   const insets = useSafeAreaInsets();
-  const { initializeHome, refreshHomeData, isRefreshing, sections, promotionVideos } = useHome();
+  const { initializeHome, refreshHomeData, isRefreshing, isLoading, sections, banners, categories, featuredProducts, brands, promotionVideos } = useHome();
   const { products, fetchProducts } = useProducts();
   const router = useRouter();
 
@@ -89,11 +119,9 @@ export default function Home() {
   useEffect(() => {
     const init = async () => {
       await initializeHome();
-      // Also fetch some products for "All Products" section
       await fetchProducts(true);
     };
     init();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Pull to refresh
@@ -113,7 +141,6 @@ export default function Home() {
 
   // Handle chat press
   const handleChatPress = () => {
-    // TODO: Implement chat functionality
     console.log("Chat pressed");
   };
 
@@ -122,6 +149,18 @@ export default function Home() {
 
   // Calculate bottom padding for tab bar
   const bottomPadding = 56 + Math.max(insets.bottom, 8) + 16;
+
+  // Sort sections by display_order
+  const sortedSections = sections
+    ? [...sections]
+        .filter((s) => s && s.enabled !== false)
+        .sort((a, b) => (a.display_order || a.order || 0) - (b.display_order || b.order || 0))
+    : [];
+
+  // Check if we have hero/banner at top (most common case)
+  const hasHeroBannerSection = sortedSections.some(
+    (s) => s.section_type === "hero_banner" || s.section_type === "banner_carousel"
+  );
 
   return (
     <SafeAreaView
@@ -147,31 +186,56 @@ export default function Home() {
           />
         }
       >
-        {/* Header with Search */}
+        {/* Header with Search - Always at top */}
         <HomeHeader />
 
-        {/* Banner Carousel */}
-        <BannerCarousel />
+        {/* Loading State */}
+        {isLoading && sortedSections.length === 0 && (
+          <View style={{ padding: 40, alignItems: "center" }}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={{ marginTop: 16, color: colors.textSecondary }}>
+              Loading...
+            </Text>
+          </View>
+        )}
 
-        {sections && sections.length > 0 ? (
+        {/* Render sections in backend order */}
+        {sortedSections.length > 0 ? (
           <>
+            {/* If no hero_banner section, show BannerCarousel as default first */}
+            {!hasHeroBannerSection && banners && banners.length > 0 && (
+              <BannerCarousel />
+            )}
+
+            {/* Render each section based on type */}
+            {sortedSections.map((section) => (
+              <RenderSection
+                key={section.section_id || section.id}
+                section={section}
+                colors={colors}
+              />
+            ))}
+
+            {/* Always show Brands and Videos at end if not in sections */}
+            {!sortedSections.some((s) => s.section_type === "brands") && brands && brands.length > 0 && (
+              <BrandsSection />
+            )}
+            {!sortedSections.some((s) => s.section_type === "whats_trending") && promotionVideos && promotionVideos.length > 0 && (
+              <VideoCarousel />
+            )}
+          </>
+        ) : (
+          /* Fallback static layout when no sections from backend */
+          <>
+            <BannerCarousel />
             <CategoryGrid />
             <FeaturedSection />
-            {sections.map((section, index) => (
-              <DynamicSection key={section.id || index} section={section} />
-            ))}
             <BrandsSection />
             <VideoCarousel />
           </>
-        ) : (
-          <>
-            <CategoryGrid />
-            <FeaturedSection />
-            <BrandsSection />
-          </>
         )}
 
-        {/* All Products Section */}
+        {/* All Products Section - Always at bottom */}
         {allProducts.length > 0 && (
           <View style={{ backgroundColor: colors.cardBg, marginTop: 8 }}>
             <SectionHeader
