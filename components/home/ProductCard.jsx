@@ -178,7 +178,7 @@ export default function ProductCard({
               }}
             >
               {product.rating.toFixed(1)}
-              {product.reviews_count && <Text> ({product.reviews_count})</Text>}
+              {product.reviews_count ? ` (${product.reviews_count})` : ''}
             </Text>
           </View>
         )}

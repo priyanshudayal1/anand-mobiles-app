@@ -72,4 +72,13 @@ export const API_ENDPOINTS = {
   // Homepage
   homepage: "/admin/homepage/sections/public/",
   featuredProducts: "/products/mobile/featured/",
+
+  // Gamification / Wallet
+  wallet: "/users/wallet/",
+  gamificationStatus: "/users/gamification/status/",
+  achievements: "/users/rewards/achievements/",
+  leaderboard: "/users/rewards/leaderboard/",
+  referrals: "/users/rewards/referrals/",
+  spinWheel: "/users/rewards/spin-wheel/",
+  loginStreak: "/users/rewards/login-streak/",
 };

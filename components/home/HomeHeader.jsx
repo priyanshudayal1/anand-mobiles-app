@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { View, Text, TouchableOpacity, TextInput, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, FlatList, Keyboard } from "react-native";
 import { Image } from "expo-image";
-import { Search, MapPin, ShoppingCart, X, Bell, Heart, User, ChevronDown, Check, Plus, Briefcase, Home } from "lucide-react-native";
+import { Search, MapPin, ShoppingCart, X, Bell, Heart, User, ChevronDown, Check, Plus, Briefcase, Home, TrendingUp } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import { useTheme } from "../../store/useTheme";
@@ -13,7 +13,7 @@ import { useAddressStore } from "../../store/useAddress";
 
 export default function HomeHeader() {
   const { colors, mode } = useTheme();
-  const { setSearch } = useProducts();
+  // We don't need useProducts.setSearch here anymore as we pass param directly
   const { getCartCount, fetchCart } = useCartStore();
   const { logoUrl, shopName, fetchSiteConfig, isInitialized } = useSiteConfig();
   const { location, detectLocation } = useLocationStore();
@@ -22,6 +22,11 @@ export default function HomeHeader() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAddress, setSelectedAddress] = useState(null);
+
+  // Search Suggestions State
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const debounceTimer = useRef(null);
 
   // Bottom Sheet Refs
   const bottomSheetModalRef = useRef(null);
@@ -44,31 +49,84 @@ export default function HomeHeader() {
         const defaultAddr = addresses.find(a => a.is_default);
         setSelectedAddress(defaultAddr || addresses[0]);
       } else {
-        // If we have a selected address, ensure it still exists in the list (e.g. after deletion)
+        // If we have a selected address, ensure it still exists in the list
         const exists = addresses.find(a => a.id === selectedAddress.id);
         if (!exists) {
           const defaultAddr = addresses.find(a => a.is_default);
           setSelectedAddress(defaultAddr || addresses[0]);
         } else {
-          // Optional: update the object to get latest fields
           setSelectedAddress(exists);
         }
       }
     }
   }, [addresses]);
 
-  const handleSearch = () => {
+  // Debounced Search Suggestions
+  const fetchSuggestions = async (text) => {
+    if (!text || text.trim().length < 2) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://suggestqueries.google.com/complete/search?client=firefox&ds=sh&q=${encodeURIComponent(text)}`
+      );
+      const data = await response.json();
+      // Google API returns [query, [suggestions...]]
+      if (Array.isArray(data) && data[1]) {
+        setSuggestions(data[1]);
+      }
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
+    }
+  };
+
+  const handleSearchChange = (text) => {
+    setSearchQuery(text);
+    if (text.length > 0) {
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+
+    debounceTimer.current = setTimeout(() => {
+      fetchSuggestions(text);
+    }, 300); // 300ms debounce
+  };
+
+  const handleSearchSubmit = () => {
     if (searchQuery.trim()) {
-      setSearch(searchQuery.trim());
-      router.push({
-        pathname: "/(tabs)/menu",
+      setShowSuggestions(false);
+      Keyboard.dismiss();
+      // Use replace to ensure navigation even when already on products page
+      router.replace({
+        pathname: "/products",
         params: { search: searchQuery.trim() },
       });
     }
   };
 
-  const handleSearchSubmit = () => {
-    handleSearch();
+  const handleSuggestionPress = (suggestion) => {
+    setSearchQuery(suggestion);
+    setShowSuggestions(false);
+    Keyboard.dismiss();
+    // Use replace to ensure navigation even when already on products page
+    router.replace({
+      pathname: "/products",
+      params: { search: suggestion },
+    });
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+    setSuggestions([]);
+    setShowSuggestions(false);
+    Keyboard.dismiss();
   };
 
   const handleAddressSelect = useCallback(async (address) => {
@@ -86,7 +144,6 @@ export default function HomeHeader() {
     router.push("/addresses");
   };
 
-  // Render Backdrop for Bottom Sheet
   const renderBackdrop = useCallback(
     (props) => (
       <BottomSheetBackdrop
@@ -99,7 +156,6 @@ export default function HomeHeader() {
     []
   );
 
-  // Address Item Renderer
   const renderAddressItem = useCallback(({ item }) => {
     const isSelected = selectedAddress?.id === item.id;
     return (
@@ -144,16 +200,14 @@ export default function HomeHeader() {
     );
   }, [colors, selectedAddress, handleAddressSelect]);
 
-  // Determine what to display in the header
-  // User requested "show the default address", prioritizing street address for better context
-  const displayLabel = selectedAddress 
-      ? `${selectedAddress.street_address?.substring(0, 25)}${selectedAddress.street_address?.length > 25 ? '...' : ''}${selectedAddress.city ? ', ' + selectedAddress.city : ''}`
-      : location.city 
-        ? `${location.city}, ${location.pincode}` 
-        : "Select Location";
+  const displayLabel = selectedAddress
+    ? `${selectedAddress.street_address?.substring(0, 25)}${selectedAddress.street_address?.length > 25 ? '...' : ''}${selectedAddress.city ? ', ' + selectedAddress.city : ''}`
+    : location.city
+      ? `${location.city}, ${location.pincode}`
+      : "Select Location";
 
   return (
-    <View style={{ width: "100%", backgroundColor: colors.headerBg, zIndex: 10 }}>
+    <View style={{ width: "100%", backgroundColor: colors.headerBg, zIndex: 100 }}>
 
       {/* Main Header Area */}
       <View
@@ -170,6 +224,7 @@ export default function HomeHeader() {
             justifyContent: "space-between",
             alignItems: "center",
             marginBottom: 12,
+            zIndex: 1
           }}
         >
           {/* Location (Deliver to) */}
@@ -197,44 +252,97 @@ export default function HomeHeader() {
         </View>
 
         {/* Row 2: Search Bar & Icons */}
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 12, zIndex: 2 }}>
 
-          {/* Search Bar */}
-          <View
-            style={{
-              flex: 1,
-              borderRadius: 8,
-              flexDirection: "row",
-              alignItems: "center",
-              paddingHorizontal: 12,
-              height: 44,
-              backgroundColor: mode === 'dark' ? colors.surfaceSecondary : colors.white,
-            }}
-          >
-            <Image
-              source={{ uri: logoUrl || "https://upload.wikimedia.org/wikipedia/commons/4/4a/Myntra_Logo.png" }}
-              style={{ width: 28, height: 28, marginRight: 8, borderRadius: 4 }}
-              contentFit="contain"
-            />
-            <TextInput
+          {/* Search Bar Container */}
+          <View style={{ flex: 1, zIndex: 10 }}>
+            <View
               style={{
-                flex: 1,
-                fontSize: 14,
-                color: colors.text,
-                height: '100%',
-                textAlignVertical: 'center',
-                paddingVertical: 0,
+                borderRadius: 8,
+                flexDirection: "row",
+                alignItems: "center",
+                paddingHorizontal: 12,
+                height: 44,
+                backgroundColor: mode === 'dark' ? colors.surfaceSecondary : colors.white,
+                // Add border if showing suggestions
+                borderBottomLeftRadius: showSuggestions && suggestions.length > 0 ? 0 : 8,
+                borderBottomRightRadius: showSuggestions && suggestions.length > 0 ? 0 : 8,
               }}
-              placeholder='Search "Jeans"'
-              placeholderTextColor={colors.textSecondary}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              onSubmitEditing={handleSearchSubmit}
-              returnKeyType="search"
-            />
-            <TouchableOpacity onPress={handleSearchSubmit}>
-              <Search size={20} color={colors.textSecondary} />
-            </TouchableOpacity>
+            >
+              <Search size={20} color={colors.textSecondary} style={{ marginRight: 8 }} />
+              <TextInput
+                style={{
+                  flex: 1,
+                  fontSize: 14,
+                  color: colors.text,
+                  height: '100%',
+                  textAlignVertical: 'center',
+                  paddingVertical: 0,
+                }}
+                placeholder='Search "Mobile"'
+                placeholderTextColor={colors.textSecondary}
+                value={searchQuery}
+                onChangeText={handleSearchChange}
+                onSubmitEditing={handleSearchSubmit}
+                returnKeyType="search"
+                onFocus={() => {
+                  if (searchQuery.length > 0) setShowSuggestions(true);
+                }}
+                onBlur={() => {
+                  // Small delay to allow clicking on suggestions
+                  setTimeout(() => setShowSuggestions(false), 200);
+                }}
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={clearSearch}>
+                  <X size={18} color={colors.textSecondary} />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Suggestions Dropdown */}
+            {showSuggestions && suggestions.length > 0 && (
+              <View
+                style={{
+                  position: 'absolute',
+                  top: 44,
+                  left: 0,
+                  right: 0,
+                  backgroundColor: mode === 'dark' ? colors.surfaceSecondary : colors.white,
+                  borderBottomLeftRadius: 8,
+                  borderBottomRightRadius: 8,
+                  elevation: 5,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.2,
+                  shadowRadius: 3.84,
+                  zIndex: 1000,
+                  maxHeight: 300,
+                  borderTopWidth: 1,
+                  borderTopColor: colors.border,
+                }}
+              >
+                <View style={{ maxHeight: 300 }}>
+                  {suggestions.map((item, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => handleSuggestionPress(item)}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        paddingVertical: 12,
+                        paddingHorizontal: 16,
+                        borderBottomWidth: 1,
+                        borderBottomColor: colors.border + "40",
+                      }}
+                    >
+                      <TrendingUp size={16} color={colors.textSecondary} style={{ marginRight: 12 }} />
+                      <Text style={{ color: colors.text, fontSize: 14 }}>{item}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            )}
           </View>
 
           {/* Notification */}
