@@ -180,10 +180,7 @@ export default function FeaturedSection() {
 
   const handleProductPress = (product) => {
     // Navigate to product details
-    router.push({
-      pathname: "/(tabs)/menu",
-      params: { productId: product.id },
-    });
+    router.push(`/product/${product.id || product.product_id}`);
   };
 
   const handleSeeAll = () => {

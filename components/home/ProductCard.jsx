@@ -45,10 +45,7 @@ export default function ProductCard({
     if (onPress) {
       onPress(product);
     } else {
-      router.push({
-        pathname: "/(tabs)/menu",
-        params: { productId: product.id },
-      });
+      router.push(`/product/${product.id || product.product_id}`);
     }
   };
 

@@ -55,8 +55,10 @@ export const useCartStore = create((set, get) => ({
                 payload.variant_id = variantId;
             }
 
-            // Backend expects product_id in URL, quantity in body
-            await api.post(`/users/cart/add/${productId}/`, payload);
+            // Backend expects product_id in URL path: /users/cart/add/{productId}/
+            const endpoint = `/users/cart/add/${productId}/`;
+            const response = await api.post(endpoint, payload);
+            const data = response.data;
 
             // Refresh cart to get updated data
             await get().fetchCart();

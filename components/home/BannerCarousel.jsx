@@ -11,7 +11,7 @@ import { useTheme } from "../../store/useTheme";
 import { useHome } from "../../store/useHome";
 
 const { width } = Dimensions.get("window");
-const BANNER_HEIGHT = 180;
+const BANNER_HEIGHT = width * 0.56; // 16:9 Aspect Ratio roughly
 const AUTO_SCROLL_INTERVAL = 4000;
 
 export default function BannerCarousel() {
@@ -29,15 +29,15 @@ export default function BannerCarousel() {
     activeBanners.length > 0
       ? activeBanners
       : [
-          {
-            id: "1",
-            title: "Welcome to Anand Mobiles",
-            subtitle: "Best deals on smartphones",
-            image:
-              "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&h=400&fit=crop",
-            cta_text: "Shop Now",
-          },
-        ];
+        {
+          id: "1",
+          title: "Welcome to Anand Mobiles",
+          subtitle: "Best deals on smartphones",
+          image:
+            "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&h=400&fit=crop",
+          cta_text: "Shop Now",
+        },
+      ];
 
   // Auto scroll
   useEffect(() => {
@@ -77,53 +77,14 @@ export default function BannerCarousel() {
       <Image
         source={{ uri: item.image }}
         style={{ width: "100%", height: "100%" }}
-        contentFit="cover"
+        contentFit="contain"
         transition={300}
       />
-      {/* Gradient Overlay */}
-      <View
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: 80,
-          backgroundColor: "rgba(0,0,0,0.4)",
-          justifyContent: "flex-end",
-          padding: 16,
-        }}
-      >
-        {item.title && (
-          <Text
-            style={{
-              color: colors.white,
-              fontSize: 18,
-              fontWeight: "bold",
-              marginBottom: 4,
-            }}
-            numberOfLines={1}
-          >
-            {item.title}
-          </Text>
-        )}
-        {item.subtitle && (
-          <Text
-            style={{
-              color: colors.white,
-              fontSize: 12,
-              opacity: 0.9,
-            }}
-            numberOfLines={1}
-          >
-            {item.subtitle}
-          </Text>
-        )}
-      </View>
     </TouchableOpacity>
   );
 
   return (
-    <View style={{ height: BANNER_HEIGHT, backgroundColor: colors.black }}>
+    <View style={{ height: BANNER_HEIGHT, backgroundColor: 'transparent' }}>
       <FlatList
         ref={flatListRef}
         data={displayBanners}
@@ -141,31 +102,7 @@ export default function BannerCarousel() {
         })}
       />
 
-      {/* Pagination Dots */}
-      {displayBanners.length > 1 && (
-        <View
-          style={{
-            position: "absolute",
-            bottom: 12,
-            right: 16,
-            flexDirection: "row",
-            gap: 6,
-          }}
-        >
-          {displayBanners.map((_, index) => (
-            <View
-              key={index}
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: 4,
-                backgroundColor:
-                  index === currentIndex ? colors.white : colors.textSecondary,
-              }}
-            />
-          ))}
-        </View>
-      )}
+
     </View>
   );
 }

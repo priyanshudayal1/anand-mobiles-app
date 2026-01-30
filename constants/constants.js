@@ -25,6 +25,10 @@ export const API_ENDPOINTS = {
   // Theme
   publicTheme: "/admin/theme/public/",
 
+  // Site Config
+  logo: "/admin/content/logo/",
+  footer: "/admin/footer/",
+
   // Products - Legacy
   products: "/products/products/",
   categories: "/products/categories/",
