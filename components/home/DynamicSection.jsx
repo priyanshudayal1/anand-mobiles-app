@@ -180,7 +180,7 @@ const TabbedSection = ({ section }) => {
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: 12,
+            marginBottom: 0,
           }}
         >
           <Text
@@ -289,7 +289,7 @@ export default function DynamicSection({ section }) {
       <View
         style={{
           paddingHorizontal: 16,
-          marginBottom: 12,
+          marginBottom: 0,
         }}
       >
         <View
@@ -471,7 +471,12 @@ export default function DynamicSection({ section }) {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 0, gap: 0 }}
+        contentContainerStyle={{
+          paddingHorizontal: 0,
+          paddingVertical: 0,
+          marginVertical: 0,
+          gap: 0,
+        }}
         decelerationRate="fast"
         snapToAlignment="center"
         pagingEnabled
@@ -601,6 +606,7 @@ export default function DynamicSection({ section }) {
       case "special_offers_carousel":
         return renderBannerCarousel();
 
+      case "special_offers":
       case "banners":
       case "section_banners":
         return renderBannerGrid();
@@ -661,13 +667,17 @@ export default function DynamicSection({ section }) {
     return null;
   }
 
-  const isBannerCarousel = section_type === "special_offers_carousel";
+  const isBannerCarousel =
+    section_type === "special_offers_carousel" ||
+    section_type === "special_offers" ||
+    section_type === "tabbed_banner_grid";
 
   return (
     <View
       style={{
-        marginTop: isBannerCarousel ? 0 : 8,
-        paddingVertical: isBannerCarousel ? 0 : 16,
+        marginTop: 0,
+        marginBottom: 0,
+        paddingVertical: 0,
         backgroundColor: isBannerCarousel ? "transparent" : colors.cardBg,
       }}
     >

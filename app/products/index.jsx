@@ -4,10 +4,12 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
 import { Ionicons } from "@expo/vector-icons";
+import { Filter, X } from "lucide-react-native";
 import { useTheme } from "../../store/useTheme";
 import { useProducts } from "../../store/useProducts";
 import ProductCard from "../../components/home/ProductCard";
 import SearchBar from "../../components/common/SearchBar";
+import ProductFilterModal from "../../components/common/ProductFilterModal";
 
 export default function ProductsScreen() {
   const router = useRouter();
@@ -21,9 +23,25 @@ export default function ProductsScreen() {
     resetFilters,
     loadMoreProducts,
     pagination,
+    filters,
   } = useProducts();
 
   const [searchTitle, setSearchTitle] = useState("Products");
+  const [showFilterModal, setShowFilterModal] = useState(false);
+
+  // Calculate active filter count
+  const getActiveFilterCount = () => {
+    let count = 0;
+    if (filters.brands && filters.brands.length > 0) count++;
+    if (filters.category) count++;
+    if (filters.minPrice > 0) count++;
+    if (filters.maxPrice < 10000000) count++;
+    if (filters.sortBy && filters.sortBy !== "newest") count++;
+    if (filters.inStockOnly) count++;
+    return count;
+  };
+
+  const activeFilterCount = getActiveFilterCount();
 
   useEffect(() => {
     // Immediate execution function to handle async operations
@@ -113,7 +131,7 @@ export default function ProductsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      {/* Header with Search Bar and Back Button */}
+      {/* Header with Search Bar, Back Button, and Filter */}
       <View
         style={{
           backgroundColor: colors.surface,
@@ -136,24 +154,113 @@ export default function ProductsScreen() {
           <SearchBar placeholder={searchTitle} />
         </View>
 
-        {/* Item Count Badge */}
-        {pagination.totalCount > 0 && (
-          <View
+        {/* Filter Button */}
+        <TouchableOpacity
+          onPress={() => setShowFilterModal(true)}
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            backgroundColor:
+              activeFilterCount > 0
+                ? colors.primary
+                : colors.backgroundSecondary,
+            justifyContent: "center",
+            alignItems: "center",
+            position: "relative",
+          }}
+        >
+          <Filter
+            size={20}
+            color={activeFilterCount > 0 ? colors.white : colors.text}
+          />
+          {activeFilterCount > 0 ? (
+            <View
+              style={{
+                position: "absolute",
+                top: -4,
+                right: -4,
+                width: 18,
+                height: 18,
+                borderRadius: 9,
+                backgroundColor: colors.error,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 10,
+                  color: colors.white,
+                  fontWeight: "bold",
+                }}
+              >
+                {activeFilterCount}
+              </Text>
+            </View>
+          ) : null}
+        </TouchableOpacity>
+      </View>
+
+      {/* Active Filters Bar */}
+      {activeFilterCount > 0 ? (
+        <View
+          style={{
+            backgroundColor: colors.primary + "10",
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border,
+          }}
+        >
+          <Text
+            style={{ fontSize: 13, color: colors.primary, fontWeight: "500" }}
+          >
+            {activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""} applied
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              resetFilters();
+              applyFilters({});
+            }}
             style={{
-              backgroundColor: colors.primary + "20",
-              paddingHorizontal: 8,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 4,
+              paddingHorizontal: 10,
               paddingVertical: 4,
+              backgroundColor: colors.error + "20",
               borderRadius: 12,
             }}
           >
+            <X size={14} color={colors.error} />
             <Text
-              style={{ fontSize: 11, color: colors.primary, fontWeight: "600" }}
+              style={{ fontSize: 12, color: colors.error, fontWeight: "500" }}
             >
-              {pagination.totalCount}
+              Clear All
             </Text>
-          </View>
-        )}
-      </View>
+          </TouchableOpacity>
+        </View>
+      ) : null}
+
+      {/* Results Count */}
+      {!isLoading && pagination.totalCount > 0 ? (
+        <View
+          style={{
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border,
+          }}
+        >
+          <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+            Showing {products.length} of {pagination.totalCount} products
+          </Text>
+        </View>
+      ) : null}
 
       {/* Content */}
       {isLoading ? (
@@ -188,10 +295,38 @@ export default function ProductsScreen() {
               >
                 No products found.
               </Text>
+              {activeFilterCount > 0 ? (
+                <TouchableOpacity
+                  onPress={() => {
+                    resetFilters();
+                    applyFilters({});
+                  }}
+                  style={{
+                    marginTop: 16,
+                    paddingHorizontal: 20,
+                    paddingVertical: 10,
+                    backgroundColor: colors.primary,
+                    borderRadius: 8,
+                  }}
+                >
+                  <Text style={{ color: colors.white, fontWeight: "600" }}>
+                    Clear Filters
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
             </View>
           }
         />
       )}
+
+      {/* Filter Modal */}
+      <ProductFilterModal
+        visible={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        onApply={async (newFilters) => {
+          await applyFilters(newFilters);
+        }}
+      />
     </SafeAreaView>
   );
 }

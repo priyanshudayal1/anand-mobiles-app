@@ -6,7 +6,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
-  ActivityIndicator,
   Alert,
 } from "react-native";
 import Svg, { Path, G, Text as SvgText } from "react-native-svg";
@@ -315,70 +314,92 @@ export default function SpinWheel({
     setResult(null);
     setShowConfetti(false);
 
+    // Start continuous spinning animation immediately
     const currentRot = rotation.value;
-    rotation.value = withTiming(currentRot + 360 * 8, {
-      duration: 4000,
-      easing: Easing.out(Easing.quad),
+    const initialSpinRotation = currentRot + 360 * 5;
+
+    rotation.value = withTiming(initialSpinRotation, {
+      duration: 2500,
+      easing: Easing.in(Easing.quad),
     });
 
     try {
+      // Make API call while wheel is spinning
       const response = await spinWheel();
+
+      let targetSegmentIndex;
+      let rewardToShow;
 
       if (response.success && response.data?.reward) {
         const reward = response.data.reward;
-        let rewardIndex = segments.findIndex(
+        rewardToShow = reward;
+
+        targetSegmentIndex = segments.findIndex(
           (s) => s.type === reward.type && s.value === reward.value,
         );
 
-        if (rewardIndex === -1 && response.data.reward_index !== undefined) {
-          rewardIndex = response.data.reward_index;
+        if (
+          targetSegmentIndex === -1 &&
+          response.data.reward_index !== undefined
+        ) {
+          targetSegmentIndex = response.data.reward_index;
         }
-        if (rewardIndex === -1)
-          rewardIndex = Math.floor(Math.random() * segments.length);
-
-        const segmentCenter =
-          rewardIndex * anglePerSegment + anglePerSegment / 2;
-        const targetRotation =
-          360 * 10 - segmentCenter + (Math.random() * 10 - 5);
-
-        cancelAnimation(rotation);
-        rotation.value = withTiming(
-          targetRotation,
-          {
-            duration: 5000,
-            easing: Easing.out(Easing.cubic),
-          },
-          (finished) => {
-            if (finished) {
-              runOnJS(handleSpinComplete)(reward);
-            }
-          },
-        );
+        if (targetSegmentIndex === -1) {
+          targetSegmentIndex = Math.floor(Math.random() * segments.length);
+        }
       } else {
-        const randomIndex = Math.floor(Math.random() * segments.length);
-        const segmentCenter =
-          randomIndex * anglePerSegment + anglePerSegment / 2;
-        const targetRotation = 360 * 10 - segmentCenter;
-
-        cancelAnimation(rotation);
-        rotation.value = withTiming(
-          targetRotation,
-          {
-            duration: 5000,
-            easing: Easing.out(Easing.cubic),
-          },
-          (finished) => {
-            if (finished) {
-              runOnJS(handleSpinComplete)(segments[randomIndex]);
-            }
-          },
-        );
+        // Fallback to random segment
+        targetSegmentIndex = Math.floor(Math.random() * segments.length);
+        rewardToShow = segments[targetSegmentIndex];
       }
+
+      // Calculate final rotation to land on target segment
+      // Pointer is at top (0 degrees), so we need to rotate to put target segment at top
+      const segmentCenter =
+        targetSegmentIndex * anglePerSegment + anglePerSegment / 2;
+      // Add extra rotations for dramatic effect + land on segment
+      const extraSpins = 360 * 6;
+      const targetRotation =
+        extraSpins + (360 - segmentCenter) + (Math.random() * 8 - 4);
+
+      // Smoothly transition from current spinning to final target
+      cancelAnimation(rotation);
+
+      rotation.value = withTiming(
+        initialSpinRotation + targetRotation,
+        {
+          duration: 4500,
+          easing: Easing.out(Easing.cubic),
+        },
+        (finished) => {
+          if (finished) {
+            runOnJS(handleSpinComplete)(rewardToShow);
+          }
+        },
+      );
     } catch (error) {
       console.error("Spin error:", error);
-      isSpinning.value = false;
-      setIsSpinningState(false);
-      Alert.alert("Error", "Failed to spin. Please try again.");
+
+      // Even on error, complete the spin gracefully
+      const randomIndex = Math.floor(Math.random() * segments.length);
+      const segmentCenter = randomIndex * anglePerSegment + anglePerSegment / 2;
+      const targetRotation = 360 * 4 + (360 - segmentCenter);
+
+      cancelAnimation(rotation);
+      rotation.value = withTiming(
+        initialSpinRotation + targetRotation,
+        {
+          duration: 3000,
+          easing: Easing.out(Easing.cubic),
+        },
+        (finished) => {
+          if (finished) {
+            isSpinning.value = false;
+            setIsSpinningState(false);
+            runOnJS(Alert.alert)("Error", "Failed to spin. Please try again.");
+          }
+        },
+      );
     }
   };
 
@@ -490,16 +511,12 @@ export default function SpinWheel({
                   (!canSpin || isSpinningState) && styles.spinButtonDisabled,
                 ]}
                 onPress={handleSpin}
-                disabled={isSpinningState || isLoading || !canSpin}
+                disabled={isSpinningState || !canSpin}
                 activeOpacity={0.8}
               >
-                {isLoading || isSpinningState ? (
-                  <ActivityIndicator size="small" color="#7c3aed" />
-                ) : (
-                  <Text style={styles.spinButtonText}>
-                    {canSpin ? "SPIN" : "✓"}
-                  </Text>
-                )}
+                <Text style={styles.spinButtonText}>
+                  {isSpinningState ? "🎰" : canSpin ? "SPIN" : "✓"}
+                </Text>
               </TouchableOpacity>
             </View>
 

@@ -281,83 +281,85 @@ export default function ProductCard({
           {/* Text Information */}
           <View style={{ flex: 1 }}>
             {/* Brand & Category */}
-            <Text
-              style={{
-                fontSize: 10,
-                color: colors.textSecondary,
-                lineHeight: 14,
-                height: 14,
-                marginBottom: 4,
-              }}
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {[brandName, categoryName].filter(Boolean).join(" • ")}
-            </Text>
+            <View style={{ height: 16, justifyContent: "center" }}>
+              <Text
+                style={{
+                  fontSize: 10,
+                  color: colors.textSecondary,
+                  lineHeight: 14,
+                }}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {[brandName, categoryName].filter(Boolean).join(" • ") || " "}
+              </Text>
+            </View>
 
             {/* Title */}
-            <Text
-              style={{
-                fontSize: size === "small" ? 12 : 13,
-                fontWeight: "600",
-                color: colors.text,
-                height: 36,
-                marginBottom: 6,
-                lineHeight: 18,
-              }}
-              numberOfLines={2}
-              ellipsizeMode="tail"
-            >
-              {displayName}
-            </Text>
+            <View style={{ height: size === "small" ? 32 : 36, marginTop: 4 }}>
+              <Text
+                style={{
+                  fontSize: size === "small" ? 12 : 13,
+                  fontWeight: "600",
+                  color: colors.text,
+                  lineHeight: size === "small" ? 16 : 18,
+                }}
+                numberOfLines={2}
+                ellipsizeMode="tail"
+              >
+                {displayName}
+              </Text>
+            </View>
 
             {/* Rating */}
-            {showRating && (
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginBottom: 6,
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    backgroundColor: colors.success + "20",
-                    paddingHorizontal: 4,
-                    paddingVertical: 2,
-                    borderRadius: 4,
-                    marginRight: 6,
-                  }}
-                >
-                  <Text
+            <View
+              style={{ height: 20, marginTop: 4, justifyContent: "center" }}
+            >
+              {showRating ? (
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <View
                     style={{
-                      fontSize: 10,
-                      fontWeight: "700",
-                      color: colors.success,
-                      marginRight: 2,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      backgroundColor: colors.success + "20",
+                      paddingHorizontal: 4,
+                      paddingVertical: 2,
+                      borderRadius: 4,
+                      marginRight: 6,
                     }}
                   >
-                    {ratingValue.toFixed(1)}
-                  </Text>
-                  <Star size={8} color={colors.success} fill={colors.success} />
+                    <Text
+                      style={{
+                        fontSize: 10,
+                        fontWeight: "700",
+                        color: colors.success,
+                        marginRight: 2,
+                      }}
+                    >
+                      {ratingValue.toFixed(1)}
+                    </Text>
+                    <Star
+                      size={8}
+                      color={colors.success}
+                      fill={colors.success}
+                    />
+                  </View>
+                  {reviewsCount > 0 && (
+                    <Text style={{ fontSize: 10, color: colors.textSecondary }}>
+                      ({reviewsCount})
+                    </Text>
+                  )}
                 </View>
-                {reviewsCount > 0 && (
-                  <Text style={{ fontSize: 10, color: colors.textSecondary }}>
-                    ({reviewsCount})
-                  </Text>
-                )}
-              </View>
-            )}
+              ) : null}
+            </View>
 
             {/* Price */}
             <View
               style={{
                 flexDirection: "row",
-                alignItems: "baseline",
-                flexWrap: "wrap",
-                gap: 6,
+                alignItems: "center",
+                height: 22,
+                marginTop: 4,
               }}
             >
               <Text
@@ -366,6 +368,7 @@ export default function ProductCard({
                   fontWeight: "bold",
                   color: colors.text,
                 }}
+                numberOfLines={1}
               >
                 ₹{displayPrice.toLocaleString()}
               </Text>
@@ -375,7 +378,9 @@ export default function ProductCard({
                     fontSize: 11,
                     color: colors.textSecondary,
                     textDecorationLine: "line-through",
+                    marginLeft: 6,
                   }}
+                  numberOfLines={1}
                 >
                   ₹{originalPrice.toLocaleString()}
                 </Text>

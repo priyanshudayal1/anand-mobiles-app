@@ -696,6 +696,7 @@ export default function WalletScreen() {
         {/* Tab Content */}
         <ScrollView
           showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 100 }}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -776,27 +777,25 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     marginBottom: 0,
+    flexGrow: 0,
   },
   tabsContent: {
     paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingVertical: 8,
+    gap: 8,
   },
   tab: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 20,
-    gap: 6,
-    marginRight: 8,
-    minWidth: 110,
-    maxWidth: 140,
-    height: 40,
+    gap: 4,
+    height: 36,
   },
   tabLabel: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "500",
-    flexShrink: 1,
   },
   tabContent: {
     padding: 16,

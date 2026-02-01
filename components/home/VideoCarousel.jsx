@@ -126,7 +126,8 @@ export default function VideoCarousel({
     <View
       style={{
         marginTop: 0,
-        backgroundColor: colors.cardBg,
+        marginBottom: 0,
+        backgroundColor: "transparent",
       }}
     >
       {showHeader && (

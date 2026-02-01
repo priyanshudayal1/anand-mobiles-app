@@ -29,7 +29,7 @@ const SectionHeader = ({ title, subtitle, onSeeAll, colors }) => (
   <View
     style={{
       paddingHorizontal: 16,
-      paddingTop: 16,
+      paddingTop: 12,
       paddingBottom: 8,
       backgroundColor: colors.cardBg,
     }}
@@ -90,7 +90,7 @@ const SectionTitle = ({ section, colors, onSeeAll }) => {
     <View
       style={{
         paddingHorizontal: 16,
-        paddingTop: 16,
+        paddingTop: 12,
         paddingBottom: 8,
         backgroundColor: colors.cardBg,
       }}
@@ -181,7 +181,7 @@ const RenderSection = ({ section, colors, router }) => {
       return (
         <View
           key={section.section_id}
-          style={{ backgroundColor: colors.cardBg, marginTop: 8 }}
+          style={{ backgroundColor: colors.cardBg, marginTop: 0 }}
         >
           <SectionTitle section={section} colors={colors} />
           <CategoryGrid showHeader={false} />
@@ -192,7 +192,7 @@ const RenderSection = ({ section, colors, router }) => {
       return (
         <View
           key={section.section_id}
-          style={{ backgroundColor: colors.cardBg, marginTop: 8 }}
+          style={{ backgroundColor: colors.cardBg, marginTop: 0 }}
         >
           <SectionTitle section={section} colors={colors} />
           <FeaturedSection showHeader={false} />
@@ -203,7 +203,7 @@ const RenderSection = ({ section, colors, router }) => {
       return (
         <View
           key={section.section_id}
-          style={{ backgroundColor: colors.cardBg, marginTop: 8 }}
+          style={{ backgroundColor: colors.cardBg, marginTop: 0 }}
         >
           <SectionTitle section={section} colors={colors} />
           <BrandsSection showHeader={false} />
@@ -214,7 +214,7 @@ const RenderSection = ({ section, colors, router }) => {
       return (
         <View
           key={section.section_id}
-          style={{ backgroundColor: colors.cardBg, marginTop: 8 }}
+          style={{ backgroundColor: colors.cardBg, marginTop: 0 }}
         >
           <SectionTitle section={section} colors={colors} />
           <VideoCarousel
@@ -311,6 +311,9 @@ export default function Home() {
         backgroundColor={colors.primary}
       />
 
+      {/* Header with Search - Sticky at top */}
+      <HomeHeader />
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={{ flex: 1 }}
@@ -325,9 +328,6 @@ export default function Home() {
           />
         }
       >
-        {/* Header with Search - Always at top */}
-        <HomeHeader />
-
         {/* Video Section - Like Website */}
         <VideoCarousel showHeader={false} />
 
@@ -380,7 +380,7 @@ export default function Home() {
 
         {/* All Products Section - Always at bottom */}
         {allProducts.length > 0 && (
-          <View style={{ backgroundColor: colors.cardBg, marginTop: 8 }}>
+          <View style={{ backgroundColor: colors.cardBg, marginTop: 0 }}>
             <SectionHeader
               title="All Products"
               subtitle="Explore our complete collection"
