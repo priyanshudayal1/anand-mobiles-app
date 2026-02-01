@@ -51,6 +51,7 @@ export default function ProductCard({
         : (width - 48) / 2;
 
   const imageHeight = size === "small" ? 100 : size === "large" ? 200 : 140;
+  const cardHeight = size === "small" ? 270 : size === "large" ? 380 : 310;
 
   // Price & Variant Logic (Matching Web)
   const firstVariant = product.valid_options?.[0];
@@ -170,6 +171,7 @@ export default function ProductCard({
       onPress={handlePress}
       style={{
         width: cardWidth,
+        height: cardHeight,
         backgroundColor: colors.cardBg,
         borderRadius: 12,
         overflow: "hidden",
@@ -283,9 +285,12 @@ export default function ProductCard({
               style={{
                 fontSize: 10,
                 color: colors.textSecondary,
+                lineHeight: 14,
+                height: 14,
                 marginBottom: 4,
               }}
               numberOfLines={1}
+              ellipsizeMode="tail"
             >
               {[brandName, categoryName].filter(Boolean).join(" • ")}
             </Text>
@@ -296,10 +301,12 @@ export default function ProductCard({
                 fontSize: size === "small" ? 12 : 13,
                 fontWeight: "600",
                 color: colors.text,
+                height: 36,
                 marginBottom: 6,
                 lineHeight: 18,
               }}
               numberOfLines={2}
+              ellipsizeMode="tail"
             >
               {displayName}
             </Text>

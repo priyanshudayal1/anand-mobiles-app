@@ -86,7 +86,7 @@ const TabbedSection = ({ section }) => {
     <BannerItem
       banner={banner}
       onPress={(b) => handleLinkPress(b?.link_url || b?.link)}
-      style={{ borderRadius: 8 }}
+      style={{ borderRadius: 0 }}
     />
   );
 
@@ -106,8 +106,8 @@ const TabbedSection = ({ section }) => {
   };
 
   const layout = getGridLayout(activeTab);
-  const GAP = 12;
-  const padding = 16;
+  const GAP = 0;
+  const padding = 0;
   const itemWidth = (width - padding * 2 - GAP) / 2;
 
   const renderGrid = () => {
@@ -174,7 +174,7 @@ const TabbedSection = ({ section }) => {
   return (
     <View style={{ paddingHorizontal: 0 }}>
       {/* Tab Header inside section */}
-      <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
+      <View style={{ paddingHorizontal: 16, marginBottom: 0 }}>
         <View
           style={{
             flexDirection: "row",
@@ -222,7 +222,7 @@ const TabbedSection = ({ section }) => {
           ))}
         </ScrollView>
       </View>
-      <View style={{ paddingHorizontal: 16 }}>{renderGrid()}</View>
+      <View style={{ paddingHorizontal: 0 }}>{renderGrid()}</View>
     </View>
   );
 };
@@ -296,7 +296,7 @@ export default function DynamicSection({ section }) {
           style={{
             flexDirection: "row",
             justifyContent: "space-between",
-            alignItems: "flex-start",
+            alignItems: "center",
           }}
         >
           <View style={{ flex: 1, marginRight: 8 }}>
@@ -335,7 +335,22 @@ export default function DynamicSection({ section }) {
               </Text>
             ) : null}
           </View>
-          {showSeeAll ? (
+
+          {showTimer ? (
+            <View>
+              <CountdownTimer
+                endTime={config.countdown_end_time}
+                label={
+                  timerLabel ||
+                  (section_type === "flash_deal" ? "Ends in" : "Ends in")
+                }
+                size="sm"
+                variant="urgent"
+                showIcon={true}
+                showLabels={true}
+              />
+            </View>
+          ) : showSeeAll ? (
             <TouchableOpacity
               onPress={handleSeeAll}
               style={{ flexDirection: "row", alignItems: "center" }}
@@ -347,22 +362,6 @@ export default function DynamicSection({ section }) {
             </TouchableOpacity>
           ) : null}
         </View>
-
-        {showTimer && (
-          <View style={{ marginTop: 8 }}>
-            <CountdownTimer
-              endTime={config.countdown_end_time}
-              label={
-                timerLabel ||
-                (section_type === "flash_deal" ? "Hurry! Ends in" : "Ends in")
-              }
-              size="sm"
-              variant="urgent"
-              showIcon={true}
-              showLabels={true}
-            />
-          </View>
-        )}
       </View>
     );
   };
@@ -374,7 +373,7 @@ export default function DynamicSection({ section }) {
       <TouchableOpacity
         activeOpacity={0.9}
         onPress={() => handleLinkPress(data.link_url)}
-        style={[{ overflow: "hidden", borderRadius: 8 }, style]}
+        style={[{ overflow: "hidden", borderRadius: 0 }, style]}
       >
         <Image
           source={{ uri: data.image_url }}
@@ -498,15 +497,15 @@ export default function DynamicSection({ section }) {
       // Grid Layouts
       case "banner_grid_main_quad":
         return (
-          <View style={{ paddingHorizontal: 16, gap: 12 }}>
+          <View style={{ paddingHorizontal: 0, gap: 0 }}>
             {slots.main
               ? renderBannerImage(slots.main, {
                   width: "100%",
                   height: width * 0.5,
                 })
               : null}
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-              <View style={{ flexDirection: "row", gap: 8, width: "100%" }}>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 0 }}>
+              <View style={{ flexDirection: "row", gap: 0, width: "100%" }}>
                 <View style={{ flex: 1, aspectRatio: 4 / 3 }}>
                   {renderBannerImage(slots.sub1, {
                     width: "100%",
@@ -520,7 +519,7 @@ export default function DynamicSection({ section }) {
                   })}
                 </View>
               </View>
-              <View style={{ flexDirection: "row", gap: 8, width: "100%" }}>
+              <View style={{ flexDirection: "row", gap: 0, width: "100%" }}>
                 <View style={{ flex: 1, aspectRatio: 4 / 3 }}>
                   {renderBannerImage(slots.sub3, {
                     width: "100%",
@@ -540,7 +539,7 @@ export default function DynamicSection({ section }) {
 
       case "banner_grid_triple":
         return (
-          <View style={{ paddingHorizontal: 16, gap: 12 }}>
+          <View style={{ paddingHorizontal: 0, gap: 0 }}>
             {slots.left && (
               <BannerItem
                 banner={slots.left}
@@ -564,7 +563,7 @@ export default function DynamicSection({ section }) {
 
       case "banner_grid_split":
         return (
-          <View style={{ paddingHorizontal: 16, gap: 12 }}>
+          <View style={{ paddingHorizontal: 0, gap: 0 }}>
             {slots.main && (
               <BannerItem
                 banner={slots.main}
@@ -662,12 +661,14 @@ export default function DynamicSection({ section }) {
     return null;
   }
 
+  const isBannerCarousel = section_type === "special_offers_carousel";
+
   return (
     <View
       style={{
-        marginTop: 8,
-        paddingVertical: 16,
-        backgroundColor: colors.cardBg,
+        marginTop: isBannerCarousel ? 0 : 8,
+        paddingVertical: isBannerCarousel ? 0 : 16,
+        backgroundColor: isBannerCarousel ? "transparent" : colors.cardBg,
       }}
     >
       {renderSectionHeader(false)}

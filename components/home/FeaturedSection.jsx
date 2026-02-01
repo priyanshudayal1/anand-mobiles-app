@@ -16,7 +16,7 @@ const { width } = Dimensions.get("window");
 const CARD_WIDTH = (width - 48) / 2; // 2 cards with padding
 
 // Product Card Component
-const ProductCard = ({ product, colors, onPress }) => {
+const ProductCard = React.memo(({ product, colors, onPress }) => {
   const discountPrice =
     product.discount_price || product.discounted_price || product.price;
   const originalPrice = product.price;
@@ -144,7 +144,9 @@ const ProductCard = ({ product, colors, onPress }) => {
       </View>
     </TouchableOpacity>
   );
-};
+});
+
+ProductCard.displayName = "ProductCard";
 
 export default function FeaturedSection({ showHeader = true }) {
   const { colors } = useTheme();
@@ -178,10 +180,33 @@ export default function FeaturedSection({ showHeader = true }) {
           },
         ];
 
-  const handleProductPress = (product) => {
-    // Navigate to product details
-    router.push(`/product/${product.id || product.product_id}`);
-  };
+  const handleProductPress = React.useCallback(
+    (product) => {
+      // Navigate to product details
+      router.push(`/product/${product.id || product.product_id}`);
+    },
+    [router],
+  );
+
+  const renderItem = React.useCallback(
+    ({ item }) => (
+      <ProductCard
+        product={item}
+        colors={colors}
+        onPress={handleProductPress}
+      />
+    ),
+    [colors, handleProductPress],
+  );
+
+  const getItemLayout = React.useCallback(
+    (data, index) => ({
+      length: CARD_WIDTH + 12,
+      offset: (CARD_WIDTH + 12) * index,
+      index,
+    }),
+    [],
+  );
 
   const handleSeeAll = () => {
     router.push({
@@ -254,17 +279,16 @@ export default function FeaturedSection({ showHeader = true }) {
       {/* Products Horizontal Scroll */}
       <FlatList
         data={displayProducts}
-        renderItem={({ item }) => (
-          <ProductCard
-            product={item}
-            colors={colors}
-            onPress={handleProductPress}
-          />
-        )}
+        renderItem={renderItem}
         keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 16 }}
+        getItemLayout={getItemLayout}
+        initialNumToRender={4}
+        maxToRenderPerBatch={4}
+        windowSize={3}
+        removeClippedSubviews={true}
       />
     </View>
   );
