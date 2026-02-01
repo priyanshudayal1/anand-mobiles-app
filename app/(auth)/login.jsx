@@ -54,7 +54,7 @@ const Login = () => {
           headers: {
             Authorization: `Bearer ${response.authentication.accessToken}`,
           },
-        }
+        },
       );
       const googleUser = await userInfoResponse.json();
 
@@ -200,7 +200,7 @@ const Login = () => {
 
         <View className="flex-row justify-center mt-8">
           <Text style={{ color: colors.textSecondary }}>
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
           </Text>
           <Link href="/register" asChild>
             <TouchableOpacity>

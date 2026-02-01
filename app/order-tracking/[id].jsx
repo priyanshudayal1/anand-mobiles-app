@@ -99,7 +99,7 @@ export default function OrderTracking() {
         if (s.includes("delivered")) return colors.success;
         if (s.includes("cancelled") || s.includes("failed")) return colors.error;
         if (s.includes("pending") || s.includes("out for")) return colors.warning;
-        if (s.includes("shipped") || s.includes("assigned")) return colors.info || "#3b82f6";
+        if (s.includes("shipped") || s.includes("assigned")) return colors.info;
         if (s.includes("processing") || s.includes("packed") || s.includes("payment successful"))
             return colors.primary;
         return colors.textSecondary;
@@ -282,7 +282,7 @@ export default function OrderTracking() {
                             }}
                             onPress={() => router.push("/orders")}
                         >
-                            <Text style={{ color: "#FFF", fontWeight: "600" }}>View All Orders</Text>
+                            <Text style={{ color: colors.white, fontWeight: "600" }}>View All Orders</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -389,7 +389,7 @@ export default function OrderTracking() {
                         borderRadius: 16,
                         borderWidth: 1,
                         borderColor: colors.border,
-                        shadowColor: "#000",
+                        shadowColor: colors.black,
                         shadowOffset: { width: 0, height: 2 },
                         shadowOpacity: 0.05,
                         shadowRadius: 8,

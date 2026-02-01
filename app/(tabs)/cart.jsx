@@ -16,6 +16,7 @@ import { Ionicons, Feather } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { useTheme } from "../../store/useTheme";
 import { useCartStore } from "../../store/useCart";
+import CheckoutModal from "../../components/checkout/CheckoutModal";
 
 export default function Cart() {
     const router = useRouter();
@@ -33,6 +34,7 @@ export default function Cart() {
         getCartCount,
     } = useCartStore();
     const [refreshing, setRefreshing] = React.useState(false);
+    const [isCheckoutVisible, setIsCheckoutVisible] = React.useState(false);
 
     useEffect(() => {
         fetchCart();
@@ -85,8 +87,7 @@ export default function Cart() {
     };
 
     const handleCheckout = () => {
-        // TODO: Navigate to checkout screen
-        Alert.alert("Checkout", "Checkout feature coming soon!");
+        setIsCheckoutVisible(true);
     };
 
     const handleProductPress = (item) => {
@@ -473,6 +474,12 @@ export default function Cart() {
                     </View>
                 </>
             )}
+
+            <CheckoutModal 
+                visible={isCheckoutVisible} 
+                onClose={() => setIsCheckoutVisible(false)} 
+                totalAmount={cartTotal}
+            />
         </SafeAreaView>
     );
 }

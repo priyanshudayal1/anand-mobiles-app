@@ -28,6 +28,8 @@ import {
 import { useTheme } from "../../store/useTheme";
 import { useGamification } from "../../store/useGamification";
 import { useAuthStore } from "../../store/useAuth";
+import SpinWheel from "../../components/gamification/SpinWheel";
+import WalletModal from "../../components/gamification/WalletModal";
 
 export default function WalletScreen() {
   const { colors } = useTheme();
@@ -45,6 +47,8 @@ export default function WalletScreen() {
 
   const [activeTab, setActiveTab] = useState("overview");
   const [refreshing, setRefreshing] = useState(false);
+  const [showSpinWheel, setShowSpinWheel] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -228,14 +232,15 @@ export default function WalletScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: colors.secondary || "#6C757D" }]}
+            style={[styles.actionButton, { backgroundColor: "#2563EB" }]}
+            onPress={() => setShowWalletModal(true)}
           >
             <Coins size={20} color="#FFF" />
             <Text style={styles.actionButtonText}>View Wallet</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: colors.primary + "80" }]}
+            style={[styles.actionButton, { backgroundColor: "#7C3AED" }]}
             onPress={handleShare}
           >
             <Share2 size={20} color="#FFF" />
@@ -378,7 +383,7 @@ export default function WalletScreen() {
                   </Text>
                 </View>
                 <TouchableOpacity
-                  style={[styles.copyButton, { backgroundColor: colors.secondary || "#6C757D" }]}
+                  style={[styles.copyButton, { backgroundColor: "#4B5563" }]} // Dark gray for better visibility
                   onPress={copyReferralCode}
                 >
                   <Copy size={16} color="#FFF" />
@@ -449,14 +454,25 @@ export default function WalletScreen() {
           style={[
             styles.spinButton,
             {
-              backgroundColor: gamificationStatus?.daily_spin_available
-                ? colors.primary
-                : colors.border || "#E0E0E0",
+              backgroundColor: colors.primary, // Always colored, maybe dim if unavailable in future
+              opacity: gamificationStatus?.daily_spin_available ? 1 : 0.8
             },
           ]}
-          disabled={!gamificationStatus?.daily_spin_available}
+          onPress={() => {
+              if (gamificationStatus?.daily_spin_available) {
+                  setShowSpinWheel(true);
+              } else {
+                  setShowSpinWheel(true); // Open it anyway so they can see the wheel, handle disabled state inside if needed, or just show alert.
+                  // For better UX, let's open it but maybe the SpinWheel component should handle "already spun".
+                  // However, the user said "nothing happening".
+                  // Let's just open it. The SpinWheel component needs to handle the case where they can't spin.
+                  // For now, I'll allow opening.
+              }
+          }}
         >
-          <Text style={styles.spinButtonText}>🎰 Daily Spin Wheel</Text>
+          <Text style={styles.spinButtonText}>
+             {gamificationStatus?.daily_spin_available ? "🎰 Daily Spin Wheel" : "✅ Spin Completed (View)"}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -537,6 +553,20 @@ export default function WalletScreen() {
         {activeTab === "leaderboard" && renderLeaderboardTab()}
         {activeTab === "rewards" && renderRewardsTab()}
       </ScrollView>
+
+      <SpinWheel 
+        visible={showSpinWheel} 
+        onClose={() => setShowSpinWheel(false)} 
+        canSpin={gamificationStatus?.daily_spin_available}
+        onSpinComplete={() => {
+            loadAllData();
+        }}
+      />
+      
+      <WalletModal 
+        visible={showWalletModal}
+        onClose={() => setShowWalletModal(false)}
+      />
     </SafeAreaView>
   );
 }

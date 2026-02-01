@@ -17,8 +17,16 @@ export const useCartStore = create((set, get) => ({
             const data = response.data;
 
             const items = data.cart_items || data.items || data.cart || [];
-            const total = data.total || data.cart_total || 0;
+            let total = data.total || data.cart_total || 0;
             const count = data.item_count || items.length || 0;
+
+            // Recalculate total if backend returns 0 or null
+            if (!total && items.length > 0) {
+                total = items.reduce((sum, item) => {
+                    const price = item.discounted_price || item.price || 0;
+                    return sum + price * (item.quantity || 1);
+                }, 0);
+            }
 
             set({
                 cartItems: items,

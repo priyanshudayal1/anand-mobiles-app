@@ -38,25 +38,30 @@ export default function ProductsScreen() {
                 filters.search = searchParam;
                 setSearchTitle(`Results for "${searchParam}"`);
                 console.log('Applying search filter:', searchParam);
-            } else if (categoryParam) {
+            }
+
+            if (categoryParam) {
                 filters.category = categoryParam;
-                setSearchTitle(categoryNameParam || "Category");
+                // If we also have a brand, the categoryName param likely contains the specific model/subcat name
+                if (!searchParam) {
+                    setSearchTitle(categoryNameParam || "Category");
+                }
                 console.log('Applying category filter:', categoryParam, 'Name:', categoryNameParam);
-            } else if (brandParam) {
+            }
+
+            if (brandParam) {
                 filters.brands = [brandParam];
-                setSearchTitle(brandParam);
+                 if (!searchParam && !categoryParam) {
+                    setSearchTitle(brandParam);
+                 }
                 console.log('Applying brand filter:', brandParam);
             }
 
             console.log('Filters to apply:', filters);
 
             // Apply filters only if we have some criteria
-            if (Object.keys(filters).length > 0) {
-                await applyFilters(filters);
-            } else {
-                console.log('No filters to apply - fetching default products');
-                await applyFilters({});
-            }
+            // If empty, it fetches default products which is what we want if no params passed
+            await applyFilters(filters);
         };
 
         loadData();

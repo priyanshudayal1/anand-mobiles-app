@@ -14,6 +14,7 @@ import axios from 'axios';
 import { useRouter } from 'expo-router';
 import { BACKEND_URL } from '../../constants/constants';
 import { Ionicons } from '@expo/vector-icons';
+import SearchBar from '../../components/common/SearchBar';
 
 const { width } = Dimensions.get('window');
 
@@ -89,6 +90,8 @@ export default function Menu() {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+
 
   useEffect(() => {
     fetchMenuData();
@@ -193,6 +196,9 @@ export default function Menu() {
       case 'account':
         router.push('/profile');
         break;
+      case 'wishlist':
+        router.push('/wishlist');
+        break;
       default:
         console.log('Action:', action);
     }
@@ -251,6 +257,10 @@ export default function Menu() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+      {/* Search Bar */}
+      <View style={{ padding: 12, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f3f4f6', zIndex: 50 }}>
+        <SearchBar />
+      </View>
       <View className="flex-1 flex-row">
         {/* Left Sidebar - Main Categories */}
         <View
@@ -323,6 +333,10 @@ export default function Menu() {
             contentContainerStyle={{ paddingBottom: 100 }}
             showsVerticalScrollIndicator={false}
             stickySectionHeadersEnabled={false}
+            initialNumToRender={6}
+            maxToRenderPerBatch={6}
+            windowSize={5}
+            removeClippedSubviews={true}
           />
 
           {/* Quick Action Buttons - Fixed at bottom */}
@@ -346,9 +360,8 @@ export default function Menu() {
             >
               {[
                 { id: 'orders', label: 'Orders' },
-                { id: 'buyAgain', label: 'Buy Again' },
                 { id: 'account', label: 'Account' },
-                { id: 'lists', label: 'Lists' }
+                { id: 'wishlist', label: 'Wishlist' }
               ].map((action) => (
                 <TouchableOpacity
                   key={action.id}

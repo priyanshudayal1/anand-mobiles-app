@@ -131,19 +131,21 @@ export default function ProductCard({
       {/* Product Info */}
       <View style={{ padding: size === "small" ? 8 : 10 }}>
         {/* Brand */}
-        {product.brand && size !== "small" && (
-          <Text
-            style={{
-              fontSize: 10,
-              color: colors.primary,
-              fontWeight: "600",
-              textTransform: "uppercase",
-              marginBottom: 2,
-            }}
-          >
-            {product.brand}
-          </Text>
-        )}
+        {product.brand ? (
+          size !== "small" && (
+            <Text
+              style={{
+                fontSize: 10,
+                color: colors.primary,
+                fontWeight: "600",
+                textTransform: "uppercase",
+                marginBottom: 2,
+              }}
+            >
+              {product.brand}
+            </Text>
+          )
+        ) : null}
 
         {/* Product Name */}
         <Text
@@ -161,7 +163,7 @@ export default function ProductCard({
         </Text>
 
         {/* Rating */}
-        {showRating && product.rating > 0 && (
+        {showRating && product.rating > 0 ? (
           <View
             style={{
               flexDirection: "row",
@@ -181,7 +183,7 @@ export default function ProductCard({
               {product.reviews_count ? ` (${product.reviews_count})` : ''}
             </Text>
           </View>
-        )}
+        ) : null}
 
         {/* Price */}
         <View
@@ -201,7 +203,7 @@ export default function ProductCard({
           >
             ₹{(discountPrice || 0).toLocaleString()}
           </Text>
-          {hasDiscount && (
+          {hasDiscount ? (
             <Text
               style={{
                 fontSize: size === "small" ? 10 : 11,
@@ -211,11 +213,11 @@ export default function ProductCard({
             >
               ₹{originalPrice.toLocaleString()}
             </Text>
-          )}
+          ) : null}
         </View>
 
         {/* Variant Info */}
-        {product.variant && size !== "small" && (
+        {product.variant && size !== "small" ? (
           <View
             style={{
               marginTop: 6,
@@ -224,13 +226,13 @@ export default function ProductCard({
               flexWrap: "wrap",
             }}
           >
-            {product.variant.storage?.length > 0 && (
+            {product.variant.storage?.length > 0 ? (
               <Text style={{ fontSize: 10, color: colors.textSecondary }}>
                 {product.variant.storage.join(" | ")}
               </Text>
-            )}
+            ) : null}
           </View>
-        )}
+        ) : null}
       </View>
     </TouchableOpacity>
   );
