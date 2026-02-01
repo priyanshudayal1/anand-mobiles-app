@@ -116,6 +116,7 @@ export const useHome = create((set, get) => ({
     set({ isRefreshing: true });
     try {
       await get().fetchHomeData();
+      await get().fetchBrands();
     } finally {
       set({ isRefreshing: false });
     }

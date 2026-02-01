@@ -13,38 +13,12 @@ export default function BrandsSection({ showHeader = true }) {
 
   // Fetch brands if not available - runs only once on mount
   React.useEffect(() => {
-    if (!brands || brands.length === 0) {
-      fetchBrands();
-    }
+    fetchBrands();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array to prevent infinite loop
 
   // Filter and sort brands similar to web logic
   const displayBrands = React.useMemo(() => {
-    // If no brands loaded yet, use fallback
-    if (!brands || brands.length === 0) {
-      return [
-        {
-          brand_id: "1",
-          name: "Apple",
-          logo_url:
-            "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",
-          slug: "apple",
-        },
-        {
-          brand_id: "2",
-          name: "Samsung",
-          logo_url:
-            "https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg",
-          slug: "samsung",
-        },
-        { brand_id: "3", name: "OnePlus", logo_url: "", slug: "oneplus" },
-        { brand_id: "4", name: "Xiaomi", logo_url: "", slug: "xiaomi" },
-        { brand_id: "5", name: "Realme", logo_url: "", slug: "realme" },
-        { brand_id: "6", name: "Vivo", logo_url: "", slug: "vivo" },
-      ];
-    }
-
     // Sort and filter real data - backend already filters by active
     const featuredBrands = brands.filter((brand) => brand.featured === true);
     const nonFeaturedBrands = brands.filter((brand) => brand.featured !== true);
