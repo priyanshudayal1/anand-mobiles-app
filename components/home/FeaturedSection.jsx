@@ -146,7 +146,7 @@ const ProductCard = ({ product, colors, onPress }) => {
   );
 };
 
-export default function FeaturedSection() {
+export default function FeaturedSection({ showHeader = true }) {
   const { colors } = useTheme();
   const { featuredProducts } = useHome();
   const router = useRouter();
@@ -185,7 +185,7 @@ export default function FeaturedSection() {
 
   const handleSeeAll = () => {
     router.push({
-      pathname: "/(tabs)/menu",
+      pathname: "/products",
       params: { featured: "true" },
     });
   };
@@ -199,49 +199,57 @@ export default function FeaturedSection() {
       }}
     >
       {/* Header */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          paddingHorizontal: 16,
-          marginBottom: 12,
-        }}
-      >
-        <View>
-          <Text
-            style={{ fontSize: 18, fontWeight: "bold", color: colors.text }}
-          >
-            Featured Products
-          </Text>
+      {showHeader && (
+        <>
           <View
             style={{
-              height: 3,
-              width: 64,
-              marginTop: 4,
-              backgroundColor: colors.primary,
-              borderRadius: 2,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              paddingHorizontal: 16,
+              marginBottom: 12,
             }}
-          />
-        </View>
-        <TouchableOpacity onPress={handleSeeAll}>
-          <Text style={{ fontWeight: "500", color: colors.primary }}>
-            See All →
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Description */}
-      <Text
-        style={{
-          fontSize: 12,
-          color: colors.textSecondary,
-          paddingHorizontal: 16,
-          marginBottom: 16,
-        }}
-      >
-        Discover our best-selling items handpicked for you
-      </Text>
+          >
+            <View style={{ flex: 1 }}>
+              <View style={{ alignSelf: "flex-start" }}>
+                <Text
+                  style={{
+                    fontSize: 18,
+                    fontWeight: "bold",
+                    color: colors.text,
+                  }}
+                >
+                  Featured Products
+                </Text>
+                <View
+                  style={{
+                    height: 3,
+                    width: 40,
+                    marginTop: 4,
+                    backgroundColor: colors.primary,
+                    borderRadius: 2,
+                    alignSelf: "flex-end",
+                  }}
+                />
+              </View>
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: colors.textSecondary,
+                  marginTop: 4,
+                }}
+              >
+                Discover our best-selling items handpicked for you
+              </Text>
+            </View>
+            <TouchableOpacity onPress={handleSeeAll}>
+              <Text style={{ fontWeight: "500", color: colors.primary }}>
+                See All →
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
 
       {/* Products Horizontal Scroll */}
       <FlatList

@@ -1,17 +1,46 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  Image,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, Link } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
+import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
+import { auth } from "../../services/firebaseConfig";
 import CustomInput from "../../components/CustomInput";
 import CustomButton from "../../components/CustomButton";
 import { useTheme } from "../../store/useTheme";
 import { useAuthStore } from "../../store/useAuth";
 
+WebBrowser.maybeCompleteAuthSession();
+
+// Google icon SVG as data URI for consistent cross-platform display
+const GoogleIcon = () => (
+  <Image
+    source={{
+      uri: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMjIuNTYgMTIuMjVjMC0uNzgtLjA3LTEuNTMtLjItMi4yNUgxMnY0LjI2aDUuOTJjLS4yNiAxLjM3LTEuMDQgMi41My0yLjIxIDMuMzF2Mi43N2gzLjU3YzIuMDgtMS45MiAzLjI4LTQuNzQgMy4yOC04LjA5eiIgZmlsbD0iIzQyODVGNCIvPjxwYXRoIGQ9Ik0xMiAyM2MyLjk3IDAgNS40Ni0uOTggNy4yOC0yLjY2bC0zLjU3LTIuNzdjLS45OC42Ni0yLjIzIDEuMDYtMy43MSAxLjA2LTIuODYgMC01LjI5LTEuOTMtNi4xNi00LjUzSDIuMTh2Mi44NEMzLjk5IDIwLjUzIDcuNyAyMyAxMiAyM3oiIGZpbGw9IiMzNEE4NTMiLz48cGF0aCBkPSJNNS44NCAxNC4wOWMtLjIyLS42Ni0uMzUtMS4zNi0uMzUtMi4wOXMuMTMtMS40My4zNS0yLjA5VjcuMDdIMi4xOEMxLjQzIDguNTUgMSAxMC4yMiAxIDEycy40MyAzLjQ1IDEuMTggNC45M2wzLjY2LTIuODR6IiBmaWxsPSIjRkJCQzA1Ii8+PHBhdGggZD0iTTEyIDUuMzhjMS42MiAwIDMuMDYuNTYgNC4yMSAxLjY0bDMuMTUtMy4xNUMxNy40NSAyLjA5IDE0Ljk3IDEgMTIgMSA3LjcgMSAzLjk5IDMuNDcgMi4xOCA3LjA3bDMuNjYgMi44NGMuODctMi42IDMuMy00LjUzIDYuMTYtNC41M3oiIGZpbGw9IiNFQTQzMzUiLz48L3N2Zz4=",
+    }}
+    style={{ width: 20, height: 20, marginRight: 8 }}
+    resizeMode="contain"
+  />
+);
+
 const Register = () => {
   const router = useRouter();
   const { colors, mode } = useTheme();
-  const { register, error: authError, isLoading: authLoading } = useAuthStore();
+  const {
+    register,
+    googleLogin,
+    error: authError,
+    isLoading: authLoading,
+  } = useAuthStore();
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -23,6 +52,71 @@ const Register = () => {
   });
   const [errors, setErrors] = useState({});
   const [localLoading, setLocalLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  // Google Auth Request - using Firebase project's web client ID
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    expoClientId:
+      "403268549781-gqku5d5h7t9p9s0q0q0q0q0q0q0q0q0q.apps.googleusercontent.com",
+    androidClientId: "403268549781-android.apps.googleusercontent.com",
+    iosClientId: "403268549781-ios.apps.googleusercontent.com",
+    webClientId:
+      "403268549781-gqku5d5h7t9p9s0q0q0q0q0q0q0q0q0q.apps.googleusercontent.com",
+  });
+
+  const handleGoogleSignup = useCallback(
+    async (idToken) => {
+      setGoogleLoading(true);
+      try {
+        // Sign in with Firebase using Google credential
+        const credential = GoogleAuthProvider.credential(idToken);
+        const userCredential = await signInWithCredential(auth, credential);
+        const firebaseUser = userCredential.user;
+
+        // Get fresh Firebase ID token for backend
+        const firebaseIdToken = await firebaseUser.getIdToken();
+
+        // Call store's googleLogin with the Firebase ID token
+        // The backend will either create new user or login existing
+        await googleLogin(firebaseIdToken);
+        router.replace("/(tabs)");
+      } catch (err) {
+        console.error("Google Signup Error:", err);
+        Alert.alert(
+          "Google Signup Failed",
+          err.message || "Something went wrong",
+        );
+      } finally {
+        setGoogleLoading(false);
+      }
+    },
+    [googleLogin, router],
+  );
+
+  useEffect(() => {
+    if (response?.type === "success") {
+      const { id_token } = response.params;
+      if (id_token) {
+        handleGoogleSignup(id_token);
+      }
+    } else if (response?.type === "error") {
+      Alert.alert(
+        "Google Sign Up Error",
+        response.error?.message || "Something went wrong",
+      );
+      setGoogleLoading(false);
+    }
+  }, [response, handleGoogleSignup]);
+
+  const handleGooglePress = async () => {
+    setGoogleLoading(true);
+    try {
+      await promptAsync();
+    } catch (err) {
+      console.error("Google prompt error:", err);
+      setGoogleLoading(false);
+    }
+  };
 
   const handleChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -74,7 +168,7 @@ const Register = () => {
     } catch (err) {
       Alert.alert(
         "Registration Failed",
-        err.response?.data?.error || err.message
+        err.response?.data?.error || err.message,
       );
     } finally {
       setLocalLoading(false);
@@ -101,6 +195,48 @@ const Register = () => {
           <Text className="text-base" style={{ color: colors.textSecondary }}>
             Join us to start shopping
           </Text>
+        </View>
+
+        {/* Google Sign Up Button */}
+        <TouchableOpacity
+          onPress={handleGooglePress}
+          disabled={!request || googleLoading}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            paddingVertical: 14,
+            paddingHorizontal: 24,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: colors.border,
+            backgroundColor: colors.surface,
+            opacity: !request || googleLoading ? 0.6 : 1,
+            marginBottom: 16,
+          }}
+        >
+          <GoogleIcon />
+          <Text style={{ color: colors.text, fontSize: 16, fontWeight: "600" }}>
+            {googleLoading ? "Signing up..." : "Continue with Google"}
+          </Text>
+        </TouchableOpacity>
+
+        <View className="flex-row items-center mb-4">
+          <View
+            style={{ flex: 1, height: 1, backgroundColor: colors.border }}
+          />
+          <Text
+            style={{
+              color: colors.textSecondary,
+              paddingHorizontal: 16,
+              fontSize: 14,
+            }}
+          >
+            Or sign up with email
+          </Text>
+          <View
+            style={{ flex: 1, height: 1, backgroundColor: colors.border }}
+          />
         </View>
 
         {authError && (

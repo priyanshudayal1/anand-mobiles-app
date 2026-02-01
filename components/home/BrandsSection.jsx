@@ -5,7 +5,7 @@ import { useRouter } from "expo-router";
 import { useTheme } from "../../store/useTheme";
 import { useHome } from "../../store/useHome";
 
-export default function BrandsSection() {
+export default function BrandsSection({ showHeader = true }) {
   const { colors } = useTheme();
   const { brands } = useHome();
   const router = useRouter();
@@ -33,13 +33,13 @@ export default function BrandsSection() {
 
   const handleBrandPress = (brand) => {
     router.push({
-      pathname: "/(tabs)/menu",
+      pathname: "/products",
       params: { brand: brand.slug || brand.name },
     });
   };
 
   const handleSeeAll = () => {
-    router.push("/(tabs)/menu");
+    router.push("/products");
   };
 
   const renderBrandItem = (brand) => {
@@ -112,56 +112,59 @@ export default function BrandsSection() {
   return (
     <View style={{ padding: 16, backgroundColor: colors.cardBg, marginTop: 8 }}>
       {/* Header */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
-        <View>
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: "bold",
-              color: colors.text,
-            }}
-          >
-            Shop by Brands
-          </Text>
-          <View
-            style={{
-              height: 3,
-              width: 64,
-              marginTop: 4,
-              backgroundColor: colors.primary,
-              borderRadius: 2,
-            }}
-          />
+      {showHeader && (
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            marginBottom: 16,
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <View style={{ alignSelf: "flex-start" }}>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "bold",
+                  color: colors.text,
+                }}
+              >
+                Shop by Brands
+              </Text>
+              <View
+                style={{
+                  height: 3,
+                  width: 40,
+                  marginTop: 4,
+                  backgroundColor: colors.primary,
+                  borderRadius: 2,
+                  alignSelf: "flex-end",
+                }}
+              />
+            </View>
+            <Text
+              style={{
+                fontSize: 12,
+                color: colors.textSecondary,
+                marginTop: 4,
+              }}
+            >
+              Explore top brands with exclusive deals
+            </Text>
+          </View>
+          <TouchableOpacity onPress={handleSeeAll}>
+            <Text
+              style={{
+                fontWeight: "500",
+                color: colors.primary,
+              }}
+            >
+              See All →
+            </Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={handleSeeAll}>
-          <Text
-            style={{
-              fontWeight: "500",
-              color: colors.primary,
-            }}
-          >
-            See All →
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Description */}
-      <Text
-        style={{
-          fontSize: 12,
-          color: colors.textSecondary,
-          marginBottom: 16,
-        }}
-      >
-        Explore top brands with exclusive deals
-      </Text>
+      )}
 
       {/* Brands Scroll */}
       <ScrollView
