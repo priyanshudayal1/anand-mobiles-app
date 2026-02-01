@@ -104,7 +104,6 @@ export default function BrandsSection({ showHeader = true }) {
             borderWidth: 1,
             borderColor: colors.border,
             overflow: "hidden",
-            padding: 12,
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.1,

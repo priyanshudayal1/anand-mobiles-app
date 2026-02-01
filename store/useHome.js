@@ -4,7 +4,7 @@ import api from "../services/api";
 
 // Storage key for caching home data
 const HOME_DATA_CACHE_KEY = "@anand_mobiles_home_data";
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 2 * 60 * 1000; // 5 minutes
 
 export const useHome = create((set, get) => ({
   // State
