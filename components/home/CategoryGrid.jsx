@@ -129,19 +129,19 @@ export default function CategoryGrid({ showHeader = true }) {
         style={{
           alignItems: "center",
           marginRight: 16,
-          width: 72,
+          width: 80,
         }}
         activeOpacity={0.7}
       >
         {/* Category Icon/Image Container */}
         <View
           style={{
-            width: 64,
-            height: 48,
+            width: 72,
+            height: 72,
             marginBottom: 8,
             justifyContent: "center",
             alignItems: "center",
-            borderRadius: 8,
+            borderRadius: 12,
             backgroundColor:
               colors.surfaceSecondary || colors.backgroundSecondary,
             overflow: "hidden",
@@ -204,7 +204,7 @@ export default function CategoryGrid({ showHeader = true }) {
                   marginTop: 4,
                   backgroundColor: colors.primary,
                   borderRadius: 2,
-                  alignSelf: "flex-end",
+                  alignSelf: "flex-start",
                 }}
               />
             </View>

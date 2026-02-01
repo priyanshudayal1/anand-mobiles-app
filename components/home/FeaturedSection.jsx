@@ -43,7 +43,7 @@ const ProductCard = ({ product, colors, onPress }) => {
       {/* Product Image */}
       <View
         style={{
-          height: 120,
+          height: 160,
           backgroundColor: colors.white,
           justifyContent: "center",
           alignItems: "center",
@@ -228,7 +228,7 @@ export default function FeaturedSection({ showHeader = true }) {
                     marginTop: 4,
                     backgroundColor: colors.primary,
                     borderRadius: 2,
-                    alignSelf: "flex-end",
+                    alignSelf: "flex-start",
                   }}
                 />
               </View>

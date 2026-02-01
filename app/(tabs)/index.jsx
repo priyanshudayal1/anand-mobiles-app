@@ -7,10 +7,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MessageCircle, ChevronRight } from "lucide-react-native";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
@@ -59,7 +56,7 @@ const SectionHeader = ({ title, subtitle, onSeeAll, colors }) => (
               marginTop: 4,
               backgroundColor: colors.primary,
               borderRadius: 2,
-              alignSelf: "flex-end",
+              alignSelf: "flex-start",
             }}
           />
         </View>
@@ -119,7 +116,7 @@ const SectionTitle = ({ section, colors, onSeeAll }) => {
                 marginTop: 4,
                 backgroundColor: colors.primary,
                 borderRadius: 2,
-                alignSelf: "flex-end",
+                alignSelf: "flex-start",
               }}
             />
           </View>
@@ -172,7 +169,6 @@ const getSectionDefaultTitle = (sectionType) => {
 // Render a section based on its type
 const RenderSection = ({ section, colors, router }) => {
   const sectionType = section.section_type;
-  const handleSeeAll = () => router.push("/products");
 
   // These types have dedicated components with optional custom titles from backend
   switch (sectionType) {
@@ -187,11 +183,7 @@ const RenderSection = ({ section, colors, router }) => {
           key={section.section_id}
           style={{ backgroundColor: colors.cardBg, marginTop: 8 }}
         >
-          <SectionTitle
-            section={section}
-            colors={colors}
-            onSeeAll={handleSeeAll}
-          />
+          <SectionTitle section={section} colors={colors} />
           <CategoryGrid showHeader={false} />
         </View>
       );
@@ -202,11 +194,7 @@ const RenderSection = ({ section, colors, router }) => {
           key={section.section_id}
           style={{ backgroundColor: colors.cardBg, marginTop: 8 }}
         >
-          <SectionTitle
-            section={section}
-            colors={colors}
-            onSeeAll={handleSeeAll}
-          />
+          <SectionTitle section={section} colors={colors} />
           <FeaturedSection showHeader={false} />
         </View>
       );
@@ -249,9 +237,6 @@ export default function Home() {
     isLoading,
     sections,
     banners,
-    categories,
-    featuredProducts,
-    brands,
     promotionVideos,
   } = useHome();
   const { products, fetchProducts } = useProducts();
@@ -264,7 +249,7 @@ export default function Home() {
       await fetchProducts(true);
     };
     init();
-  }, []);
+  }, [initializeHome, fetchProducts]);
 
   // Pull to refresh
   const onRefresh = useCallback(async () => {
@@ -283,7 +268,7 @@ export default function Home() {
 
   // Handle chat press
   const handleChatPress = () => {
-    console.log("Chat pressed");
+    // TODO: Implement chat functionality
   };
 
   // Get products for "All Products" section
@@ -310,9 +295,12 @@ export default function Home() {
   );
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}
-      edges={["top"]}
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: colors.backgroundSecondary,
+        paddingTop: insets.top,
+      }}
     >
       <StatusBar
         style={mode === "dark" ? "light" : "light"}
@@ -335,6 +323,9 @@ export default function Home() {
       >
         {/* Header with Search - Always at top */}
         <HomeHeader />
+
+        {/* Video Section - Like Website */}
+        <VideoCarousel showHeader={false} />
 
         {/* Loading State */}
         {isLoading && sortedSections.length === 0 && (
@@ -365,9 +356,9 @@ export default function Home() {
             ))}
 
             {/* Always show Brands and Videos at end if not in sections */}
-            {!sortedSections.some((s) => s.section_type === "brands") &&
-              brands &&
-              brands.length > 0 && <BrandsSection />}
+            {!sortedSections.some((s) => s.section_type === "brands") && (
+              <BrandsSection />
+            )}
             {!sortedSections.some((s) => s.section_type === "whats_trending") &&
               promotionVideos &&
               promotionVideos.length > 0 && <VideoCarousel />}
@@ -477,6 +468,6 @@ export default function Home() {
           }}
         />
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 }

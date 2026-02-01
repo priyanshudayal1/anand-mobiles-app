@@ -16,7 +16,7 @@ const { width } = Dimensions.get("window");
 
 // Reusable Product Card for horizontal scrolls
 const ProductCard = ({ product, colors, onPress }) => {
-  const CARD_WIDTH = width * 0.4;
+  const CARD_WIDTH = width * 0.48;
   const discountPrice =
     Number(
       product?.discount_price || product?.discounted_price || product?.price,
@@ -53,7 +53,7 @@ const ProductCard = ({ product, colors, onPress }) => {
     >
       <View
         style={{
-          height: 100,
+          height: 160,
           backgroundColor: colors.white,
           justifyContent: "center",
           alignItems: "center",
@@ -204,7 +204,7 @@ export default function DynamicSection({ section }) {
                 marginTop: 4,
                 backgroundColor: colors.primary,
                 borderRadius: 2,
-                alignSelf: "flex-end",
+                alignSelf: "flex-start",
               }}
             />
           </View>
@@ -478,7 +478,7 @@ export default function DynamicSection({ section }) {
         backgroundColor: colors.cardBg,
       }}
     >
-      {renderSectionHeader(products.length > 0)}
+      {renderSectionHeader(false)}
       {content}
     </View>
   );

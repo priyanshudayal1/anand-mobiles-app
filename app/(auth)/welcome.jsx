@@ -18,7 +18,7 @@ const Welcome = () => {
     if (!isInitialized) {
       fetchSiteConfig();
     }
-  }, []);
+  }, [isInitialized, fetchSiteConfig]);
 
   return (
     <SafeAreaView

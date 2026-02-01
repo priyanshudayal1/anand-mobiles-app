@@ -96,7 +96,7 @@ export const useHome = create((set, get) => ({
           JSON.stringify({
             ...newState,
             timestamp: Date.now(),
-          })
+          }),
         );
       } else {
         if (!isBackground) {
@@ -149,7 +149,7 @@ export const useHome = create((set, get) => ({
   fetchFeaturedProducts: async (limit = 10) => {
     try {
       const response = await api.get(
-        `/products/mobile/featured/?limit=${limit}`
+        `/products/mobile/featured/?limit=${limit}`,
       );
       if (response.data && response.data.products) {
         set({ featuredProducts: response.data.products });
@@ -160,11 +160,23 @@ export const useHome = create((set, get) => ({
   },
 
   // Fetch brands
-  fetchBrands: async (category = null) => {
+  fetchBrands: async (featured_only = false, limit = null) => {
     try {
-      const url = category
-        ? `/products/mobile/brands/?category=${category}`
-        : "/products/mobile/brands/";
+      let url = "/admin/brands/public/";
+      const params = [];
+
+      if (featured_only) {
+        params.push(`featured_only=true`);
+      }
+
+      if (limit) {
+        params.push(`limit=${limit}`);
+      }
+
+      if (params.length > 0) {
+        url += `?${params.join("&")}`;
+      }
+
       const response = await api.get(url);
       if (response.data && response.data.brands) {
         set({ brands: response.data.brands });
@@ -196,7 +208,7 @@ export const useHome = create((set, get) => ({
       (c) =>
         c.slug === slug ||
         c.id === slug ||
-        c.name.toLowerCase() === slug.toLowerCase()
+        c.name.toLowerCase() === slug.toLowerCase(),
     );
   },
 
@@ -207,7 +219,7 @@ export const useHome = create((set, get) => ({
       (b) =>
         b.slug === slug ||
         b.id === slug ||
-        b.name.toLowerCase() === slug.toLowerCase()
+        b.name.toLowerCase() === slug.toLowerCase(),
     );
   },
 }));
