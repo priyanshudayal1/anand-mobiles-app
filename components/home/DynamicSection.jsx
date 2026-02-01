@@ -4,150 +4,17 @@ import {
   Text,
   TouchableOpacity,
   Dimensions,
-  FlatList,
   ScrollView,
 } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { Star, ChevronRight } from "lucide-react-native";
+import { ChevronRight } from "lucide-react-native";
 import { useTheme } from "../../store/useTheme";
 import CountdownTimer from "../common/CountdownTimer";
 import VideoCarousel from "./VideoCarousel";
+import ProductCard from "./ProductCard";
 
 const { width } = Dimensions.get("window");
-
-// Reusable Product Card for horizontal scrolls
-const ProductCard = ({ product, colors, onPress }) => {
-  const CARD_WIDTH = width * 0.48;
-  const discountPrice =
-    Number(
-      product?.discount_price || product?.discounted_price || product?.price,
-    ) || 0;
-  const originalPrice = Number(product?.price) || 0;
-  const hasDiscount =
-    originalPrice > 0 && discountPrice > 0 && originalPrice > discountPrice;
-  const discountPercent = hasDiscount
-    ? Math.round(((originalPrice - discountPrice) / originalPrice) * 100)
-    : 0;
-
-  // Get product name safely
-  const productName =
-    product?.name ||
-    [product?.brand, product?.model].filter(Boolean).join(" ") ||
-    "Product";
-
-  // Get rating safely
-  const rating = typeof product?.rating === "number" ? product.rating : 0;
-
-  return (
-    <TouchableOpacity
-      onPress={() => onPress(product)}
-      style={{
-        width: CARD_WIDTH,
-        marginRight: 12,
-        backgroundColor: colors.cardBg,
-        borderRadius: 12,
-        overflow: "hidden",
-        borderWidth: 1,
-        borderColor: colors.border,
-      }}
-      activeOpacity={0.8}
-    >
-      <View
-        style={{
-          height: 160,
-          backgroundColor: colors.white,
-          justifyContent: "center",
-          alignItems: "center",
-          padding: 8,
-        }}
-      >
-        <Image
-          source={{
-            uri:
-              product?.image ||
-              product?.images?.[0] ||
-              "https://via.placeholder.com/150",
-          }}
-          style={{ width: "100%", height: "100%" }}
-          contentFit="contain"
-          transition={200}
-        />
-        {discountPercent > 0 && (
-          <View
-            style={{
-              position: "absolute",
-              top: 6,
-              right: 6,
-              backgroundColor: colors.error,
-              paddingHorizontal: 4,
-              paddingVertical: 2,
-              borderRadius: 4,
-            }}
-          >
-            <Text
-              style={{ color: colors.white, fontSize: 9, fontWeight: "bold" }}
-            >
-              {discountPercent}% OFF
-            </Text>
-          </View>
-        )}
-      </View>
-      <View style={{ padding: 8 }}>
-        <Text
-          style={{
-            fontSize: 12,
-            fontWeight: "500",
-            color: colors.text,
-            marginBottom: 4,
-            lineHeight: 16,
-          }}
-          numberOfLines={2}
-        >
-          {productName}
-        </Text>
-        {rating > 0 && (
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: 4,
-            }}
-          >
-            <Star size={10} color={colors.warning} fill={colors.warning} />
-            <Text
-              style={{
-                fontSize: 10,
-                color: colors.textSecondary,
-                marginLeft: 2,
-              }}
-            >
-              {rating.toFixed(1)}
-            </Text>
-          </View>
-        )}
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-          <Text
-            style={{ fontSize: 13, fontWeight: "bold", color: colors.text }}
-          >
-            ₹{discountPrice.toLocaleString()}
-          </Text>
-          {hasDiscount && (
-            <Text
-              style={{
-                fontSize: 10,
-                color: colors.textSecondary,
-                textDecorationLine: "line-through",
-              }}
-            >
-              ₹{originalPrice.toLocaleString()}
-            </Text>
-          )}
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
-};
 
 // Reusable Banner Item that auto-adjusts height based on image aspect ratio
 const BannerItem = ({ banner, onPress, style }) => {
@@ -519,7 +386,7 @@ export default function DynamicSection({ section }) {
     );
   };
 
-  // Product List
+  // Product List - Grid Layout (Matching All Products Section)
   const renderProductList = () => {
     if (!products || products.length === 0) {
       return (
@@ -531,20 +398,27 @@ export default function DynamicSection({ section }) {
       );
     }
     return (
-      <FlatList
-        data={products}
-        renderItem={({ item }) => (
-          <ProductCard
-            product={item}
-            colors={colors}
-            onPress={handleProductPress}
-          />
-        )}
-        keyExtractor={(item, index) => item?.id?.toString() || index.toString()}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16 }}
-      />
+      <View
+        style={{
+          flexDirection: "row",
+          flexWrap: "wrap",
+          paddingHorizontal: 12,
+          gap: 8,
+        }}
+      >
+        {products.map((item) => (
+          <View
+            key={item?.id?.toString() || item?.product_id?.toString()}
+            style={{ width: "48%" }}
+          >
+            <ProductCard
+              product={item}
+              size="medium"
+              onPress={handleProductPress}
+            />
+          </View>
+        ))}
+      </View>
     );
   };
 

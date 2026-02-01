@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { Star, ChevronRight, ChevronLeft } from "lucide-react-native";
+import { Star } from "lucide-react-native";
 import { useTheme } from "../../store/useTheme";
 import { useHome } from "../../store/useHome";
 

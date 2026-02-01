@@ -23,7 +23,6 @@ import {
   Share2,
   Copy,
   Coins,
-  Target,
 } from "lucide-react-native";
 import { useTheme } from "../../store/useTheme";
 import { useGamification } from "../../store/useGamification";
@@ -54,7 +53,7 @@ export default function WalletScreen() {
     if (isAuthenticated && user) {
       loadAllData();
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, loadAllData]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -685,6 +684,7 @@ export default function WalletScreen() {
                     styles.tabLabel,
                     { color: isActive ? "#FFF" : colors.text },
                   ]}
+                  numberOfLines={1}
                 >
                   {tab.label}
                 </Text>
@@ -775,27 +775,32 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   tabsContainer: {
-    marginBottom: 8,
+    marginBottom: 0,
   },
   tabsContent: {
     paddingHorizontal: 16,
-    gap: 10,
+    paddingBottom: 12,
   },
   tab: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 20,
-    gap: 8,
+    gap: 6,
     marginRight: 8,
+    minWidth: 110,
+    maxWidth: 140,
+    height: 40,
   },
   tabLabel: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "500",
+    flexShrink: 1,
   },
   tabContent: {
     padding: 16,
+    paddingTop: 12,
   },
   statsGrid: {
     flexDirection: "row",
@@ -896,7 +901,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    marginBottom: 16,
+    marginBottom: 12,
   },
   achievementsGrid: {
     gap: 12,
