@@ -3,208 +3,238 @@ import api from "../services/api";
 import { API_ENDPOINTS } from "../constants/constants";
 
 export const useCartStore = create((set, get) => ({
-    cartItems: [],
-    cartTotal: 0,
-    itemCount: 0,
-    isLoading: false,
-    error: null,
+  cartItems: [],
+  cartTotal: 0,
+  itemCount: 0,
+  isLoading: false,
+  error: null,
 
-    // Fetch cart
-    fetchCart: async () => {
-        set({ isLoading: true, error: null });
-        try {
-            const response = await api.get(API_ENDPOINTS.cart || "/users/cart/");
-            const data = response.data;
+  // Fetch cart
+  fetchCart: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.get(API_ENDPOINTS.cart || "/users/cart/");
+      const data = response.data;
 
-            const items = data.cart_items || data.items || data.cart || [];
-            let total = data.total || data.cart_total || 0;
-            const count = data.item_count || items.length || 0;
+      const items = data.cart_items || data.items || data.cart || [];
+      let total = data.total || data.cart_total || 0;
+      const count = data.item_count || items.length || 0;
 
-            // Recalculate total if backend returns 0 or null
-            if (!total && items.length > 0) {
-                total = items.reduce((sum, item) => {
-                    const price = item.discounted_price || item.price || 0;
-                    return sum + price * (item.quantity || 1);
-                }, 0);
-            }
+      // Recalculate total if backend returns 0 or null
+      if (!total && items.length > 0) {
+        total = items.reduce((sum, item) => {
+          const price = item.discounted_price || item.price || 0;
+          return sum + price * (item.quantity || 1);
+        }, 0);
+      }
 
-            set({
-                cartItems: items,
-                cartTotal: total,
-                itemCount: count,
-                isLoading: false,
-            });
+      set({
+        cartItems: items,
+        cartTotal: total,
+        itemCount: count,
+        isLoading: false,
+      });
 
-            return { items, total, count };
-        } catch (error) {
-            const msg = error.response?.data?.error || error.response?.data?.detail || "Failed to fetch cart";
-            set({ error: msg, isLoading: false });
-            console.error("Failed to fetch cart:", error);
-            throw error;
-        }
-    },
+      return { items, total, count };
+    } catch (error) {
+      // Silence 401 errors as they are handled by the interceptor
+      if (error.response && error.response.status === 401) {
+        set({
+          cartItems: [],
+          cartTotal: 0,
+          itemCount: 0,
+          isLoading: false,
+          error: null,
+        });
+        return { items: [], total: 0, count: 0 };
+      }
+      const msg =
+        error.response?.data?.error ||
+        error.response?.data?.detail ||
+        "Failed to fetch cart";
+      set({ error: msg, isLoading: false });
+      console.error("Failed to fetch cart:", error);
+      throw error;
+    }
+  },
 
-    // Add to cart
-    addToCart: async (productId, quantity = 1, variantId = null) => {
-        set({ isLoading: true, error: null });
-        try {
-            const payload = {
-                quantity: quantity,
-            };
+  // Add to cart - now handles both adding new items and updating existing quantities
+  addItem: async (product, quantity = 1) => {
+    set({ isLoading: true, error: null });
+    try {
+      const productId = product?.id || product?.product_id || product?._id;
+      const variantId = product?.variant_id || product?.variant?.id || null;
 
-            if (variantId) {
-                payload.variant_id = variantId;
-            }
+      const payload = {
+        quantity: quantity,
+      };
 
-            // Backend expects product_id in URL path: /users/cart/add/{productId}/
-            const endpoint = `/users/cart/add/${productId}/`;
-            const response = await api.post(endpoint, payload);
-            const data = response.data;
+      if (variantId) {
+        payload.variant_id = variantId;
+      }
 
-            // Refresh cart to get updated data
-            await get().fetchCart();
+      // Backend expects product_id in URL path: /users/cart/add/{productId}/
+      const endpoint = `/users/cart/add/${productId}/`;
+      const response = await api.post(endpoint, payload);
+      const data = response.data;
 
-            return { success: true, data };
-        } catch (error) {
-            const msg = error.response?.data?.error || error.response?.data?.detail || "Failed to add to cart";
-            set({ error: msg, isLoading: false });
-            throw error;
-        }
-    },
+      // Refresh cart to get updated data
+      await get().fetchCart();
 
-    // Update cart item quantity
-    updateQuantity: async (itemId, quantity) => {
-        if (quantity < 1) {
-            return await get().removeFromCart(itemId);
-        }
+      return { success: true, data };
+    } catch (error) {
+      const msg =
+        error.response?.data?.error ||
+        error.response?.data?.detail ||
+        "Failed to add to cart";
+      set({ error: msg, isLoading: false });
+      throw error;
+    }
+  },
 
-        set({ isLoading: true, error: null });
-        try {
-            const response = await api.put(API_ENDPOINTS.updateCartItem || "/users/cart/update/", {
-                item_id: itemId,
-                quantity: quantity,
-            });
+  // Legacy method for compatibility
+  addToCart: async (productId, quantity = 1, variantId = null) => {
+    const product = { id: productId, variant_id: variantId };
+    return await get().addItem(product, quantity);
+  },
 
-            // Update local state
-            set((state) => {
-                const updatedItems = state.cartItems.map((item) =>
-                    item.id === itemId ? { ...item, quantity } : item
-                );
+  // Update cart item quantity (sets absolute quantity)
+  updateQuantity: async (itemId, quantity) => {
+    if (quantity < 1) {
+      return await get().removeFromCart(itemId);
+    }
 
-                // Recalculate total
-                const newTotal = updatedItems.reduce((sum, item) => {
-                    const price = item.discounted_price || item.price || 0;
-                    return sum + price * item.quantity;
-                }, 0);
+    try {
+      console.log(`[Cart] Updating item ${itemId} to quantity ${quantity}`);
+      const response = await api.put("/users/cart/update/", {
+        item_id: itemId,
+        quantity: quantity,
+      });
+      console.log(`[Cart] Update successful:`, response.data);
 
-                return {
-                    cartItems: updatedItems,
-                    cartTotal: newTotal,
-                    isLoading: false,
-                };
-            });
+      // Refresh cart to get updated data from backend
+      await get().fetchCart();
 
-            return { success: true };
-        } catch (error) {
-            const msg = error.response?.data?.error || error.response?.data?.detail || "Failed to update quantity";
-            set({ error: msg, isLoading: false });
-            throw error;
-        }
-    },
+      return { success: true };
+    } catch (error) {
+      console.error(
+        `[Cart] Update failed:`,
+        error.response?.data || error.message,
+      );
+      const msg =
+        error.response?.data?.error ||
+        error.response?.data?.detail ||
+        "Failed to update quantity";
+      set({ error: msg });
+      throw error;
+    }
+  },
 
-    // Remove from cart
-    removeFromCart: async (itemId) => {
-        set({ isLoading: true, error: null });
-        try {
-            await api.delete(API_ENDPOINTS.removeFromCart || "/users/cart/remove/", {
-                data: { item_id: itemId },
-            });
+  // Remove from cart
+  removeFromCart: async (itemId) => {
+    try {
+      console.log(`[Cart] Removing item ${itemId}`);
+      // Backend expects item_id in URL path: /users/cart/remove/{itemId}/
+      const endpoint = `/users/cart/remove/${itemId}/`;
+      const response = await api.delete(endpoint);
+      console.log(`[Cart] Remove successful:`, response.data);
 
-            set((state) => {
-                const updatedItems = state.cartItems.filter((item) => item.id !== itemId);
-                const newTotal = updatedItems.reduce((sum, item) => {
-                    const price = item.discounted_price || item.price || 0;
-                    return sum + price * item.quantity;
-                }, 0);
+      // Refresh cart to get updated data from backend
+      await get().fetchCart();
 
-                return {
-                    cartItems: updatedItems,
-                    cartTotal: newTotal,
-                    itemCount: updatedItems.length,
-                    isLoading: false,
-                };
-            });
+      return { success: true };
+    } catch (error) {
+      console.error(
+        `[Cart] Remove failed:`,
+        error.response?.data || error.message,
+      );
+      const msg =
+        error.response?.data?.error ||
+        error.response?.data?.detail ||
+        "Failed to remove from cart";
+      set({ error: msg });
+      throw error;
+    }
+  },
 
-            return { success: true };
-        } catch (error) {
-            const msg = error.response?.data?.error || error.response?.data?.detail || "Failed to remove from cart";
-            set({ error: msg, isLoading: false });
-            throw error;
-        }
-    },
-
-    // Clear cart
-    clearCart: async () => {
-        set({ isLoading: true, error: null });
-        try {
-            await api.delete(API_ENDPOINTS.clearCart || "/users/cart/clear/");
-            set({
-                cartItems: [],
-                cartTotal: 0,
-                itemCount: 0,
-                isLoading: false,
-            });
-            return { success: true };
-        } catch (error) {
-            const msg = error.response?.data?.error || error.response?.data?.detail || "Failed to clear cart";
-            set({ error: msg, isLoading: false });
-            throw error;
-        }
-    },
-
-    // Increment item quantity
-    incrementQuantity: async (itemId) => {
-        const { cartItems } = get();
-        const item = cartItems.find((i) => i.id === itemId);
-        if (item) {
-            return await get().updateQuantity(itemId, item.quantity + 1);
-        }
-    },
-
-    // Decrement item quantity
-    decrementQuantity: async (itemId) => {
-        const { cartItems } = get();
-        const item = cartItems.find((i) => i.id === itemId);
-        if (item && item.quantity > 1) {
-            return await get().updateQuantity(itemId, item.quantity - 1);
-        } else if (item) {
-            return await get().removeFromCart(itemId);
-        }
-    },
-
-    // Check if product is in cart
-    isInCart: (productId) => {
-        const { cartItems } = get();
-        return cartItems.some(
-            (item) => item.product_id === productId || item.product?.id === productId
-        );
-    },
-
-    // Get cart item count
-    getCartCount: () => {
-        const { cartItems } = get();
-        return cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
-    },
-
-    // Clear error
-    clearError: () => set({ error: null }),
-
-    // Reset store
-    reset: () => set({
+  // Clear cart
+  clearCart: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      await api.delete(API_ENDPOINTS.clearCart || "/users/cart/clear/");
+      set({
         cartItems: [],
         cartTotal: 0,
         itemCount: 0,
         isLoading: false,
-        error: null,
+      });
+      return { success: true };
+    } catch (error) {
+      const msg =
+        error.response?.data?.error ||
+        error.response?.data?.detail ||
+        "Failed to clear cart";
+      set({ error: msg, isLoading: false });
+      throw error;
+    }
+  },
+
+  // Increment item quantity
+  incrementQuantity: async (itemId) => {
+    const { cartItems } = get();
+    const item = cartItems.find((i) => i.id === itemId);
+    if (!item) {
+      console.error(`[Cart] Item not found: ${itemId}`);
+      throw new Error("Item not found in cart");
+    }
+    console.log(
+      `[Cart] Incrementing item ${itemId} from ${item.quantity} to ${item.quantity + 1}`,
+    );
+    return await get().updateQuantity(itemId, item.quantity + 1);
+  },
+
+  // Decrement item quantity
+  decrementQuantity: async (itemId) => {
+    const { cartItems } = get();
+    const item = cartItems.find((i) => i.id === itemId);
+    if (!item) {
+      console.error(`[Cart] Item not found: ${itemId}`);
+      throw new Error("Item not found in cart");
+    }
+    console.log(
+      `[Cart] Decrementing item ${itemId} from ${item.quantity} to ${item.quantity > 1 ? item.quantity - 1 : "removing"}`,
+    );
+    if (item.quantity > 1) {
+      return await get().updateQuantity(itemId, item.quantity - 1);
+    } else {
+      return await get().removeFromCart(itemId);
+    }
+  },
+
+  // Check if product is in cart
+  isInCart: (productId) => {
+    const { cartItems } = get();
+    return cartItems.some(
+      (item) => item.product_id === productId || item.product?.id === productId,
+    );
+  },
+
+  // Get cart item count
+  getCartCount: () => {
+    const { cartItems } = get();
+    return cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
+  },
+
+  // Clear error
+  clearError: () => set({ error: null }),
+
+  // Reset store
+  reset: () =>
+    set({
+      cartItems: [],
+      cartTotal: 0,
+      itemCount: 0,
+      isLoading: false,
+      error: null,
     }),
 }));

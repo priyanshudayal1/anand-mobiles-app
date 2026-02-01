@@ -217,7 +217,11 @@ const RenderSection = ({ section, colors, router }) => {
           style={{ backgroundColor: colors.cardBg, marginTop: 8 }}
         >
           <SectionTitle section={section} colors={colors} />
-          <VideoCarousel showHeader={false} />
+          <VideoCarousel
+            showHeader={false}
+            videos={section.config?.videos}
+            autoPlay={false}
+          />
         </View>
       );
 
@@ -389,18 +393,14 @@ export default function Home() {
               style={{
                 flexDirection: "row",
                 flexWrap: "wrap",
-                paddingHorizontal: 16,
-                paddingBottom: 16,
+                paddingHorizontal: 12,
+                gap: 8,
               }}
             >
-              {allProducts.map((product, index) => (
+              {allProducts.map((product) => (
                 <View
-                  key={product.id || index}
-                  style={{
-                    width: "50%",
-                    paddingRight: index % 2 === 0 ? 6 : 0,
-                    paddingLeft: index % 2 === 1 ? 6 : 0,
-                  }}
+                  key={product.id || product.product_id}
+                  style={{ width: "48%" }}
                 >
                   <ProductCard
                     product={product}
@@ -416,7 +416,8 @@ export default function Home() {
               onPress={handleSeeAllProducts}
               style={{
                 marginHorizontal: 16,
-                marginBottom: 16,
+                marginTop: 8,
+                marginBottom: 0,
                 paddingVertical: 12,
                 borderRadius: 8,
                 borderWidth: 1,

@@ -23,11 +23,20 @@ const { width } = Dimensions.get("window");
 // Aspect ratio 16:9 or similar to web
 const VIDEO_HEIGHT = width * (9 / 16);
 
-export default function VideoCarousel({ showHeader = false }) {
+export default function VideoCarousel({
+  showHeader = false,
+  videos: propVideos,
+  autoPlay = true,
+}) {
   const { colors } = useTheme();
   const { promotionVideos } = useHome();
-  // Ensure promotionVideos is always an array
-  const videos = Array.isArray(promotionVideos) ? promotionVideos : [];
+  // Ensure we use the provided videos or fallback to promotionVideos from store
+  const videos =
+    Array.isArray(propVideos) && propVideos.length > 0
+      ? propVideos
+      : Array.isArray(promotionVideos)
+        ? promotionVideos
+        : [];
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMuted, setIsMuted] = useState(true);
@@ -47,6 +56,9 @@ export default function VideoCarousel({ showHeader = false }) {
   const currentItem = hasVideos ? videos[currentIndex] : {};
   // Helper to ensure URL is valid string
   const url = currentItem.video_url || currentItem.link || "";
+  // Check for explicit thumbnail/image
+  const thumbnailUrl =
+    currentItem.thumbnail || currentItem.image || currentItem.image_url;
 
   const isVideo =
     url &&
@@ -58,8 +70,8 @@ export default function VideoCarousel({ showHeader = false }) {
 
   const player = useVideoPlayer(url, (player) => {
     player.loop = false;
-    // Only play if it's a video and we have videos
-    if (hasVideos && isVideo) {
+    // Only play if it's a video and we have videos AND autoPlay is true
+    if (hasVideos && isVideo && autoPlay) {
       player.play();
       player.muted = isMuted;
     }
@@ -78,15 +90,16 @@ export default function VideoCarousel({ showHeader = false }) {
     player.muted = isMuted;
   }, [isMuted, player]);
 
-  // For images, auto-advance after 5 seconds
+  // For images or paused videos (thumbnails), auto-advance after 5 seconds
   useEffect(() => {
-    if (hasVideos && !isVideo) {
+    // If not auto-playing video, treat like slideshow
+    if (hasVideos && (!isVideo || !autoPlay)) {
       const timer = setTimeout(() => {
         handleNext();
       }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [currentIndex, isVideo, hasVideos, handleNext]);
+  }, [currentIndex, isVideo, hasVideos, handleNext, autoPlay]);
 
   const handlePrev = useCallback(() => {
     if (videos.length === 0) return;
@@ -104,6 +117,10 @@ export default function VideoCarousel({ showHeader = false }) {
       );
     }
   };
+
+  // Determine if we show the video player or an image (thumbnail/banner)
+  const showVideoPlayer = isVideo && (autoPlay || !thumbnailUrl);
+  const imageSource = !showVideoPlayer ? thumbnailUrl || url : null;
 
   return (
     <View
@@ -135,7 +152,7 @@ export default function VideoCarousel({ showHeader = false }) {
       )}
 
       <View style={{ width: width, height: VIDEO_HEIGHT }}>
-        {isVideo ? (
+        {showVideoPlayer ? (
           <VideoView
             player={player}
             style={StyleSheet.absoluteFill}
@@ -144,7 +161,7 @@ export default function VideoCarousel({ showHeader = false }) {
           />
         ) : (
           <Image
-            source={{ uri: url }}
+            source={{ uri: imageSource }}
             style={{ width: "100%", height: "100%" }}
             contentFit="cover"
             transition={300}

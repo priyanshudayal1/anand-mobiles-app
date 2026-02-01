@@ -3,6 +3,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
 import { auth } from "../services/firebaseConfig";
 import api, { setUnauthorizedCallback } from "../services/api";
+import { useCartStore } from "./useCart";
+import { useAddressStore } from "./useAddress";
+import { useWishlistStore } from "./useWishlist";
+import { useOrderStore } from "./useOrder";
+import { useGamification } from "./useGamification";
 
 export const useAuthStore = create((set, get) => ({
   user: null,
@@ -171,6 +176,13 @@ export const useAuthStore = create((set, get) => ({
       await AsyncStorage.removeItem("userData");
       // Ideally sign out from Firebase too
       await auth.signOut();
+
+      // Reset other stores
+      useCartStore.getState().reset();
+      useAddressStore.getState().reset();
+      useWishlistStore.getState().reset();
+      useOrderStore.getState().reset();
+      useGamification.getState().reset();
 
       set({ user: null, isAuthenticated: false, isLoading: false });
     } catch (error) {

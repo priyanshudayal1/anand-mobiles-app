@@ -73,7 +73,10 @@ export default function WalletScreen() {
 
   const handleShare = async () => {
     if (!referralData?.referral_code) {
-      Alert.alert("Error", "Referral code not available. Please try again later.");
+      Alert.alert(
+        "Error",
+        "Referral code not available. Please try again later.",
+      );
       return;
     }
 
@@ -98,13 +101,17 @@ export default function WalletScreen() {
   // Not authenticated state
   if (!isAuthenticated || !user) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
         <View style={styles.emptyState}>
           <Wallet size={64} color={colors.textSecondary || "#999"} />
           <Text style={[styles.emptyStateTitle, { color: colors.text }]}>
             Login Required
           </Text>
-          <Text style={[styles.emptyStateText, { color: colors.textSecondary }]}>
+          <Text
+            style={[styles.emptyStateText, { color: colors.textSecondary }]}
+          >
             Please login to access gamification features
           </Text>
         </View>
@@ -115,7 +122,9 @@ export default function WalletScreen() {
   // Loading state
   if (isLoading && !refreshing) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
@@ -129,14 +138,19 @@ export default function WalletScreen() {
   // Calculate progress
   const progressPercentage = Math.min(
     ((coinBalance - (levelInfo.threshold - 500)) / 500) * 100,
-    100
+    100,
   );
 
   const renderOverviewTab = () => (
     <View style={styles.tabContent}>
       {/* Stats Cards */}
       <View style={styles.statsGrid}>
-        <View style={[styles.statCard, { backgroundColor: colors.surface || "#FFF" }]}>
+        <View
+          style={[
+            styles.statCard,
+            { backgroundColor: colors.surface || "#FFF" },
+          ]}
+        >
           <Coins size={28} color="#FFD700" />
           <Text style={[styles.statValue, { color: colors.text }]}>
             {coinBalance.toLocaleString()}
@@ -146,7 +160,12 @@ export default function WalletScreen() {
           </Text>
         </View>
 
-        <View style={[styles.statCard, { backgroundColor: colors.surface || "#FFF" }]}>
+        <View
+          style={[
+            styles.statCard,
+            { backgroundColor: colors.surface || "#FFF" },
+          ]}
+        >
           <Star size={28} color={levelInfo.color} />
           <Text style={[styles.statValue, { color: colors.text }]}>
             {gamificationStatus?.level || "Bronze"}
@@ -156,7 +175,12 @@ export default function WalletScreen() {
           </Text>
         </View>
 
-        <View style={[styles.statCard, { backgroundColor: colors.surface || "#FFF" }]}>
+        <View
+          style={[
+            styles.statCard,
+            { backgroundColor: colors.surface || "#FFF" },
+          ]}
+        >
           <Calendar size={28} color="#4CAF50" />
           <Text style={[styles.statValue, { color: colors.text }]}>
             {gamificationStatus?.login_streak || 0}
@@ -166,7 +190,12 @@ export default function WalletScreen() {
           </Text>
         </View>
 
-        <View style={[styles.statCard, { backgroundColor: colors.surface || "#FFF" }]}>
+        <View
+          style={[
+            styles.statCard,
+            { backgroundColor: colors.surface || "#FFF" },
+          ]}
+        >
           <Trophy size={28} color={colors.primary} />
           <Text style={[styles.statValue, { color: colors.text }]}>
             {achievements?.length || 0}
@@ -178,7 +207,12 @@ export default function WalletScreen() {
       </View>
 
       {/* Level Progress */}
-      <View style={[styles.progressCard, { backgroundColor: colors.surface || "#FFF" }]}>
+      <View
+        style={[
+          styles.progressCard,
+          { backgroundColor: colors.surface || "#FFF" },
+        ]}
+      >
         <View style={styles.progressHeader}>
           <Text style={[styles.progressTitle, { color: colors.text }]}>
             Level Progress
@@ -188,11 +222,19 @@ export default function WalletScreen() {
           </Text>
         </View>
 
-        <View style={[styles.progressBarBg, { backgroundColor: colors.border || "#E0E0E0" }]}>
+        <View
+          style={[
+            styles.progressBarBg,
+            { backgroundColor: colors.border || "#E0E0E0" },
+          ]}
+        >
           <View
             style={[
               styles.progressBarFill,
-              { width: `${Math.max(0, Math.min(100, progressPercentage))}%`, backgroundColor: levelInfo.color },
+              {
+                width: `${Math.max(0, Math.min(100, progressPercentage))}%`,
+                backgroundColor: levelInfo.color,
+              },
             ]}
           />
         </View>
@@ -208,7 +250,12 @@ export default function WalletScreen() {
       </View>
 
       {/* Quick Actions */}
-      <View style={[styles.actionsCard, { backgroundColor: colors.surface || "#FFF" }]}>
+      <View
+        style={[
+          styles.actionsCard,
+          { backgroundColor: colors.surface || "#FFF" },
+        ]}
+      >
         <Text style={[styles.actionsTitle, { color: colors.text }]}>
           Quick Actions
         </Text>
@@ -224,10 +271,13 @@ export default function WalletScreen() {
               },
             ]}
             disabled={!gamificationStatus?.daily_spin_available}
+            onPress={() => setShowSpinWheel(true)}
           >
             <Gift size={20} color="#FFF" />
             <Text style={styles.actionButtonText}>
-              {gamificationStatus?.daily_spin_available ? "Daily Spin!" : "Come Back Tomorrow"}
+              {gamificationStatus?.daily_spin_available
+                ? "Daily Spin!"
+                : "Come Back Tomorrow"}
             </Text>
           </TouchableOpacity>
 
@@ -262,7 +312,10 @@ export default function WalletScreen() {
           {achievements.map((achievement, index) => (
             <View
               key={index}
-              style={[styles.achievementCard, { backgroundColor: colors.surface || "#FFF" }]}
+              style={[
+                styles.achievementCard,
+                { backgroundColor: colors.surface || "#FFF" },
+              ]}
             >
               <Text style={styles.achievementIcon}>
                 {achievement.icon || "🏆"}
@@ -270,10 +323,20 @@ export default function WalletScreen() {
               <Text style={[styles.achievementTitle, { color: colors.text }]}>
                 {achievement.title}
               </Text>
-              <Text style={[styles.achievementDesc, { color: colors.textSecondary }]}>
+              <Text
+                style={[
+                  styles.achievementDesc,
+                  { color: colors.textSecondary },
+                ]}
+              >
                 {achievement.description}
               </Text>
-              <View style={[styles.achievementReward, { backgroundColor: "#4CAF50" }]}>
+              <View
+                style={[
+                  styles.achievementReward,
+                  { backgroundColor: "#4CAF50" },
+                ]}
+              >
                 <Text style={styles.achievementRewardText}>
                   +{achievement.reward_coins || 0} coins
                 </Text>
@@ -284,7 +347,9 @@ export default function WalletScreen() {
       ) : (
         <View style={styles.emptyState}>
           <Trophy size={48} color={colors.textSecondary || "#999"} />
-          <Text style={[styles.emptyStateText, { color: colors.textSecondary }]}>
+          <Text
+            style={[styles.emptyStateText, { color: colors.textSecondary }]}
+          >
             No achievements yet. Start shopping to unlock rewards!
           </Text>
         </View>
@@ -299,20 +364,31 @@ export default function WalletScreen() {
       </Text>
 
       {leaderboard && leaderboard.length > 0 ? (
-        <View style={[styles.leaderboardContainer, { backgroundColor: colors.surface || "#FFF" }]}>
+        <View
+          style={[
+            styles.leaderboardContainer,
+            { backgroundColor: colors.surface || "#FFF" },
+          ]}
+        >
           {leaderboard.map((user, index) => (
             <View
               key={index}
               style={[
                 styles.leaderboardItem,
-                index !== leaderboard.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border || "#E0E0E0" },
+                index !== leaderboard.length - 1 && {
+                  borderBottomWidth: 1,
+                  borderBottomColor: colors.border || "#E0E0E0",
+                },
               ]}
             >
               <View style={styles.leaderboardLeft}>
                 <View
                   style={[
                     styles.rankBadge,
-                    { backgroundColor: index < 3 ? "#FFD700" : colors.background },
+                    {
+                      backgroundColor:
+                        index < 3 ? "#FFD700" : colors.background,
+                    },
                   ]}
                 >
                   <Text
@@ -325,10 +401,17 @@ export default function WalletScreen() {
                   </Text>
                 </View>
                 <View>
-                  <Text style={[styles.leaderboardName, { color: colors.text }]}>
+                  <Text
+                    style={[styles.leaderboardName, { color: colors.text }]}
+                  >
                     {user.name}
                   </Text>
-                  <Text style={[styles.leaderboardLevel, { color: colors.textSecondary }]}>
+                  <Text
+                    style={[
+                      styles.leaderboardLevel,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
                     Level {user.level}
                   </Text>
                 </View>
@@ -337,7 +420,12 @@ export default function WalletScreen() {
                 <Text style={[styles.leaderboardCoins, { color: colors.text }]}>
                   {user.coins?.toLocaleString()} coins
                 </Text>
-                <Text style={[styles.leaderboardPoints, { color: colors.textSecondary }]}>
+                <Text
+                  style={[
+                    styles.leaderboardPoints,
+                    { color: colors.textSecondary },
+                  ]}
+                >
                   {user.points} points
                 </Text>
               </View>
@@ -347,7 +435,9 @@ export default function WalletScreen() {
       ) : (
         <View style={styles.emptyState}>
           <Users size={48} color={colors.textSecondary || "#999"} />
-          <Text style={[styles.emptyStateText, { color: colors.textSecondary }]}>
+          <Text
+            style={[styles.emptyStateText, { color: colors.textSecondary }]}
+          >
             Leaderboard will update soon!
           </Text>
         </View>
@@ -362,7 +452,12 @@ export default function WalletScreen() {
       </Text>
 
       {/* Referral Section */}
-      <View style={[styles.rewardCard, { backgroundColor: colors.surface || "#FFF" }]}>
+      <View
+        style={[
+          styles.rewardCard,
+          { backgroundColor: colors.surface || "#FFF" },
+        ]}
+      >
         <View style={styles.rewardHeader}>
           <Users size={24} color={colors.primary} />
           <Text style={[styles.rewardTitle, { color: colors.text }]}>
@@ -372,12 +467,27 @@ export default function WalletScreen() {
 
         {referralData ? (
           <View style={styles.referralContent}>
-            <View style={[styles.referralCodeBox, { backgroundColor: colors.background }]}>
-              <Text style={[styles.referralCodeLabel, { color: colors.textSecondary }]}>
+            <View
+              style={[
+                styles.referralCodeBox,
+                { backgroundColor: colors.background },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.referralCodeLabel,
+                  { color: colors.textSecondary },
+                ]}
+              >
                 Your Referral Code:
               </Text>
               <View style={styles.referralCodeRow}>
-                <View style={[styles.referralCodeBadge, { backgroundColor: colors.primary }]}>
+                <View
+                  style={[
+                    styles.referralCodeBadge,
+                    { backgroundColor: colors.primary },
+                  ]}
+                >
                   <Text style={styles.referralCodeText}>
                     {referralData.referral_code}
                   </Text>
@@ -393,25 +503,49 @@ export default function WalletScreen() {
 
             <View style={styles.referralStats}>
               <View style={styles.referralStatItem}>
-                <Text style={[styles.referralStatValue, { color: colors.primary }]}>
+                <Text
+                  style={[styles.referralStatValue, { color: colors.primary }]}
+                >
                   {referralData.total_referrals || 0}
                 </Text>
-                <Text style={[styles.referralStatLabel, { color: colors.textSecondary }]}>
+                <Text
+                  style={[
+                    styles.referralStatLabel,
+                    { color: colors.textSecondary },
+                  ]}
+                >
                   Referrals
                 </Text>
               </View>
               <View style={styles.referralStatItem}>
-                <Text style={[styles.referralStatValue, { color: colors.primary }]}>
+                <Text
+                  style={[styles.referralStatValue, { color: colors.primary }]}
+                >
                   {referralData.total_earned || 0}
                 </Text>
-                <Text style={[styles.referralStatLabel, { color: colors.textSecondary }]}>
+                <Text
+                  style={[
+                    styles.referralStatLabel,
+                    { color: colors.textSecondary },
+                  ]}
+                >
                   Coins Earned
                 </Text>
               </View>
             </View>
 
-            <View style={[styles.referralInfo, { backgroundColor: colors.background }]}>
-              <Text style={[styles.referralInfoText, { color: colors.textSecondary }]}>
+            <View
+              style={[
+                styles.referralInfo,
+                { backgroundColor: colors.background },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.referralInfoText,
+                  { color: colors.textSecondary },
+                ]}
+              >
                 Earn{" "}
                 <Text style={{ color: colors.primary, fontWeight: "bold" }}>
                   {referralData.reward_per_referral || 50} coins
@@ -434,7 +568,12 @@ export default function WalletScreen() {
       </View>
 
       {/* Daily Rewards */}
-      <View style={[styles.rewardCard, { backgroundColor: colors.surface || "#FFF" }]}>
+      <View
+        style={[
+          styles.rewardCard,
+          { backgroundColor: colors.surface || "#FFF" },
+        ]}
+      >
         <View style={styles.rewardHeader}>
           <Gift size={24} color={colors.primary} />
           <Text style={[styles.rewardTitle, { color: colors.text }]}>
@@ -442,11 +581,20 @@ export default function WalletScreen() {
           </Text>
         </View>
 
-        <View style={[styles.dailyRewardBox, { backgroundColor: colors.background }]}>
+        <View
+          style={[
+            styles.dailyRewardBox,
+            { backgroundColor: colors.background },
+          ]}
+        >
           <Gift size={32} color={colors.primary} />
-          <Text style={[styles.dailyRewardText, { color: colors.textSecondary }]}>
+          <Text
+            style={[styles.dailyRewardText, { color: colors.textSecondary }]}
+          >
             Daily Login:{" "}
-            <Text style={{ color: colors.primary, fontWeight: "bold" }}>+5 coins</Text>
+            <Text style={{ color: colors.primary, fontWeight: "bold" }}>
+              +5 coins
+            </Text>
           </Text>
         </View>
 
@@ -455,23 +603,25 @@ export default function WalletScreen() {
             styles.spinButton,
             {
               backgroundColor: colors.primary, // Always colored, maybe dim if unavailable in future
-              opacity: gamificationStatus?.daily_spin_available ? 1 : 0.8
+              opacity: gamificationStatus?.daily_spin_available ? 1 : 0.8,
             },
           ]}
           onPress={() => {
-              if (gamificationStatus?.daily_spin_available) {
-                  setShowSpinWheel(true);
-              } else {
-                  setShowSpinWheel(true); // Open it anyway so they can see the wheel, handle disabled state inside if needed, or just show alert.
-                  // For better UX, let's open it but maybe the SpinWheel component should handle "already spun".
-                  // However, the user said "nothing happening".
-                  // Let's just open it. The SpinWheel component needs to handle the case where they can't spin.
-                  // For now, I'll allow opening.
-              }
+            if (gamificationStatus?.daily_spin_available) {
+              setShowSpinWheel(true);
+            } else {
+              setShowSpinWheel(true); // Open it anyway so they can see the wheel, handle disabled state inside if needed, or just show alert.
+              // For better UX, let's open it but maybe the SpinWheel component should handle "already spun".
+              // However, the user said "nothing happening".
+              // Let's just open it. The SpinWheel component needs to handle the case where they can't spin.
+              // For now, I'll allow opening.
+            }
           }}
         >
           <Text style={styles.spinButtonText}>
-             {gamificationStatus?.daily_spin_available ? "🎰 Daily Spin Wheel" : "✅ Spin Completed (View)"}
+            {gamificationStatus?.daily_spin_available
+              ? "🎰 Daily Spin Wheel"
+              : "✅ Spin Completed (View)"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -479,25 +629,19 @@ export default function WalletScreen() {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={[colors.primary]}
-            tintColor={colors.primary}
-          />
-        }
-      >
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      <View style={{ flex: 1 }}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingBottom: 16 }]}>
           <View>
             <Text style={[styles.headerTitle, { color: colors.text }]}>
               Gamification Hub
             </Text>
-            <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
+            <Text
+              style={[styles.headerSubtitle, { color: colors.textSecondary }]}
+            >
               Track progress, earn coins & unlock rewards!
             </Text>
           </View>
@@ -528,7 +672,9 @@ export default function WalletScreen() {
                 style={[
                   styles.tab,
                   {
-                    backgroundColor: isActive ? colors.primary : colors.surface || "#FFF",
+                    backgroundColor: isActive
+                      ? colors.primary
+                      : colors.surface || "#FFF",
                   },
                 ]}
                 onPress={() => setActiveTab(tab.id)}
@@ -548,22 +694,34 @@ export default function WalletScreen() {
         </ScrollView>
 
         {/* Tab Content */}
-        {activeTab === "overview" && renderOverviewTab()}
-        {activeTab === "achievements" && renderAchievementsTab()}
-        {activeTab === "leaderboard" && renderLeaderboardTab()}
-        {activeTab === "rewards" && renderRewardsTab()}
-      </ScrollView>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
+            />
+          }
+        >
+          {activeTab === "overview" && renderOverviewTab()}
+          {activeTab === "achievements" && renderAchievementsTab()}
+          {activeTab === "leaderboard" && renderLeaderboardTab()}
+          {activeTab === "rewards" && renderRewardsTab()}
+        </ScrollView>
+      </View>
 
-      <SpinWheel 
-        visible={showSpinWheel} 
-        onClose={() => setShowSpinWheel(false)} 
+      <SpinWheel
+        visible={showSpinWheel}
+        onClose={() => setShowSpinWheel(false)}
         canSpin={gamificationStatus?.daily_spin_available}
         onSpinComplete={() => {
-            loadAllData();
+          loadAllData();
         }}
       />
-      
-      <WalletModal 
+
+      <WalletModal
         visible={showWalletModal}
         onClose={() => setShowWalletModal(false)}
       />
