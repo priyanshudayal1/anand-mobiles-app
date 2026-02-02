@@ -64,6 +64,15 @@ export const API_ENDPOINTS = {
   orders: "/users/orders/",
   orderDetails: (id) => `/users/orders/${id}/`,
 
+  // Notifications
+  notifications: "/users/notifications/",
+  notificationCount: "/users/notifications/count/",
+  markNotificationRead: (id) => `/users/notifications/${id}/read/`,
+  markAllNotificationsRead: "/users/notifications/read-all/",
+  deleteNotification: (id) => `/users/notifications/${id}/delete/`,
+  deleteAllNotifications: "/users/notifications/delete-all/",
+  registerPushToken: "/users/notifications/register-token/",
+
   // Banners
   banners: "/admin/banners/",
   publicBanners: "/admin/banners/public/",

@@ -29,6 +29,7 @@ import { useCartStore } from "../../store/useCart";
 import { useSiteConfig } from "../../store/useSiteConfig";
 import { useLocationStore } from "../../store/useLocation";
 import { useAddressStore } from "../../store/useAddress";
+import { useNotificationStore } from "../../store/useNotification";
 import SearchBar from "../common/SearchBar";
 
 export default function HomeHeader() {
@@ -38,6 +39,7 @@ export default function HomeHeader() {
   const { fetchSiteConfig, isInitialized } = useSiteConfig();
   const { location } = useLocationStore();
   const { addresses, fetchAddresses, setDefaultAddress } = useAddressStore();
+  const { unreadCount, fetchUnreadCount } = useNotificationStore();
 
   const [selectedAddress, setSelectedAddress] = useState(null);
 
@@ -49,10 +51,17 @@ export default function HomeHeader() {
   useEffect(() => {
     fetchCart();
     fetchAddresses();
+    fetchUnreadCount();
     if (!isInitialized) {
       fetchSiteConfig();
     }
-  }, [fetchCart, fetchAddresses, isInitialized, fetchSiteConfig]);
+  }, [
+    fetchCart,
+    fetchAddresses,
+    fetchUnreadCount,
+    isInitialized,
+    fetchSiteConfig,
+  ]);
 
   // Update selected address when addresses change or on initial load
   useEffect(() => {
@@ -233,8 +242,39 @@ export default function HomeHeader() {
           <SearchBar style={{ flex: 1 }} />
 
           {/* Notification */}
-          <TouchableOpacity onPress={() => router.push("/notifications")}>
+          <TouchableOpacity
+            onPress={() => router.push("/notifications")}
+            style={{ position: "relative" }}
+          >
             <Bell size={24} color={colors.white} />
+            {unreadCount > 0 && (
+              <View
+                style={{
+                  position: "absolute",
+                  top: -4,
+                  right: -4,
+                  backgroundColor: "#EF4444",
+                  borderRadius: 10,
+                  minWidth: 18,
+                  height: 18,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  paddingHorizontal: 4,
+                  borderWidth: 2,
+                  borderColor: colors.headerBg,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontSize: 10,
+                    fontWeight: "700",
+                  }}
+                >
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
 
           {/* Wishlist */}
