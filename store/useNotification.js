@@ -253,13 +253,25 @@ export const useNotificationStore = create((set, get) => ({
       console.log("✅ Push notifications registered successfully");
       return token;
     } catch (error) {
-      console.log("Push notifications setup:", error.message);
-      // Don't set error state for expected Expo Go limitations
+      // Provide clearer error messages for common issues
+      const errorMessage = error.message || "";
       if (
-        !error.message?.includes("Expo Go") &&
-        !error.message?.includes("projectId")
+        errorMessage.includes("FirebaseApp is not initialized") ||
+        errorMessage.includes("FirebaseApp.initializeApp")
       ) {
-        set({ error: error.message });
+        console.log(
+          "📱 Push notifications: Native FCM not configured. This is expected for Expo-managed builds. WebSocket notifications will be used instead.",
+        );
+      } else if (
+        errorMessage.includes("Expo Go") ||
+        errorMessage.includes("projectId")
+      ) {
+        console.log(
+          "📱 Push notifications: Not available in Expo Go. Use a development build for full push notification support.",
+        );
+      } else {
+        console.log("📱 Push notifications setup:", errorMessage);
+        set({ error: errorMessage });
       }
       return null;
     }

@@ -92,59 +92,66 @@ const ConfettiPiece = ({ delay, startX }) => {
 const DEFAULT_SEGMENTS = [
   {
     id: 1,
-    label: "10% OFF",
+    label: "10 Coins",
     value: 10,
-    type: "discount",
-    color: "#FF6B6B",
-    textColor: "#FFFFFF",
+    type: "coins",
+    color: "#FFD700",
+    textColor: "#333333",
+    weight: 30,
   },
   {
     id: 2,
-    label: "FREE SHIP",
-    value: "shipping",
-    type: "freebie",
+    label: "25 Coins",
+    value: 25,
+    type: "coins",
     color: "#4ECDC4",
     textColor: "#FFFFFF",
+    weight: 20,
   },
   {
     id: 3,
-    label: "20% OFF",
-    value: 20,
-    type: "discount",
-    color: "#45B7D1",
-    textColor: "#FFFFFF",
-  },
-  {
-    id: 4,
-    label: "50 COINS",
+    label: "50 Coins",
     value: 50,
     type: "coins",
     color: "#96CEB4",
     textColor: "#FFFFFF",
+    weight: 15,
   },
   {
-    id: 5,
+    id: 4,
     label: "5% OFF",
     value: 5,
     type: "discount",
     color: "#FFEAA7",
     textColor: "#2D3436",
+    weight: 15,
+  },
+  {
+    id: 5,
+    label: "10% OFF",
+    value: 10,
+    type: "discount",
+    color: "#45B7D1",
+    textColor: "#FFFFFF",
+    weight: 10,
   },
   {
     id: 6,
-    label: "100 COINS",
+    label: "FREE SHIPPING",
+    value: "shipping",
+    type: "freebie",
+    color: "#FF6B6B",
+    textColor: "#FFFFFF",
+    weight: 8,
+  },
+  {
+    id: 7,
+    label: "100 Coins",
     value: 100,
     type: "coins",
     color: "#DDA0DD",
     textColor: "#FFFFFF",
-  },
-  {
-    id: 7,
-    label: "15% OFF",
-    value: 15,
-    type: "discount",
-    color: "#FD79A8",
-    textColor: "#FFFFFF",
+    weight: 2,
   },
   {
     id: 8,
@@ -153,6 +160,7 @@ const DEFAULT_SEGMENTS = [
     type: "none",
     color: "#636E72",
     textColor: "#FFFFFF",
+    weight: 10,
   },
 ];
 
@@ -162,13 +170,15 @@ export default function SpinWheel({
   onSpinComplete,
   canSpin = true,
 }) {
-  const { spinWheel, gamificationConfig } = useGamification();
+  const { spinWheel, gamificationConfig, fetchGamificationConfig, isLoading } =
+    useGamification();
 
   const [segments, setSegments] = useState(DEFAULT_SEGMENTS);
   const [isSpinningState, setIsSpinningState] = useState(false);
   const [result, setResult] = useState(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [confettiPieces, setConfettiPieces] = useState([]);
+  const [configLoaded, setConfigLoaded] = useState(false);
 
   const rotation = useSharedValue(0);
   const gestureRotation = useSharedValue(0);
@@ -180,10 +190,24 @@ export default function SpinWheel({
     canSpinShared.value = canSpin;
   }, [canSpin, canSpinShared]);
 
+  // Fetch config when wheel becomes visible if not already loaded
   useEffect(() => {
+    if (visible && !gamificationConfig?.spin_wheel_rewards && !isLoading) {
+      console.log("🎰 SpinWheel opened - fetching gamification config...");
+      fetchGamificationConfig();
+    }
+  }, [visible, gamificationConfig, isLoading, fetchGamificationConfig]);
+
+  useEffect(() => {
+    // Skip logging if config is still loading
+    if (isLoading && !configLoaded) {
+      return;
+    }
+
     if (
       gamificationConfig?.spin_wheel_rewards &&
-      Array.isArray(gamificationConfig.spin_wheel_rewards)
+      Array.isArray(gamificationConfig.spin_wheel_rewards) &&
+      gamificationConfig.spin_wheel_rewards.length > 0
     ) {
       const backendSegments = gamificationConfig.spin_wheel_rewards.map(
         (reward, index) => ({
@@ -194,11 +218,23 @@ export default function SpinWheel({
             reward.label || reward.title || `${reward.value} ${reward.type}`,
         }),
       );
-      if (backendSegments.length > 0) {
-        setSegments(backendSegments);
-      }
+      setSegments(backendSegments);
+      setConfigLoaded(true);
+      console.log("🎰 SpinWheel config update:", {
+        hasConfig: true,
+        count: backendSegments.length,
+        rewards: backendSegments.map((s) => ({
+          label: s.label,
+          weight: s.weight,
+        })),
+      });
+    } else if (configLoaded || (!isLoading && gamificationConfig !== null)) {
+      // Only show warning if we've already tried loading or config explicitly has no rewards
+      console.log(
+        "⚠️ Using default spin wheel segments - no backend config found",
+      );
     }
-  }, [gamificationConfig]);
+  }, [gamificationConfig, isLoading, configLoaded]);
 
   useEffect(() => {
     if (visible) {

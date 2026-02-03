@@ -56,8 +56,22 @@ export default function WalletScreen() {
     }
   }, [isAuthenticated, user, loadAllData]);
 
+  // Log gamificationConfig for debugging
+  useEffect(() => {
+    if (gamificationConfig?.spin_wheel_rewards) {
+      console.log("Gamification config loaded:", {
+        rewardCount: gamificationConfig.spin_wheel_rewards.length,
+        enabled: gamificationConfig.spin_wheel_enabled,
+        dailySpins: gamificationConfig.daily_spins,
+      });
+    }
+  }, [gamificationConfig]);
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
+    console.log(
+      "🔄 Manual refresh triggered - reloading all gamification data",
+    );
     await loadAllData();
     setRefreshing(false);
   }, [loadAllData]);
@@ -593,7 +607,7 @@ export default function WalletScreen() {
           >
             Daily Login:{" "}
             <Text style={{ color: colors.primary, fontWeight: "bold" }}>
-              +{gamificationConfig?.daily_login_bonus || 2} coins
+              +{gamificationConfig?.daily_login_bonus || 1} coins
             </Text>
           </Text>
         </View>

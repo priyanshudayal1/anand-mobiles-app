@@ -23,27 +23,109 @@ export const useGamification = create((set, get) => ({
   // Fetch Gamification Config (public - no auth required)
   fetchGamificationConfig: async () => {
     try {
+      console.log("🔄 Fetching gamification config...");
       const response = await api.get(API_ENDPOINTS.gamificationConfig);
-      set({
-        gamificationConfig: response.data.config,
+      const config = response.data.config;
+
+      console.log("📦 Gamification config received:", {
+        rewardCount: config.spin_wheel_rewards?.length || 0,
+        enabled: config.spin_wheel_enabled,
+        dailySpins: config.daily_spins,
       });
-      return { success: true, data: response.data.config };
+
+      set({
+        gamificationConfig: config,
+      });
+      return { success: true, data: config };
     } catch (error) {
       console.error(
-        "Gamification config error:",
+        "❌ Gamification config error:",
         error.response?.data || error.message,
       );
-      // Set default values if fetch fails
+      // Set default values if fetch fails - must match backend GAMIFICATION_DEFAULTS
       set({
         gamificationConfig: {
-          daily_login_bonus: 2,
+          daily_login_bonus: 1,
           signup_bonus: 100,
           wishlist_bonus: 2,
           review_bonus: 10,
           referral_bonus: 50,
           purchase_percentage: 1,
           daily_login_streak_bonus: 10,
-          spin_wheel_rewards: [],
+          spin_wheel_rewards: [
+            {
+              id: 1,
+              type: "coins",
+              value: 10,
+              weight: 30,
+              label: "10 Coins",
+              color: "#FFD700",
+              textColor: "#333333",
+            },
+            {
+              id: 2,
+              type: "coins",
+              value: 25,
+              weight: 20,
+              label: "25 Coins",
+              color: "#4ECDC4",
+              textColor: "#FFFFFF",
+            },
+            {
+              id: 3,
+              type: "coins",
+              value: 50,
+              weight: 15,
+              label: "50 Coins",
+              color: "#96CEB4",
+              textColor: "#FFFFFF",
+            },
+            {
+              id: 4,
+              type: "discount",
+              value: 5,
+              weight: 15,
+              label: "5% OFF",
+              color: "#FFEAA7",
+              textColor: "#2D3436",
+            },
+            {
+              id: 5,
+              type: "discount",
+              value: 10,
+              weight: 10,
+              label: "10% OFF",
+              color: "#45B7D1",
+              textColor: "#FFFFFF",
+            },
+            {
+              id: 6,
+              type: "freebie",
+              value: "shipping",
+              weight: 8,
+              label: "FREE SHIPPING",
+              color: "#FF6B6B",
+              textColor: "#FFFFFF",
+            },
+            {
+              id: 7,
+              type: "coins",
+              value: 100,
+              weight: 2,
+              label: "100 Coins",
+              color: "#DDA0DD",
+              textColor: "#FFFFFF",
+            },
+            {
+              id: 8,
+              type: "none",
+              value: "none",
+              weight: 10,
+              label: "TRY AGAIN",
+              color: "#636E72",
+              textColor: "#FFFFFF",
+            },
+          ],
           spin_wheel_enabled: true,
           daily_spins: 1,
         },
