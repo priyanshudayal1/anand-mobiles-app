@@ -1,33 +1,38 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "../../store/useTheme";
 import { ChevronDown } from "lucide-react-native";
+import QuantityPickerModal from "./QuantityPickerModal";
 
 const ProductQuantitySelector = ({ quantity, setQuantity, stock }) => {
   const { colors } = useTheme();
+  const [showPicker, setShowPicker] = useState(false);
 
-  // Ideally this opens a picker/modal. For now, we'll just toggle through 1-5 or increment.
-  // The image shows a dropdown "Quantity: 1 v"
-  
   const handlePress = () => {
-    // Simple rotation for now: 1 -> 2 -> 3 -> 4 -> 5 -> 1
-    const nextQty = quantity >= 5 ? 1 : quantity + 1;
-    if (nextQty <= stock) {
-        setQuantity(nextQty);
-    } else {
-        setQuantity(1);
-    }
+    setShowPicker(true);
   };
 
   return (
-    <View style={{ paddingHorizontal: 16, marginBottom: 16, flexDirection: 'row', alignItems: 'center' }}>
-       {/* Dropdown style button */}
-       <Text style={{ fontSize: 14, color: colors.textSecondary, marginRight: 8 }}>Quantity:</Text>
-       <TouchableOpacity
-         onPress={handlePress}
-         style={{
-            flexDirection: 'row',
-            alignItems: 'center',
+    <>
+      <View
+        style={{
+          paddingHorizontal: 16,
+          marginBottom: 16,
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
+        {/* Dropdown style button */}
+        <Text
+          style={{ fontSize: 14, color: colors.textSecondary, marginRight: 8 }}
+        >
+          Quantity:
+        </Text>
+        <TouchableOpacity
+          onPress={handlePress}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
             paddingHorizontal: 12,
             paddingVertical: 6,
             backgroundColor: colors.surface,
@@ -39,14 +44,30 @@ const ProductQuantitySelector = ({ quantity, setQuantity, stock }) => {
             shadowOpacity: 0.1,
             shadowRadius: 2,
             elevation: 2,
-         }}
-       >
-          <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text, marginRight: 4 }}>
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 14,
+              fontWeight: "600",
+              color: colors.text,
+              marginRight: 4,
+            }}
+          >
             {quantity}
           </Text>
           <ChevronDown size={14} color={colors.text} />
-       </TouchableOpacity>
-    </View>
+        </TouchableOpacity>
+      </View>
+
+      <QuantityPickerModal
+        visible={showPicker}
+        onClose={() => setShowPicker(false)}
+        quantity={quantity}
+        setQuantity={setQuantity}
+        stock={stock}
+      />
+    </>
   );
 };
 

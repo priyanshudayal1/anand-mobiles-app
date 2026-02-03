@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { Image } from "expo-image";
 import { useTheme } from "../../store/useTheme";
-import { Play, Heart, ZoomIn } from "lucide-react-native";
+import { Play, Heart, ZoomIn, Share2 } from "lucide-react-native";
 import ImageZoomModal from "./ImageZoomModal";
 
 const { width } = Dimensions.get("window");
@@ -21,6 +21,7 @@ const ProductImageGallery = ({
   discountPercentage = 0,
   onWishlistPress,
   isInWishlist = false,
+  onSharePress,
 }) => {
   const { colors } = useTheme();
   const [zoomModalVisible, setZoomModalVisible] = useState(false);
@@ -155,47 +156,17 @@ const ProductImageGallery = ({
         </View>
       )}
 
-      {/* Wishlist Heart - Top Right */}
-      {onWishlistPress && (
-        <TouchableOpacity
-          onPress={onWishlistPress}
-          style={{
-            position: "absolute",
-            top: 16,
-            right: 16,
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            backgroundColor: colors.white,
-            alignItems: "center",
-            justifyContent: "center",
-            elevation: 3,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.15,
-            shadowRadius: 4,
-            zIndex: 10,
-          }}
-        >
-          <Heart
-            size={22}
-            color={isInWishlist ? colors.error : colors.textSecondary}
-            fill={isInWishlist ? colors.error : "transparent"}
-          />
-        </TouchableOpacity>
-      )}
-
-      {/* Zoom indicator - Bottom Right */}
+      {/* Zoom indicator - Top Right */}
       <TouchableOpacity
         onPress={() => setZoomModalVisible(true)}
         style={{
           position: "absolute",
-          bottom: 60,
+          top: 16,
           right: 16,
-          width: 36,
-          height: 36,
-          borderRadius: 18,
-          backgroundColor: colors.white + "CC",
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          backgroundColor: colors.white,
           alignItems: "center",
           justifyContent: "center",
           zIndex: 10,
@@ -207,8 +178,68 @@ const ProductImageGallery = ({
         }}
         activeOpacity={0.7}
       >
-        <ZoomIn size={18} color={colors.textSecondary} />
+        <ZoomIn size={22} color={colors.textSecondary} />
       </TouchableOpacity>
+
+      {/* Action Icons - Bottom Right */}
+      <View
+        style={{
+          position: "absolute",
+          bottom: 60,
+          right: 16,
+          flexDirection: "row",
+          gap: 8,
+          zIndex: 10,
+        }}
+      >
+        {/* Wishlist Heart */}
+        {onWishlistPress && (
+          <TouchableOpacity
+            onPress={onWishlistPress}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: colors.white,
+              alignItems: "center",
+              justifyContent: "center",
+              elevation: 3,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.15,
+              shadowRadius: 4,
+            }}
+          >
+            <Heart
+              size={22}
+              color={isInWishlist ? colors.error : colors.textSecondary}
+              fill={isInWishlist ? colors.error : "transparent"}
+            />
+          </TouchableOpacity>
+        )}
+
+        {/* Share Button */}
+        {onSharePress && (
+          <TouchableOpacity
+            onPress={onSharePress}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: colors.white,
+              alignItems: "center",
+              justifyContent: "center",
+              elevation: 3,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.15,
+              shadowRadius: 4,
+            }}
+          >
+            <Share2 size={22} color={colors.textSecondary} />
+          </TouchableOpacity>
+        )}
+      </View>
 
       {/* Pagination Dots */}
       {displayMedia.length > 1 && (
@@ -229,7 +260,7 @@ const ProductImageGallery = ({
               <View
                 key={i}
                 style={{
-                  width: i === activeIndex ? 20 : 8,
+                  width: 8,
                   height: 8,
                   borderRadius: 4,
                   marginHorizontal: 3,
@@ -237,7 +268,7 @@ const ProductImageGallery = ({
                     i === activeIndex
                       ? isVideoMedia
                         ? colors.error
-                        : colors.primary
+                        : colors.text
                       : colors.border,
                 }}
               />
@@ -246,107 +277,13 @@ const ProductImageGallery = ({
         </View>
       )}
 
-      {/* Image count indicator */}
-      {displayMedia.length > 1 && (
-        <View
-          style={{
-            position: "absolute",
-            bottom: 50,
-            left: 16,
-            backgroundColor: colors.black + "80",
-            paddingHorizontal: 10,
-            paddingVertical: 4,
-            borderRadius: 12,
-          }}
-        >
-          <Text style={{ color: colors.white, fontSize: 12 }}>
-            {activeIndex + 1}/{displayMedia.length}
-          </Text>
-        </View>
-      )}
-
-      {/* Thumbnail Strip */}
-      {displayMedia.length > 1 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingHorizontal: 12,
-            paddingVertical: 12,
-          }}
-          style={{
-            backgroundColor: colors.backgroundSecondary,
-          }}
-        >
-          {displayMedia.map((media, i) => {
-            const isActive = i === activeIndex;
-            const isVideoMedia = isVideo(media);
-            const thumbnailUri =
-              typeof media === "string"
-                ? isVideoMedia
-                  ? getYouTubeThumbnail(media)
-                  : media
-                : media?.image || media?.url;
-
-            return (
-              <View
-                key={i}
-                style={{
-                  width: 50,
-                  height: 50,
-                  marginHorizontal: 4,
-                  borderRadius: 6,
-                  borderWidth: 2,
-                  borderColor: isActive ? colors.primary : "transparent",
-                  overflow: "hidden",
-                }}
-              >
-                {thumbnailUri ? (
-                  <Image
-                    source={{ uri: thumbnailUri }}
-                    style={{ width: "100%", height: "100%" }}
-                    contentFit="cover"
-                  />
-                ) : (
-                  <View
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      backgroundColor: colors.border,
-                    }}
-                  />
-                )}
-
-                {/* Video indicator on thumbnail */}
-                {isVideoMedia && (
-                  <View
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backgroundColor: colors.black + "40",
-                    }}
-                  >
-                    <Play size={16} color={colors.white} fill={colors.white} />
-
-                    {/* Image Zoom Modal */}
-                    <ImageZoomModal
-                      visible={zoomModalVisible}
-                      onClose={() => setZoomModalVisible(false)}
-                      media={displayMedia.filter((m) => m !== null)}
-                      initialIndex={activeIndex}
-                    />
-                  </View>
-                )}
-              </View>
-            );
-          })}
-        </ScrollView>
-      )}
+      {/* Image Zoom Modal */}
+      <ImageZoomModal
+        visible={zoomModalVisible}
+        onClose={() => setZoomModalVisible(false)}
+        media={displayMedia.filter((m) => m !== null)}
+        initialIndex={activeIndex}
+      />
     </View>
   );
 };

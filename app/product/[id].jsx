@@ -10,7 +10,7 @@ import {
   Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
-import { ArrowLeft, Search, Share2, ShoppingCart } from "lucide-react-native";
+import { ArrowLeft, Search, ShoppingCart, Star } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 
@@ -46,7 +46,6 @@ export default function ProductDetailScreen() {
     addToWishlist,
     removeFromWishlist,
     isInWishlist,
-    toggleWishlist,
     fetchWishlist,
     items: wishlistItems,
   } = useWishlistStore();
@@ -296,7 +295,8 @@ export default function ProductDetailScreen() {
               marginBottom: 20,
             }}
           >
-            The product you're looking for doesn't exist or has been removed.
+            The product you&apos;re looking for doesn&apos;t exist or has been
+            removed.
           </Text>
           <TouchableOpacity
             onPress={() => router.back()}
@@ -500,11 +500,6 @@ export default function ProductDetailScreen() {
             </View>
           )}
         </TouchableOpacity>
-
-        {/* Share Button */}
-        <TouchableOpacity onPress={handleShare} style={{ padding: 6 }}>
-          <Share2 size={24} color={colors.text} />
-        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -519,6 +514,74 @@ export default function ProductDetailScreen() {
           />
         }
       >
+        <View
+          style={{
+            paddingHorizontal: 16,
+            paddingTop: 12,
+            paddingBottom: 8,
+            backgroundColor: colors.white,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "500",
+                color: colors.text,
+                lineHeight: 24,
+                flex: 1,
+                marginRight: 8,
+              }}
+            >
+              {normalizedProduct.name}
+            </Text>
+
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginTop: 4,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 13,
+                  marginRight: 4,
+                  fontWeight: "400",
+                  color: colors.text,
+                }}
+              >
+                {normalizedProduct.rating?.toFixed(1) || "0.0"}
+              </Text>
+              <View style={{ flexDirection: "row" }}>
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star
+                    key={i}
+                    size={14}
+                    color="#FFA41C"
+                    fill={
+                      i <= Math.round(normalizedProduct.rating || 0)
+                        ? "#FFA41C"
+                        : "transparent"
+                    }
+                    strokeWidth={1}
+                    style={{ marginRight: 1 }}
+                  />
+                ))}
+              </View>
+              <Text style={{ fontSize: 13, marginLeft: 4, color: "#007185" }}>
+                ({normalizedProduct.reviews || 0})
+              </Text>
+            </View>
+          </View>
+        </View>
+
         {/* Product Image Gallery */}
         <ProductImageGallery
           images={validImages}
@@ -534,6 +597,7 @@ export default function ProductDetailScreen() {
           discountPercentage={discountPercentage}
           onWishlistPress={handleWishlistFromGallery}
           isInWishlist={isProductInWishlist}
+          onSharePress={handleShare}
         />
 
         {/* Product Info */}

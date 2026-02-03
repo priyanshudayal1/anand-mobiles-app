@@ -1,16 +1,7 @@
-import React from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useTheme } from "../../store/useTheme";
-import {
-  Lock,
-  ShoppingCart,
-  Heart,
-  Truck,
-  CreditCard,
-  Shield,
-  RefreshCw,
-  MapPin,
-} from "lucide-react-native";
+import { Lock, ShoppingCart, Heart } from "lucide-react-native";
+import EMIOffers from "../home/EMIOffers";
 
 const ProductActions = ({
   onAddToCart,
@@ -55,7 +46,7 @@ const ProductActions = ({
             Currently Unavailable
           </Text>
           <Text style={{ color: colors.textSecondary, fontSize: 14 }}>
-            We don't know when or if this item will be back in stock.
+            We don&apos;t know when or if this item will be back in stock.
           </Text>
         </View>
 
@@ -108,6 +99,11 @@ const ProductActions = ({
         backgroundColor: colors.white,
       }}
     >
+      {/* EMI Offers */}
+      <View style={{ marginBottom: 16 }}>
+        <EMIOffers price={price} />
+      </View>
+
       {/* Price Summary Card */}
       <View
         style={{
@@ -276,175 +272,6 @@ const ProductActions = ({
         <Text style={{ color: colors.success, fontSize: 13 }}>
           Secure transaction
         </Text>
-      </View>
-
-      {/* Seller Info */}
-      <View style={{ flexDirection: "row", marginTop: 12 }}>
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 12, color: colors.textSecondary }}>
-            Ships from
-          </Text>
-          <Text style={{ fontSize: 12, color: colors.textSecondary }}>
-            Sold by
-          </Text>
-        </View>
-        <View style={{ flex: 2 }}>
-          <Text style={{ fontSize: 12, color: colors.text }}>
-            Anand Mobiles
-          </Text>
-          <Text style={{ fontSize: 12, color: colors.primary }}>
-            Anand Mobiles
-          </Text>
-        </View>
-      </View>
-
-      {/* Delivery & Trust Badges */}
-      <View
-        style={{
-          marginTop: 20,
-          paddingTop: 16,
-          borderTopWidth: 1,
-          borderTopColor: colors.border,
-        }}
-      >
-        <Text
-          style={{
-            fontSize: 15,
-            fontWeight: "600",
-            color: colors.text,
-            marginBottom: 12,
-          }}
-        >
-          Delivery & Services
-        </Text>
-
-        {/* Free Delivery */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "flex-start",
-            marginBottom: 12,
-          }}
-        >
-          <View
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 18,
-              backgroundColor: colors.primary + "15",
-              alignItems: "center",
-              justifyContent: "center",
-              marginRight: 12,
-            }}
-          >
-            <Truck size={18} color={colors.primary} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text
-              style={{ fontSize: 14, fontWeight: "500", color: colors.text }}
-            >
-              Free & Fast Delivery
-            </Text>
-            <Text style={{ fontSize: 12, color: colors.textSecondary }}>
-              {shipping === 0
-                ? "FREE delivery on this order"
-                : "Free delivery on orders above ₹50,000"}
-            </Text>
-          </View>
-        </View>
-
-        {/* EMI Options */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "flex-start",
-            marginBottom: 12,
-          }}
-        >
-          <View
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 18,
-              backgroundColor: colors.primary + "15",
-              alignItems: "center",
-              justifyContent: "center",
-              marginRight: 12,
-            }}
-          >
-            <CreditCard size={18} color={colors.primary} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text
-              style={{ fontSize: 14, fontWeight: "500", color: colors.text }}
-            >
-              Easy EMI Options
-            </Text>
-            <Text style={{ fontSize: 12, color: colors.textSecondary }}>
-              3, 6, 9 & 12 months available
-            </Text>
-          </View>
-        </View>
-
-        {/* Warranty */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "flex-start",
-            marginBottom: 12,
-          }}
-        >
-          <View
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 18,
-              backgroundColor: colors.primary + "15",
-              alignItems: "center",
-              justifyContent: "center",
-              marginRight: 12,
-            }}
-          >
-            <Shield size={18} color={colors.primary} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text
-              style={{ fontSize: 14, fontWeight: "500", color: colors.text }}
-            >
-              Brand Warranty
-            </Text>
-            <Text style={{ fontSize: 12, color: colors.textSecondary }}>
-              1 Year manufacturer warranty
-            </Text>
-          </View>
-        </View>
-
-        {/* Easy Returns */}
-        <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-          <View
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 18,
-              backgroundColor: colors.primary + "15",
-              alignItems: "center",
-              justifyContent: "center",
-              marginRight: 12,
-            }}
-          >
-            <RefreshCw size={18} color={colors.primary} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text
-              style={{ fontSize: 14, fontWeight: "500", color: colors.text }}
-            >
-              Easy Returns
-            </Text>
-            <Text style={{ fontSize: 12, color: colors.textSecondary }}>
-              7 Day return policy
-            </Text>
-          </View>
-        </View>
       </View>
     </View>
   );

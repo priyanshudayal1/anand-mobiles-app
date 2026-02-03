@@ -50,14 +50,14 @@ const Login = () => {
   const [localLoading, setLocalLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  // Google Auth Request - using Firebase project's web client ID
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    expoClientId:
-      "403268549781-gqku5d5h7t9p9s0q0q0q0q0q0q0q0q0q.apps.googleusercontent.com",
-    androidClientId: "403268549781-android.apps.googleusercontent.com",
-    iosClientId: "403268549781-ios.apps.googleusercontent.com",
-    webClientId:
-      "403268549781-gqku5d5h7t9p9s0q0q0q0q0q0q0q0q0q.apps.googleusercontent.com",
+  // Google Auth Request - using ID token for Firebase
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    clientId:
+      "403268549781-6c4gvnrgol3v8mf81bj025mc8fs04nkh.apps.googleusercontent.com",
+    androidClientId:
+      "403268549781-6c4gvnrgol3v8mf81bj025mc8fs04nkh.apps.googleusercontent.com",
+    iosClientId:
+      "403268549781-mi92udu70ovm0f861ilks4kks6r2bvra.apps.googleusercontent.com",
   });
 
   const handleGoogleLogin = useCallback(
