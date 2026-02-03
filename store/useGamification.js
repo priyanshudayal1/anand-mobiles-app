@@ -132,7 +132,6 @@ export const useGamification = create((set, get) => ({
 
   // Spin Wheel
   spinWheel: async () => {
-    set({ isLoading: true });
     try {
       const response = await api.post(API_ENDPOINTS.spinWheel);
 
@@ -151,15 +150,12 @@ export const useGamification = create((set, get) => ({
           get().fetchGamificationStatus();
         }, 500);
 
-        set({ isLoading: false });
         return { success: true, data: response.data };
       }
 
-      set({ isLoading: false });
       return { success: false, error: "Invalid response from spin wheel" };
     } catch (error) {
       console.error("Spin wheel error:", error.response?.data || error.message);
-      set({ isLoading: false });
       return {
         success: false,
         error: error.response?.data?.error || "Spin failed",

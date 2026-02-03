@@ -9,6 +9,7 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "../store/useTheme";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
@@ -28,13 +29,32 @@ export default function NotificationsScreen() {
     markAllAsRead,
     deleteNotification,
     deleteAllNotifications,
+    startRealtimeListener,
   } = useNotificationStore();
 
+  // Start real-time listener on mount
   useEffect(() => {
-    fetchNotifications();
+    const initializeListener = async () => {
+      // TODO: Real-time Firestore listener disabled (needs Firebase Auth)
+      // Using API polling for now - see FIRESTORE_SETUP.md
+
+      // const userId = await AsyncStorage.getItem("userId");
+      // if (userId) {
+      //   console.log("🔥 Starting real-time listener in notifications screen");
+      //   startRealtimeListener(userId);
+      // } else {
+      //   fetchNotifications();
+      // }
+
+      // Using API approach instead
+      fetchNotifications();
+    };
+
+    initializeListener();
   }, []);
 
-  const handleRefresh = useCallback(() => {
+  const handleRefresh = useCallback(async () => {
+    // Using API polling instead of real-time listener
     fetchNotifications();
   }, []);
 

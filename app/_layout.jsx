@@ -4,6 +4,7 @@ import { LogBox, View, ActivityIndicator, Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import "../index.css";
 import { useAuthStore } from "../store/useAuth";
 import { useTheme } from "../store/useTheme";
@@ -39,6 +40,8 @@ function RootLayoutNav() {
     registerForPushNotifications,
     addNotificationLocally,
     fetchUnreadCount,
+    startRealtimeListener,
+    stopRealtimeListener,
   } = useNotificationStore();
   const segments = useSegments();
   const router = useRouter();
@@ -56,12 +59,30 @@ function RootLayoutNav() {
 
   // Setup push notifications when authenticated
   useEffect(() => {
-    if (!isAuthenticated || !authInitialized) return;
+    if (!isAuthenticated || !authInitialized) {
+      // Stop real-time listener when logged out
+      stopRealtimeListener();
+      return;
+    }
 
     // Register for push notifications (will gracefully handle Expo Go)
     registerForPushNotifications();
 
-    // Fetch initial unread count
+    // TODO: Firestore real-time listener requires Firebase Auth setup
+    // For now, using API polling + push notifications
+    // See FIRESTORE_SETUP.md for enabling real-time Firestore access
+
+    // Start real-time Firestore listener (DISABLED - needs Firebase Auth)
+    // const initializeRealtimeListener = async () => {
+    //   const userId = await AsyncStorage.getItem("userId");
+    //   if (userId) {
+    //     console.log("🚀 Initializing real-time listener on app start");
+    //     startRealtimeListener(userId);
+    //   }
+    // };
+    // initializeRealtimeListener();
+
+    // Fetch initial unread count as fallback
     fetchUnreadCount();
 
     // Skip notification listeners if not available (Expo Go)
@@ -134,6 +155,9 @@ function RootLayoutNav() {
       } catch (error) {
         console.log("Error cleaning up notification listeners:", error.message);
       }
+
+      // Stop real-time listener when component unmounts or auth changes
+      stopRealtimeListener();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, authInitialized]);

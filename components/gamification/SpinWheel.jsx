@@ -22,6 +22,8 @@ import Animated, {
   Easing,
   runOnJS,
   cancelAnimation,
+  FadeIn,
+  FadeInUp,
 } from "react-native-reanimated";
 import { useTheme } from "../../store/useTheme";
 import { useGamification } from "../../store/useGamification";
@@ -314,13 +316,16 @@ export default function SpinWheel({
     setResult(null);
     setShowConfetti(false);
 
-    // Start continuous spinning animation immediately
-    const currentRot = rotation.value;
-    const initialSpinRotation = currentRot + 360 * 5;
+    // Get current rotation value
+    const startRotation = rotation.value;
 
-    rotation.value = withTiming(initialSpinRotation, {
-      duration: 2500,
-      easing: Easing.in(Easing.quad),
+    // Start immediate continuous spinning animation (keeps wheel rotating while waiting for API)
+    const continuousSpinDuration = 10000; // 10 seconds of spinning
+    const continuousSpins = 360 * 15; // 15 full rotations
+
+    rotation.value = withTiming(startRotation + continuousSpins, {
+      duration: continuousSpinDuration,
+      easing: Easing.linear,
     });
 
     try {
@@ -353,22 +358,32 @@ export default function SpinWheel({
         rewardToShow = segments[targetSegmentIndex];
       }
 
-      // Calculate final rotation to land on target segment
-      // Pointer is at top (0 degrees), so we need to rotate to put target segment at top
+      // Cancel the continuous spin and get current rotation value
+      cancelAnimation(rotation);
+      const currentRotationValue = rotation.value;
+
+      // Calculate exact center of target segment
       const segmentCenter =
         targetSegmentIndex * anglePerSegment + anglePerSegment / 2;
-      // Add extra rotations for dramatic effect + land on segment
-      const extraSpins = 360 * 6;
-      const targetRotation =
-        extraSpins + (360 - segmentCenter) + (Math.random() * 8 - 4);
 
-      // Smoothly transition from current spinning to final target
-      cancelAnimation(rotation);
+      // Calculate final rotation to land exactly on segment center
+      // The pointer is at 0 degrees (top), we want segment center aligned with it
+      const targetAngle = (360 - segmentCenter) % 360;
 
+      // Get current angle in 0-360 range from where wheel currently is
+      const currentAngle = ((currentRotationValue % 360) + 360) % 360;
+
+      // Calculate additional rotation needed (with extra spins for dramatic effect)
+      const additionalRotation = (targetAngle - currentAngle + 360) % 360;
+      const extraSpins = 360 * 5; // 5 more full spins
+      const finalRotation =
+        currentRotationValue + extraSpins + additionalRotation;
+
+      // Smoothly decelerate to final target
       rotation.value = withTiming(
-        initialSpinRotation + targetRotation,
+        finalRotation,
         {
-          duration: 4500,
+          duration: 4000,
           easing: Easing.out(Easing.cubic),
         },
         (finished) => {
@@ -381,13 +396,21 @@ export default function SpinWheel({
       console.error("Spin error:", error);
 
       // Even on error, complete the spin gracefully
+      cancelAnimation(rotation);
+      const currentRotationValue = rotation.value;
+
       const randomIndex = Math.floor(Math.random() * segments.length);
       const segmentCenter = randomIndex * anglePerSegment + anglePerSegment / 2;
-      const targetRotation = 360 * 4 + (360 - segmentCenter);
 
-      cancelAnimation(rotation);
+      const targetAngle = (360 - segmentCenter) % 360;
+      const currentAngle = ((currentRotationValue % 360) + 360) % 360;
+      const additionalRotation = (targetAngle - currentAngle + 360) % 360;
+      const extraSpins = 360 * 4;
+      const finalRotation =
+        currentRotationValue + extraSpins + additionalRotation;
+
       rotation.value = withTiming(
-        initialSpinRotation + targetRotation,
+        finalRotation,
         {
           duration: 3000,
           easing: Easing.out(Easing.cubic),
@@ -432,15 +455,6 @@ export default function SpinWheel({
     >
       <GestureHandlerRootView style={{ flex: 1 }}>
         <View style={styles.container}>
-          {showConfetti &&
-            confettiPieces.map((piece) => (
-              <ConfettiPiece
-                key={piece.id}
-                delay={piece.delay}
-                startX={piece.startX}
-              />
-            ))}
-
           <View style={styles.content}>
             <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
               <X size={24} color="#FFF" />
@@ -525,23 +539,45 @@ export default function SpinWheel({
             </Text>
 
             {result && (
-              <View style={styles.resultContainer}>
-                <View style={styles.resultCard}>
-                  <Text style={styles.resultEmoji}>🎉</Text>
+              <Animated.View
+                entering={FadeIn.duration(300)}
+                style={styles.resultContainer}
+              >
+                <Animated.View
+                  entering={FadeInUp.duration(500).springify()}
+                  style={styles.resultCard}
+                >
+                  <View style={styles.celebrationIcon}>
+                    <Text style={styles.resultEmoji}>🎉</Text>
+                  </View>
                   <Text style={styles.resultTitle}>Congratulations!</Text>
-                  <Text style={styles.resultValue}>
-                    You won: {result.label}
-                  </Text>
+                  <Text style={styles.resultSubtitle}>You won</Text>
+                  <View style={styles.rewardBadge}>
+                    <Text style={styles.resultValue}>{result.label}</Text>
+                  </View>
                   <TouchableOpacity
                     style={styles.claimButton}
                     onPress={handleClose}
+                    activeOpacity={0.9}
                   >
                     <Text style={styles.claimButtonText}>Claim Reward</Text>
                   </TouchableOpacity>
-                </View>
-              </View>
+                </Animated.View>
+              </Animated.View>
             )}
           </View>
+
+          {showConfetti && (
+            <View style={styles.confettiContainer} pointerEvents="none">
+              {confettiPieces.map((piece) => (
+                <ConfettiPiece
+                  key={piece.id}
+                  delay={piece.delay}
+                  startX={piece.startX}
+                />
+              ))}
+            </View>
+          )}
         </View>
       </GestureHandlerRootView>
     </Modal>
@@ -665,46 +701,86 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.7)",
     zIndex: 100,
   },
   resultCard: {
     backgroundColor: "#FFF",
-    paddingVertical: 32,
-    paddingHorizontal: 40,
-    borderRadius: 20,
+    paddingVertical: 40,
+    paddingHorizontal: 32,
+    borderRadius: 24,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 25,
+    shadowColor: "#7c3aed",
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.4,
+    shadowRadius: 25,
+    elevation: 30,
+    minWidth: 280,
+    borderWidth: 3,
+    borderColor: "#FFD700",
+  },
+  celebrationIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "#FFF5E6",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
   },
   resultEmoji: {
-    fontSize: 48,
-    marginBottom: 12,
+    fontSize: 56,
   },
   resultTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
     color: "#166534",
     marginBottom: 8,
   },
+  resultSubtitle: {
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 12,
+  },
+  rewardBadge: {
+    backgroundColor: "#7c3aed",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    marginBottom: 24,
+    shadowColor: "#7c3aed",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
   resultValue: {
-    fontSize: 18,
-    color: "#333",
-    marginBottom: 20,
-    textAlign: "center",
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#FFF",
   },
   claimButton: {
-    backgroundColor: "#7c3aed",
-    paddingVertical: 14,
-    paddingHorizontal: 32,
-    borderRadius: 25,
+    backgroundColor: "#FFD700",
+    paddingVertical: 16,
+    paddingHorizontal: 40,
+    borderRadius: 28,
+    shadowColor: "#FFD700",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 12,
   },
   claimButtonText: {
-    color: "#FFF",
-    fontWeight: "600",
-    fontSize: 16,
+    color: "#1a1a1a",
+    fontWeight: "700",
+    fontSize: 18,
+    letterSpacing: 0.5,
+  },
+  confettiContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 500,
   },
 });

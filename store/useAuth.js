@@ -8,6 +8,7 @@ import { useAddressStore } from "./useAddress";
 import { useWishlistStore } from "./useWishlist";
 import { useOrderStore } from "./useOrder";
 import { useGamification } from "./useGamification";
+import { useNotificationStore } from "./useNotification";
 
 export const useAuthStore = create((set, get) => ({
   user: null,
@@ -47,6 +48,7 @@ export const useAuthStore = create((set, get) => ({
 
       await AsyncStorage.setItem("userToken", data.token);
       await AsyncStorage.setItem("userData", JSON.stringify(user));
+      await AsyncStorage.setItem("userId", data.user_id); // For Firestore listener
 
       set({ user, isAuthenticated: true, isLoading: false });
       return user;
@@ -85,6 +87,7 @@ export const useAuthStore = create((set, get) => ({
 
       await AsyncStorage.setItem("userToken", data.token);
       await AsyncStorage.setItem("userData", JSON.stringify(user));
+      await AsyncStorage.setItem("userId", data.user_id); // For Firestore listener
 
       set({ user, isAuthenticated: true, isLoading: false });
       return user;
@@ -154,6 +157,7 @@ export const useAuthStore = create((set, get) => ({
 
       await AsyncStorage.setItem("userToken", data.token);
       await AsyncStorage.setItem("userData", JSON.stringify(user));
+      await AsyncStorage.setItem("userId", data.user_id); // For Firestore listener
 
       set({ user, isAuthenticated: true, isLoading: false });
       return user;
@@ -174,6 +178,7 @@ export const useAuthStore = create((set, get) => ({
     try {
       await AsyncStorage.removeItem("userToken");
       await AsyncStorage.removeItem("userData");
+      await AsyncStorage.removeItem("userId"); // Clear userId
       // Ideally sign out from Firebase too
       await auth.signOut();
 
@@ -183,6 +188,7 @@ export const useAuthStore = create((set, get) => ({
       useWishlistStore.getState().reset();
       useOrderStore.getState().reset();
       useGamification.getState().reset();
+      useNotificationStore.getState().reset(); // Reset notifications and stop listener
 
       set({ user: null, isAuthenticated: false, isLoading: false });
     } catch (error) {

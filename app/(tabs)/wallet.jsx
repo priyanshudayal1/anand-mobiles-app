@@ -118,8 +118,8 @@ export default function WalletScreen() {
     );
   }
 
-  // Loading state
-  if (isLoading && !refreshing) {
+  // Loading state - only show on initial load when there's no data yet
+  if (isLoading && !refreshing && !gamificationStatus) {
     return (
       <SafeAreaView
         style={[styles.container, { backgroundColor: colors.background }]}

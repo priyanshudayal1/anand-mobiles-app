@@ -34,6 +34,10 @@ yarn-error.*
 .env*.local
 .env
 
+# Firebase credentials (sensitive)
+*firebase-adminsdk*.json
+*serviceAccountKey*.json
+
 # typescript
 *.tsbuildinfo
 
