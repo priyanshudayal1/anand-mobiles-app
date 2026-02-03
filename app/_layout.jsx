@@ -68,22 +68,20 @@ function RootLayoutNav() {
     // Register for push notifications (will gracefully handle Expo Go)
     registerForPushNotifications();
 
-    // TODO: Firestore real-time listener requires Firebase Auth setup
-    // For now, using API polling + push notifications
-    // See FIRESTORE_SETUP.md for enabling real-time Firestore access
-
-    // Start real-time Firestore listener (DISABLED - needs Firebase Auth)
-    // const initializeRealtimeListener = async () => {
-    //   const userId = await AsyncStorage.getItem("userId");
-    //   if (userId) {
-    //     console.log("🚀 Initializing real-time listener on app start");
-    //     startRealtimeListener(userId);
-    //   }
-    // };
-    // initializeRealtimeListener();
-
-    // Fetch initial unread count as fallback
-    fetchUnreadCount();
+    // Start WebSocket real-time listener for notifications
+    const initializeRealtimeListener = async () => {
+      const userId = await AsyncStorage.getItem("userId");
+      if (userId) {
+        console.log(
+          "🚀 Initializing WebSocket real-time listener on app start",
+        );
+        startRealtimeListener(userId);
+      } else {
+        // Fallback to API polling if no userId
+        fetchUnreadCount();
+      }
+    };
+    initializeRealtimeListener();
 
     // Skip notification listeners if not available (Expo Go)
     if (!Notifications) {

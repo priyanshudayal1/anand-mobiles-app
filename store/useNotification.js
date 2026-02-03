@@ -4,21 +4,7 @@ import * as Device from "expo-device";
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
-import { db } from "../services/firebaseConfig";
-import {
-  collection,
-  query,
-  orderBy,
-  limit,
-  onSnapshot,
-  doc,
-  updateDoc,
-  deleteDoc,
-  where,
-  writeBatch,
-  serverTimestamp,
-  getDocs,
-} from "firebase/firestore";
+import webSocketService from "../services/websocket";
 
 // Dynamically import expo-notifications to handle Expo Go limitations
 let Notifications = null;
@@ -56,99 +42,133 @@ export const useNotificationStore = create((set, get) => ({
   error: null,
   expoPushToken: null,
   notificationPermission: null,
-  realtimeUnsubscribe: null, // Store the unsubscribe function
+  wsUnsubscribers: [], // Store WebSocket event unsubscribers
+  isWebSocketConnected: false,
 
-  // Start real-time listener for notifications
+  // Start real-time listener using WebSocket
   startRealtimeListener: async (userId) => {
     try {
-      // Stop existing listener if any
-      const existingUnsubscribe = get().realtimeUnsubscribe;
-      if (existingUnsubscribe) {
-        existingUnsubscribe();
-      }
+      // Stop existing listeners if any
+      get().stopRealtimeListener();
 
       if (!userId) {
         console.log("No user ID provided for real-time listener");
-        return;
+        return null;
       }
 
       console.log(
-        "🔥 Starting real-time notification listener for user:",
+        "🚀 Starting WebSocket notification listener for user:",
         userId,
       );
 
-      // Reference to user's notifications subcollection
-      const notificationsRef = collection(db, "users", userId, "notifications");
+      // Set up WebSocket event listeners
+      const unsubscribers = [];
 
-      // Query for recent notifications (last 50)
-      const q = query(
-        notificationsRef,
-        orderBy("created_at", "desc"),
-        limit(50),
-      );
-
-      // Set up real-time listener
-      const unsubscribe = onSnapshot(
-        q,
-        (snapshot) => {
-          const notificationsList = [];
-          let unreadCount = 0;
-
-          snapshot.forEach((doc) => {
-            const data = doc.data();
-            const notification = {
-              id: doc.id,
-              ...data,
-              created_at:
-                data.created_at?.toDate?.()?.toISOString() ||
-                new Date().toISOString(),
-            };
-            notificationsList.push(notification);
-
-            if (!data.read) {
-              unreadCount++;
-            }
-          });
-
+      // Handle new notifications
+      unsubscribers.push(
+        webSocketService.on("new_notification", (notification) => {
           console.log(
-            `📬 Real-time update: ${notificationsList.length} notifications, ${unreadCount} unread`,
+            "📬 New notification received via WebSocket:",
+            notification,
           );
-
-          set({
-            notifications: notificationsList,
-            unreadCount: unreadCount,
-            isLoading: false,
-            error: null,
-          });
-        },
-        (error) => {
-          console.error("❌ Real-time listener error:", error);
-          set({
-            error: error.message,
-            isLoading: false,
-          });
-        },
+          set((state) => ({
+            notifications: [notification, ...state.notifications],
+            unreadCount: state.unreadCount + 1,
+          }));
+        }),
       );
 
-      set({ realtimeUnsubscribe: unsubscribe });
-      console.log("✅ Real-time listener started successfully");
+      // Handle notifications list update
+      unsubscribers.push(
+        webSocketService.on("notifications_list", (notifications) => {
+          console.log(
+            `📋 Received ${notifications.length} notifications via WebSocket`,
+          );
+          const unreadCount = notifications.filter((n) => !n.read).length;
+          set({
+            notifications,
+            unreadCount,
+            isLoading: false,
+          });
+        }),
+      );
 
-      return unsubscribe;
+      // Handle unread count update
+      unsubscribers.push(
+        webSocketService.on("unread_count", (count) => {
+          console.log("🔢 Unread count updated via WebSocket:", count);
+          set({ unreadCount: count });
+        }),
+      );
+
+      // Handle connection status
+      unsubscribers.push(
+        webSocketService.on("connected", () => {
+          console.log("✅ WebSocket connected");
+          set({ isWebSocketConnected: true, error: null });
+          // Request initial notifications
+          webSocketService.requestNotifications(50);
+        }),
+      );
+
+      unsubscribers.push(
+        webSocketService.on("disconnected", () => {
+          console.log("🔌 WebSocket disconnected");
+          set({ isWebSocketConnected: false });
+        }),
+      );
+
+      unsubscribers.push(
+        webSocketService.on("error", (error) => {
+          console.error("❌ WebSocket error:", error);
+          set({ error: "WebSocket connection error" });
+        }),
+      );
+
+      // Store unsubscribers
+      set({ wsUnsubscribers: unsubscribers });
+
+      // Connect to WebSocket
+      set({ isLoading: true });
+      const connected = await webSocketService.connect();
+
+      if (!connected) {
+        console.log(
+          "⚠️ WebSocket connection failed, falling back to API polling",
+        );
+        // Fall back to API-based notifications
+        await get().fetchNotifications();
+      }
+
+      console.log("✅ Real-time notification listener started");
+      return () => get().stopRealtimeListener();
     } catch (error) {
       console.error("Error starting real-time listener:", error);
       set({ error: error.message, isLoading: false });
+      // Fall back to API polling
+      await get().fetchNotifications();
       return null;
     }
   },
 
   // Stop real-time listener
   stopRealtimeListener: () => {
-    const unsubscribe = get().realtimeUnsubscribe;
-    if (unsubscribe) {
-      console.log("🛑 Stopping real-time notification listener");
-      unsubscribe();
-      set({ realtimeUnsubscribe: null });
+    const { wsUnsubscribers } = get();
+
+    // Unsubscribe from all WebSocket events
+    if (wsUnsubscribers && wsUnsubscribers.length > 0) {
+      console.log("🛑 Stopping WebSocket notification listener");
+      wsUnsubscribers.forEach((unsub) => {
+        if (typeof unsub === "function") {
+          unsub();
+        }
+      });
     }
+
+    // Disconnect WebSocket
+    webSocketService.disconnect();
+
+    set({ wsUnsubscribers: [], isWebSocketConnected: false });
   },
 
   // Register for push notifications (SDK 54 compatible)
@@ -313,11 +333,9 @@ export const useNotificationStore = create((set, get) => ({
     }
   },
 
-  // Mark single notification as read (Firestore + API)
+  // Mark single notification as read (via WebSocket or API)
   markAsRead: async (notificationId) => {
     try {
-      const userId = await AsyncStorage.getItem("userId");
-
       // Optimistic update
       set((state) => ({
         notifications: state.notifications.map((n) =>
@@ -326,26 +344,12 @@ export const useNotificationStore = create((set, get) => ({
         unreadCount: Math.max(0, state.unreadCount - 1),
       }));
 
-      // Update in Firestore
-      if (userId) {
-        const notificationRef = doc(
-          db,
-          "users",
-          userId,
-          "notifications",
-          notificationId,
-        );
-        await updateDoc(notificationRef, {
-          read: true,
-          read_at: serverTimestamp(),
-        });
-      }
-
-      // Also update via API for consistency
-      try {
+      // Try WebSocket first
+      if (webSocketService.getIsConnected()) {
+        webSocketService.markAsRead(notificationId);
+      } else {
+        // Fallback to API
         await api.post(`/users/notifications/${notificationId}/read/`);
-      } catch (apiError) {
-        console.log("API update failed (non-critical):", apiError.message);
       }
 
       return true;
@@ -357,43 +361,21 @@ export const useNotificationStore = create((set, get) => ({
     }
   },
 
-  // Mark all notifications as read (Firestore + API)
+  // Mark all notifications as read (via WebSocket or API)
   markAllAsRead: async () => {
     try {
-      const userId = await AsyncStorage.getItem("userId");
-
       // Optimistic update
       set((state) => ({
         notifications: state.notifications.map((n) => ({ ...n, read: true })),
         unreadCount: 0,
       }));
 
-      // Update in Firestore
-      if (userId) {
-        const notificationsRef = collection(
-          db,
-          "users",
-          userId,
-          "notifications",
-        );
-        const q = query(notificationsRef, where("read", "==", false));
-        const snapshot = await getDocs(q);
-
-        const batch = writeBatch(db);
-        snapshot.forEach((doc) => {
-          batch.update(doc.ref, {
-            read: true,
-            read_at: serverTimestamp(),
-          });
-        });
-        await batch.commit();
-      }
-
-      // Also update via API for consistency
-      try {
+      // Try WebSocket first
+      if (webSocketService.getIsConnected()) {
+        webSocketService.markAllAsRead();
+      } else {
+        // Fallback to API
         await api.post("/users/notifications/read-all/");
-      } catch (apiError) {
-        console.log("API update failed (non-critical):", apiError.message);
       }
 
       return true;
@@ -405,11 +387,9 @@ export const useNotificationStore = create((set, get) => ({
     }
   },
 
-  // Delete a notification (Firestore + API)
+  // Delete a notification (via API)
   deleteNotification: async (notificationId) => {
     try {
-      const userId = await AsyncStorage.getItem("userId");
-
       // Store notification before deletion for rollback
       const notification = get().notifications.find(
         (n) => n.id === notificationId,
@@ -426,24 +406,8 @@ export const useNotificationStore = create((set, get) => ({
           : state.unreadCount,
       }));
 
-      // Delete from Firestore
-      if (userId) {
-        const notificationRef = doc(
-          db,
-          "users",
-          userId,
-          "notifications",
-          notificationId,
-        );
-        await deleteDoc(notificationRef);
-      }
-
-      // Also delete via API for consistency
-      try {
-        await api.delete(`/users/notifications/${notificationId}/delete/`);
-      } catch (apiError) {
-        console.log("API delete failed (non-critical):", apiError.message);
-      }
+      // Delete via API
+      await api.delete(`/users/notifications/${notificationId}/delete/`);
 
       return true;
     } catch (error) {
@@ -454,40 +418,17 @@ export const useNotificationStore = create((set, get) => ({
     }
   },
 
-  // Delete all notifications (Firestore + API)
+  // Delete all notifications (via API)
   deleteAllNotifications: async () => {
     try {
-      const userId = await AsyncStorage.getItem("userId");
-
       // Optimistic update
       set({
         notifications: [],
         unreadCount: 0,
       });
 
-      // Delete from Firestore
-      if (userId) {
-        const notificationsRef = collection(
-          db,
-          "users",
-          userId,
-          "notifications",
-        );
-        const snapshot = await getDocs(notificationsRef);
-
-        const batch = writeBatch(db);
-        snapshot.forEach((doc) => {
-          batch.delete(doc.ref);
-        });
-        await batch.commit();
-      }
-
-      // Also delete via API for consistency
-      try {
-        await api.delete("/users/notifications/delete-all/");
-      } catch (apiError) {
-        console.log("API delete failed (non-critical):", apiError.message);
-      }
+      // Delete via API
+      await api.delete("/users/notifications/delete-all/");
 
       return true;
     } catch (error) {
@@ -508,18 +449,16 @@ export const useNotificationStore = create((set, get) => ({
 
   // Clear all local state and stop listeners
   reset: () => {
-    // Stop real-time listener
-    const unsubscribe = get().realtimeUnsubscribe;
-    if (unsubscribe) {
-      unsubscribe();
-    }
+    // Stop WebSocket listener
+    get().stopRealtimeListener();
 
     set({
       notifications: [],
       unreadCount: 0,
       isLoading: false,
       error: null,
-      realtimeUnsubscribe: null,
+      wsUnsubscribers: [],
+      isWebSocketConnected: false,
     });
   },
 }));

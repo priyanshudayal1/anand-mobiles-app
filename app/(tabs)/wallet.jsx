@@ -36,6 +36,7 @@ export default function WalletScreen() {
   const {
     coinBalance,
     gamificationStatus,
+    gamificationConfig,
     achievements,
     leaderboard,
     referralData,
@@ -592,7 +593,7 @@ export default function WalletScreen() {
           >
             Daily Login:{" "}
             <Text style={{ color: colors.primary, fontWeight: "bold" }}>
-              +5 coins
+              +{gamificationConfig?.daily_login_bonus || 2} coins
             </Text>
           </Text>
         </View>

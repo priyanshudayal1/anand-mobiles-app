@@ -25,9 +25,8 @@ import Animated, {
   FadeIn,
   FadeInUp,
 } from "react-native-reanimated";
-import { useTheme } from "../../store/useTheme";
 import { useGamification } from "../../store/useGamification";
-import { X, Sparkles } from "lucide-react-native";
+import { X, Sparkles, Loader2, Check, Trophy } from "lucide-react-native";
 
 const { width, height } = Dimensions.get("window");
 const WHEEL_SIZE = Math.min(width * 0.85, 340);
@@ -50,6 +49,7 @@ const ConfettiPiece = ({ delay, startX }) => {
     translateX.value = withTiming(startX + randomX, { duration: 3000 + delay });
     rotate.value = withTiming(360 * 3, { duration: 3000 + delay });
     opacity.value = withTiming(0, { duration: 3000 + delay });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -162,8 +162,7 @@ export default function SpinWheel({
   onSpinComplete,
   canSpin = true,
 }) {
-  const { colors } = useTheme();
-  const { spinWheel, gamificationStatus, isLoading } = useGamification();
+  const { spinWheel, gamificationConfig } = useGamification();
 
   const [segments, setSegments] = useState(DEFAULT_SEGMENTS);
   const [isSpinningState, setIsSpinningState] = useState(false);
@@ -179,23 +178,27 @@ export default function SpinWheel({
   // Keep shared values in sync with props
   useEffect(() => {
     canSpinShared.value = canSpin;
-  }, [canSpin]);
+  }, [canSpin, canSpinShared]);
 
   useEffect(() => {
-    if (gamificationStatus?.spin_wheel_rewards) {
-      const backendSegments = gamificationStatus.spin_wheel_rewards.map(
+    if (
+      gamificationConfig?.spin_wheel_rewards &&
+      Array.isArray(gamificationConfig.spin_wheel_rewards)
+    ) {
+      const backendSegments = gamificationConfig.spin_wheel_rewards.map(
         (reward, index) => ({
           ...reward,
           color: reward.color || getSegmentColor(index),
           textColor: reward.textColor || "#FFFFFF",
-          label: reward.label || reward.title,
+          label:
+            reward.label || reward.title || `${reward.value} ${reward.type}`,
         }),
       );
-      if (Array.isArray(backendSegments) && backendSegments.length > 0) {
+      if (backendSegments.length > 0) {
         setSegments(backendSegments);
       }
     }
-  }, [gamificationStatus]);
+  }, [gamificationConfig]);
 
   useEffect(() => {
     if (visible) {
@@ -207,6 +210,7 @@ export default function SpinWheel({
       setShowConfetti(false);
       setConfettiPieces([]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
   const triggerConfetti = () => {
@@ -272,7 +276,8 @@ export default function SpinWheel({
 
   const triggerSpin = useCallback(() => {
     handleSpin();
-  }, [segments, canSpin]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const gesture = useMemo(
     () =>
@@ -296,6 +301,7 @@ export default function SpinWheel({
             gestureRotation.value = withSpring(0);
           }
         }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [triggerSpin],
   );
 
@@ -470,69 +476,79 @@ export default function SpinWheel({
               </Text>
             </View>
 
-            <View style={styles.wheelWrapper}>
-              <View style={styles.pointerContainer}>
-                <View style={styles.pointer} />
-              </View>
+            {!result && (
+              <View style={styles.wheelWrapper}>
+                <View style={styles.pointerContainer}>
+                  <View style={styles.pointer} />
+                </View>
 
-              <GestureDetector gesture={gesture}>
-                <Animated.View style={[styles.wheel, animatedStyle]}>
-                  <Svg
-                    width={WHEEL_SIZE}
-                    height={WHEEL_SIZE}
-                    viewBox={`0 0 ${WHEEL_SIZE} ${WHEEL_SIZE}`}
-                  >
-                    <Path
-                      d={`M ${CENTER} ${CENTER} m -${RADIUS} 0 a ${RADIUS} ${RADIUS} 0 1 0 ${RADIUS * 2} 0 a ${RADIUS} ${RADIUS} 0 1 0 -${RADIUS * 2} 0`}
-                      fill="none"
-                      stroke="#FFD700"
-                      strokeWidth="4"
+                <GestureDetector gesture={gesture}>
+                  <Animated.View style={[styles.wheel, animatedStyle]}>
+                    <Svg
+                      width={WHEEL_SIZE}
+                      height={WHEEL_SIZE}
+                      viewBox={`0 0 ${WHEEL_SIZE} ${WHEEL_SIZE}`}
+                    >
+                      <Path
+                        d={`M ${CENTER} ${CENTER} m -${RADIUS} 0 a ${RADIUS} ${RADIUS} 0 1 0 ${RADIUS * 2} 0 a ${RADIUS} ${RADIUS} 0 1 0 -${RADIUS * 2} 0`}
+                        fill="none"
+                        stroke="#FFD700"
+                        strokeWidth="4"
+                      />
+                      <G>
+                        {segments.map((segment, index) => {
+                          const textCoords = getTextCoordinates(index);
+                          return (
+                            <G key={segment.id || index}>
+                              <Path
+                                d={createSegmentPath(index)}
+                                fill={segment.color}
+                                stroke="#FFF"
+                                strokeWidth="2"
+                              />
+                              <SvgText
+                                x={textCoords.x}
+                                y={textCoords.y}
+                                fill={segment.textColor}
+                                fontSize="11"
+                                fontWeight="bold"
+                                textAnchor="middle"
+                                alignmentBaseline="middle"
+                                transform={`rotate(${textCoords.rotation + 90}, ${textCoords.x}, ${textCoords.y})`}
+                              >
+                                {segment.label}
+                              </SvgText>
+                            </G>
+                          );
+                        })}
+                      </G>
+                    </Svg>
+                  </Animated.View>
+                </GestureDetector>
+
+                <TouchableOpacity
+                  style={[
+                    styles.spinButton,
+                    (!canSpin || isSpinningState) && styles.spinButtonDisabled,
+                  ]}
+                  onPress={handleSpin}
+                  disabled={isSpinningState || !canSpin}
+                  activeOpacity={0.8}
+                >
+                  {isSpinningState ? (
+                    <Loader2
+                      size={24}
+                      color="#7c3aed"
+                      style={{ transform: [{ rotate: "45deg" }] }}
                     />
-                    <G>
-                      {segments.map((segment, index) => {
-                        const textCoords = getTextCoordinates(index);
-                        return (
-                          <G key={segment.id || index}>
-                            <Path
-                              d={createSegmentPath(index)}
-                              fill={segment.color}
-                              stroke="#FFF"
-                              strokeWidth="2"
-                            />
-                            <SvgText
-                              x={textCoords.x}
-                              y={textCoords.y}
-                              fill={segment.textColor}
-                              fontSize="11"
-                              fontWeight="bold"
-                              textAnchor="middle"
-                              alignmentBaseline="middle"
-                              transform={`rotate(${textCoords.rotation + 90}, ${textCoords.x}, ${textCoords.y})`}
-                            >
-                              {segment.label}
-                            </SvgText>
-                          </G>
-                        );
-                      })}
-                    </G>
-                  </Svg>
-                </Animated.View>
-              </GestureDetector>
-
-              <TouchableOpacity
-                style={[
-                  styles.spinButton,
-                  (!canSpin || isSpinningState) && styles.spinButtonDisabled,
-                ]}
-                onPress={handleSpin}
-                disabled={isSpinningState || !canSpin}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.spinButtonText}>
-                  {isSpinningState ? "🎰" : canSpin ? "SPIN" : "✓"}
-                </Text>
-              </TouchableOpacity>
-            </View>
+                  ) : canSpin ? (
+                    <Text style={styles.spinButtonText}>SPIN</Text>
+                  ) : (
+                    <Check size={24} color="#7c3aed" />
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
 
             <Text style={styles.instruction}>
               {isSpinningState ? "Spinning..." : "Tap SPIN or swipe the wheel!"}
@@ -548,7 +564,7 @@ export default function SpinWheel({
                   style={styles.resultCard}
                 >
                   <View style={styles.celebrationIcon}>
-                    <Text style={styles.resultEmoji}>🎉</Text>
+                    <Trophy size={48} color="#7c3aed" />
                   </View>
                   <Text style={styles.resultTitle}>Congratulations!</Text>
                   <Text style={styles.resultSubtitle}>You won</Text>
@@ -560,7 +576,7 @@ export default function SpinWheel({
                     onPress={handleClose}
                     activeOpacity={0.9}
                   >
-                    <Text style={styles.claimButtonText}>Claim Reward</Text>
+                    <Text style={styles.claimButtonText}>Close</Text>
                   </TouchableOpacity>
                 </Animated.View>
               </Animated.View>
@@ -603,7 +619,7 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: "rgba(255,255,255,0.15)",
     borderRadius: 24,
-    zIndex: 100,
+    zIndex: 1000,
   },
   header: {
     alignItems: "center",
@@ -726,9 +742,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
-  },
-  resultEmoji: {
-    fontSize: 56,
   },
   resultTitle: {
     fontSize: 28,

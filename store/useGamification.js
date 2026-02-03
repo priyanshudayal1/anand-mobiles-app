@@ -13,11 +13,44 @@ export const useGamification = create((set, get) => ({
   coinBalance: 0,
   userLevel: "Bronze",
   gamificationStatus: null,
+  gamificationConfig: null,
   achievements: [],
   leaderboard: [],
   referralData: null,
   isLoading: false,
   error: null,
+
+  // Fetch Gamification Config (public - no auth required)
+  fetchGamificationConfig: async () => {
+    try {
+      const response = await api.get(API_ENDPOINTS.gamificationConfig);
+      set({
+        gamificationConfig: response.data.config,
+      });
+      return { success: true, data: response.data.config };
+    } catch (error) {
+      console.error(
+        "Gamification config error:",
+        error.response?.data || error.message,
+      );
+      // Set default values if fetch fails
+      set({
+        gamificationConfig: {
+          daily_login_bonus: 2,
+          signup_bonus: 100,
+          wishlist_bonus: 2,
+          review_bonus: 10,
+          referral_bonus: 50,
+          purchase_percentage: 1,
+          daily_login_streak_bonus: 10,
+          spin_wheel_rewards: [],
+          spin_wheel_enabled: true,
+          daily_spins: 1,
+        },
+      });
+      return { success: false, error: error.message };
+    }
+  },
 
   // Fetch Wallet Data
   fetchWallet: async () => {
@@ -168,6 +201,10 @@ export const useGamification = create((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
+      // Fetch config first (no auth required)
+      await get().fetchGamificationConfig();
+
+      // Then fetch user-specific data
       await Promise.all([
         get().fetchWallet(),
         get().fetchGamificationStatus(),
@@ -204,6 +241,7 @@ export const useGamification = create((set, get) => ({
       coinBalance: 0,
       userLevel: "Bronze",
       gamificationStatus: null,
+      gamificationConfig: null,
       achievements: [],
       leaderboard: [],
       referralData: null,

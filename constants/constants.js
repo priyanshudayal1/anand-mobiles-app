@@ -1,5 +1,14 @@
 export const BACKEND_URL = "http://192.168.29.7:8000/api";
 
+// WebSocket URL for real-time notifications
+export const getWebSocketURL = () => {
+  // Convert HTTP URL to WebSocket URL
+  let wsUrl = BACKEND_URL.replace(/^http/, "ws");
+  // Remove /api suffix if present to get base URL
+  wsUrl = wsUrl.replace(/\/api$/, "");
+  return `${wsUrl}/ws/notifications/`;
+};
+
 // App configuration
 export const APP_CONFIG = {
   name: "Anand Mobiles",
@@ -85,6 +94,7 @@ export const API_ENDPOINTS = {
   // Gamification / Wallet
   wallet: "/users/wallet/",
   gamificationStatus: "/users/gamification/status/",
+  gamificationConfig: "/users/gamification/config/",
   achievements: "/users/rewards/achievements/",
   leaderboard: "/users/rewards/leaderboard/",
   referrals: "/users/rewards/referrals/",
