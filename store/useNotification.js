@@ -71,10 +71,50 @@ export const useNotificationStore = create((set, get) => ({
             "📬 New notification received via WebSocket:",
             notification,
           );
-          set((state) => ({
-            notifications: [notification, ...state.notifications],
-            unreadCount: state.unreadCount + 1,
-          }));
+          set((state) => {
+            // Check if notification already exists to prevent duplicates
+            const exists = state.notifications.some(
+              (n) => n.id === notification.id,
+            );
+            if (exists) {
+              console.log(
+                "⚠️ Notification already exists, skipping:",
+                notification.id,
+              );
+              return state;
+            }
+            return {
+              notifications: [notification, ...state.notifications],
+              unreadCount: state.unreadCount + 1,
+            };
+          });
+        }),
+      );
+
+      // Handle broadcast notifications from admin
+      unsubscribers.push(
+        webSocketService.on("broadcast_notification", (notification) => {
+          console.log(
+            "📣 Broadcast notification received via WebSocket:",
+            notification,
+          );
+          set((state) => {
+            // Check if notification already exists to prevent duplicates
+            const exists = state.notifications.some(
+              (n) => n.id === notification.id,
+            );
+            if (exists) {
+              console.log(
+                "⚠️ Broadcast notification already exists, skipping:",
+                notification.id,
+              );
+              return state;
+            }
+            return {
+              notifications: [notification, ...state.notifications],
+              unreadCount: state.unreadCount + 1,
+            };
+          });
         }),
       );
 
@@ -501,6 +541,7 @@ export const getNotificationIcon = (type) => {
     order_failed_attempt: "alert-circle-outline",
     order_returning: "return-down-back-outline",
     order_update: "notifications-outline",
+    broadcast: "megaphone-outline",
   };
 
   return iconMap[type] || "notifications-outline";

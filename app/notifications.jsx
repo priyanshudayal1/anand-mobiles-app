@@ -131,6 +131,7 @@ export default function NotificationsScreen() {
       order_cancelled: "#EF4444",
       order_failed_attempt: "#F59E0B",
       order_returning: "#6B7280",
+      broadcast: "#7C3AED",
     };
     return colorMap[type] || colors.primary;
   };

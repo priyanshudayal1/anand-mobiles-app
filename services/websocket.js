@@ -165,6 +165,14 @@ class WebSocketService {
         this.emit("new_notification", data.notification);
         break;
 
+      case "broadcast_notification":
+        console.log(
+          "📣 WebSocket: Broadcast notification received",
+          data.notification,
+        );
+        this.emit("broadcast_notification", data.notification);
+        break;
+
       case "notifications_list":
         console.log("📋 WebSocket: Notifications list received", data.total);
         this.emit("notifications_list", data.notifications);
