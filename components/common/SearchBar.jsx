@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
-import { View, Text, TouchableOpacity, TextInput, Keyboard, Platform, Alert } from "react-native";
+import { View, Text, TouchableOpacity, TextInput, Keyboard, Platform } from "react-native";
 import { Image } from "expo-image";
 import { Search, X, TrendingUp, Mic } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useTheme } from "../../store/useTheme";
 import { useSiteConfig } from "../../store/useSiteConfig";
+import { useToast } from "../../store/useToast";
 // expo-av is deprecated in SDK 54, using expo-audio instead
 import { useAudioRecorder, AudioModule, RecordingPreset } from 'expo-audio';
 
@@ -29,6 +30,7 @@ export default function SearchBar({ placeholder = 'Search "Mobile"', autoFocus =
     });
 
     const debounceTimer = useRef(null);
+    const { error } = useToast();
 
     // Debounced Search Suggestions
     const fetchSuggestions = async (text) => {
@@ -109,7 +111,7 @@ export default function SearchBar({ placeholder = 'Search "Mobile"', autoFocus =
             // Request permissions using AudioModule
             const status = await AudioModule.requestRecordingPermissionsAsync();
             if (!status.granted) {
-                Alert.alert('Permission Denied', 'Permission to access microphone is required for voice search!');
+                error('Permission to access microphone is required for voice search!');
                 return;
             }
 

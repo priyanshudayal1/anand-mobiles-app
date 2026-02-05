@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   RefreshControl,
-  Alert,
   Animated,
   Linking,
 } from "react-native";
@@ -18,6 +17,7 @@ import { Ionicons, Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as WebBrowser from "expo-web-browser";
 import { useTheme } from "../../store/useTheme";
 import { useOrderStore } from "../../store/useOrder";
+import { useToast } from "../../store/useToast";
 import api from "../../services/api";
 
 export default function OrderTracking() {
@@ -27,6 +27,7 @@ export default function OrderTracking() {
   const { getOrderById, currentOrder, isLoading, error } = useOrderStore();
   const [refreshing, setRefreshing] = useState(false);
   const [downloadingInvoice, setDownloadingInvoice] = useState(false);
+  const { error: showError } = useToast();
 
   // Animation value for progress bar
   const progressAnimation = useRef(new Animated.Value(0)).current;
@@ -206,7 +207,7 @@ export default function OrderTracking() {
       await WebBrowser.openBrowserAsync(invoiceUrl);
     } catch (error) {
       console.error("Error downloading invoice:", error);
-      Alert.alert("Error", "Failed to download invoice. Please try again.");
+      showError("Failed to download invoice. Please try again.");
     } finally {
       setDownloadingInvoice(false);
     }

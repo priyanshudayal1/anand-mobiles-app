@@ -5,7 +5,6 @@ import {
     ScrollView,
     TouchableOpacity,
     ActivityIndicator,
-    Alert,
     RefreshControl,
 } from "react-native";
 import { Image } from "expo-image";
@@ -16,6 +15,8 @@ import { Ionicons, Feather } from "@expo/vector-icons";
 import { useTheme } from "../store/useTheme";
 import { useWishlistStore } from "../store/useWishlist";
 import { useCartStore } from "../store/useCart";
+import { useToast } from "../store/useToast";
+import CustomModal from "../components/common/CustomModal";
 
 export default function Wishlist() {
     const router = useRouter();
@@ -26,6 +27,9 @@ export default function Wishlist() {
     const [refreshing, setRefreshing] = useState(false);
     const [removingItemId, setRemovingItemId] = useState(null);
     const [addingToCartId, setAddingToCartId] = useState(null);
+    const [showRemoveModal, setShowRemoveModal] = useState(false);
+    const [itemToRemove, setItemToRemove] = useState(null);
+    const { success, error: showError, warning } = useToast();
 
     useEffect(() => {
         fetchWishlist();
@@ -39,30 +43,26 @@ export default function Wishlist() {
     };
 
     const handleRemoveFromWishlist = async (itemId) => {
-        Alert.alert(
-            "Remove from Wishlist",
-            "Are you sure you want to remove this item?",
-            [
-                { text: "Cancel", style: "cancel" },
-                {
-                    text: "Remove",
-                    style: "destructive",
-                    onPress: async () => {
-                        setRemovingItemId(itemId);
-                        const result = await removeFromWishlist(itemId);
-                        setRemovingItemId(null);
-                        if (!result.success) {
-                            Alert.alert("Error", result.error || "Failed to remove item");
-                        }
-                    },
-                },
-            ]
-        );
+        setItemToRemove(itemId);
+        setShowRemoveModal(true);
+    };
+
+    const confirmRemove = async () => {
+        if (!itemToRemove) return;
+        setRemovingItemId(itemToRemove);
+        const result = await removeFromWishlist(itemToRemove);
+        setRemovingItemId(null);
+        setItemToRemove(null);
+        if (!result.success) {
+            showError(result.error || "Failed to remove item");
+        } else {
+            success("Item removed from wishlist");
+        }
     };
 
     const handleAddToCart = async (item) => {
         if (item.stock === 0) {
-            Alert.alert("Out of Stock", "This item is currently out of stock.");
+            warning("This item is currently out of stock.");
             return;
         }
 
@@ -71,12 +71,12 @@ export default function Wishlist() {
         try {
             const result = await addToCart(productId, 1);
             if (result?.success) {
-                Alert.alert("Success", `${item.name} added to cart!`);
+                success(`${item.name} added to cart!`);
             } else {
-                Alert.alert("Error", result?.error || "Failed to add to cart");
+                showError(result?.error || "Failed to add to cart");
             }
-        } catch (error) {
-            Alert.alert("Error", "Failed to add to cart. Please try again.");
+        } catch (err) {
+            showError("Failed to add to cart. Please try again.");
         } finally {
             setAddingToCartId(null);
         }
@@ -426,6 +426,19 @@ export default function Wishlist() {
                     )}
                 </ScrollView>
             )}
+
+            {/* Remove Confirmation Modal */}
+            <CustomModal
+                visible={showRemoveModal}
+                onClose={() => { setShowRemoveModal(false); setItemToRemove(null); }}
+                type="confirm"
+                title="Remove from Wishlist"
+                message="Are you sure you want to remove this item from your wishlist?"
+                buttons={[
+                    { text: "Cancel", variant: "outline", onPress: () => { setShowRemoveModal(false); setItemToRemove(null); } },
+                    { text: "Remove", variant: "danger", onPress: confirmRemove },
+                ]}
+            />
         </SafeAreaView>
     );
 }

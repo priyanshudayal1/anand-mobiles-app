@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -6,7 +6,6 @@ import {
   RefreshControl,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -16,6 +15,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useNotificationStore, getTimeAgo } from "../store/useNotification";
 import * as Haptics from "expo-haptics";
+import CustomModal from "../components/common/CustomModal";
 
 export default function NotificationsScreen() {
   const { colors, isDarkMode } = useTheme();
@@ -30,6 +30,10 @@ export default function NotificationsScreen() {
     deleteNotification,
     deleteAllNotifications,
   } = useNotificationStore();
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [notificationToDelete, setNotificationToDelete] = useState(null);
+  const [showClearAllModal, setShowClearAllModal] = useState(false);
 
   // Start real-time listener on mount
   useEffect(() => {
@@ -66,22 +70,16 @@ export default function NotificationsScreen() {
 
   const handleDeleteNotification = useCallback(async (notificationId) => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    Alert.alert(
-      "Delete Notification",
-      "Are you sure you want to delete this notification?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            await deleteNotification(notificationId);
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          },
-        },
-      ],
-    );
-  }, [deleteNotification]);
+    setNotificationToDelete(notificationId);
+    setShowDeleteModal(true);
+  }, []);
+
+  const confirmDelete = useCallback(async () => {
+    if (!notificationToDelete) return;
+    await deleteNotification(notificationToDelete);
+    setNotificationToDelete(null);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  }, [notificationToDelete, deleteNotification]);
 
   const handleMarkAllRead = useCallback(async () => {
     if (unreadCount === 0) return;
@@ -92,22 +90,13 @@ export default function NotificationsScreen() {
   const handleClearAll = useCallback(async () => {
     if (notifications.length === 0) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    Alert.alert(
-      "Clear All Notifications",
-      "Are you sure you want to delete all notifications?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Clear All",
-          style: "destructive",
-          onPress: async () => {
-            await deleteAllNotifications();
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          },
-        },
-      ],
-    );
-  }, [notifications.length, deleteAllNotifications]);
+    setShowClearAllModal(true);
+  }, [notifications.length]);
+
+  const confirmClearAll = useCallback(async () => {
+    await deleteAllNotifications();
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  }, [deleteAllNotifications]);
 
   const renderNotification = useCallback(({ item }) => {
     const isUnread = !item.read;
@@ -380,6 +369,32 @@ export default function NotificationsScreen() {
           showsVerticalScrollIndicator={false}
         />
       )}
+
+      {/* Delete Single Notification Modal */}
+      <CustomModal
+        visible={showDeleteModal}
+        onClose={() => { setShowDeleteModal(false); setNotificationToDelete(null); }}
+        type="warning"
+        title="Delete Notification"
+        message="Are you sure you want to delete this notification?"
+        buttons={[
+          { text: "Cancel", variant: "outline", onPress: () => { setShowDeleteModal(false); setNotificationToDelete(null); } },
+          { text: "Delete", variant: "danger", onPress: confirmDelete },
+        ]}
+      />
+
+      {/* Clear All Notifications Modal */}
+      <CustomModal
+        visible={showClearAllModal}
+        onClose={() => setShowClearAllModal(false)}
+        type="warning"
+        title="Clear All Notifications"
+        message="Are you sure you want to delete all notifications? This action cannot be undone."
+        buttons={[
+          { text: "Cancel", variant: "outline", onPress: () => setShowClearAllModal(false) },
+          { text: "Clear All", variant: "danger", onPress: confirmClearAll },
+        ]}
+      />
     </SafeAreaView>
   );
 }

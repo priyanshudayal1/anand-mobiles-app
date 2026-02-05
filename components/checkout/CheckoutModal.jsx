@@ -1,11 +1,13 @@
-import React, { useEffect, useMemo, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Modal, ActivityIndicator, Alert } from 'react-native';
+import React, { useEffect, useMemo, useCallback, useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, Modal, ActivityIndicator } from 'react-native';
 import { useTheme } from '../../store/useTheme';
 import { useAddressStore } from '../../store/useAddress';
 import { useOrderStore } from '../../store/useOrder';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useToast } from '../../store/useToast';
+import CustomModal from '../common/CustomModal';
 
 export default function CheckoutModal({ visible, onClose, totalAmount }) {
     const { colors } = useTheme();
@@ -16,6 +18,8 @@ export default function CheckoutModal({ visible, onClose, totalAmount }) {
     const { placeOrderFromCart, isProcessingPayment, paymentSuccessful, error: orderError, clearError } = useOrderStore();
 
     const [selectedAddressId, setSelectedAddressId] = React.useState(null);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const { error: showError } = useToast();
 
     useEffect(() => {
         if (visible) {
@@ -32,29 +36,21 @@ export default function CheckoutModal({ visible, onClose, totalAmount }) {
 
     useEffect(() => {
         if (paymentSuccessful) {
-            Alert.alert(
-                "Order Placed!",
-                "Your order has been placed successfully.",
-                [{
-                    text: "OK", onPress: () => {
-                        onClose();
-                        router.push('/(tabs)/orders?refresh=true');
-                    }
-                }]
-            );
+            setShowSuccessModal(true);
         }
     }, [paymentSuccessful]);
 
     useEffect(() => {
         if (orderError) {
-            Alert.alert("Payment Failed", orderError, [{ text: "OK", onPress: clearError }]);
+            showError(orderError);
+            clearError();
         }
     }, [orderError]);
 
     const handlePlaceOrder = async () => {
         try {
             if (!selectedAddressId) {
-                Alert.alert("Address Required", "Please select a delivery address.");
+                showError("Please select a delivery address.");
                 return;
             }
             await placeOrderFromCart(selectedAddressId);
@@ -198,6 +194,26 @@ export default function CheckoutModal({ visible, onClose, totalAmount }) {
                     </View>
                 </View>
             </View>
+
+            {/* Order Success Modal */}
+            <CustomModal
+                visible={showSuccessModal}
+                onClose={() => {
+                    setShowSuccessModal(false);
+                    onClose();
+                    router.push('/(tabs)/orders?refresh=true');
+                }}
+                type="success"
+                title="Order Placed!"
+                message="Your order has been placed successfully. You can track your order from the Orders page."
+                buttons={[
+                    { text: "View Orders", variant: "primary", onPress: () => {
+                        setShowSuccessModal(false);
+                        onClose();
+                        router.push('/(tabs)/orders?refresh=true');
+                    }}
+                ]}
+            />
         </Modal>
     );
 }

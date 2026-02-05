@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   RefreshControl,
   Share,
-  Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { ArrowLeft, Search, ShoppingCart, Star } from "lucide-react-native";
@@ -19,6 +18,8 @@ import { useProducts } from "../../store/useProducts";
 import { useCartStore } from "../../store/useCart";
 import { useWishlistStore } from "../../store/useWishlist";
 import { useAuthStore } from "../../store/useAuth";
+import { useToast } from "../../store/useToast";
+import CustomModal from "../../components/common/CustomModal";
 
 // Product Components
 import ProductImageGallery from "../../components/product/ProductImageGallery";
@@ -59,6 +60,8 @@ export default function ProductDetailScreen() {
   const [addingToWishlist, setAddingToWishlist] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [isBuyingNow, setIsBuyingNow] = useState(false);
+  const [showCartModal, setShowCartModal] = useState(false);
+  const { success, error } = useToast();
 
   const loadProduct = useCallback(async () => {
     if (id) {
@@ -149,16 +152,9 @@ export default function ProductDetailScreen() {
         quantity,
         variantId,
       );
-      Alert.alert(
-        "Added to Cart",
-        `${normalizedProduct.name} has been added to your cart.`,
-        [
-          { text: "OK" },
-          { text: "View Cart", onPress: () => router.push("/cart") },
-        ],
-      );
-    } catch (error) {
-      Alert.alert("Error", error.message || "Failed to add to cart");
+      setShowCartModal(true);
+    } catch (err) {
+      error(err.message || "Failed to add to cart");
     } finally {
       setAddingToCart(false);
     }
@@ -181,8 +177,8 @@ export default function ProductDetailScreen() {
         variantId,
       );
       router.push("/cart");
-    } catch (error) {
-      Alert.alert("Error", error.message || "Failed to proceed");
+    } catch (err) {
+      error(err.message || "Failed to proceed");
     } finally {
       setIsBuyingNow(false);
     }
@@ -212,10 +208,7 @@ export default function ProductDetailScreen() {
         if (wishlistItem?.item_id) {
           const result = await removeFromWishlist(wishlistItem.item_id);
           if (result.success) {
-            Alert.alert(
-              "Removed from Wishlist",
-              `${normalizedProduct.name} has been removed from your wishlist.`,
-            );
+            success(`${normalizedProduct.name} removed from wishlist`);
           } else {
             throw new Error(result.error || "Failed to remove from wishlist");
           }
@@ -224,21 +217,15 @@ export default function ProductDetailScreen() {
         // Add to wishlist
         const result = await addToWishlist(productId, variantId);
         if (result.success && !result.alreadyExists) {
-          Alert.alert(
-            "Added to Wishlist",
-            `${normalizedProduct.name} has been added to your wishlist.`,
-          );
+          success(`${normalizedProduct.name} added to wishlist`);
         } else if (result.alreadyExists) {
-          Alert.alert(
-            "Already in Wishlist",
-            "This item is already in your wishlist.",
-          );
+          useToast.getState().info("This item is already in your wishlist");
         } else {
           throw new Error(result.error || "Failed to add to wishlist");
         }
       }
-    } catch (error) {
-      Alert.alert("Error", error.message || "Failed to update wishlist");
+    } catch (err) {
+      error(err.message || "Failed to update wishlist");
     } finally {
       setAddingToWishlist(false);
     }
@@ -682,6 +669,19 @@ export default function ProductDetailScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* Added to Cart Modal */}
+      <CustomModal
+        visible={showCartModal}
+        onClose={() => setShowCartModal(false)}
+        type="success"
+        title="Added to Cart"
+        message={`${normalizedProduct.name} has been added to your cart.`}
+        buttons={[
+          { text: "Continue Shopping", variant: "outline", onPress: () => setShowCartModal(false) },
+          { text: "View Cart", variant: "primary", onPress: () => { setShowCartModal(false); router.push("/cart"); } },
+        ]}
+      />
     </SafeAreaView>
   );
 }

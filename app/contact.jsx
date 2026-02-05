@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
   RefreshControl,
   Linking,
-  Alert,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
@@ -28,6 +27,7 @@ import {
 } from "lucide-react-native";
 import { useTheme } from "../store/useTheme";
 import { usePageContent } from "../store/usePageContent";
+import { useToast } from "../store/useToast";
 
 export default function ContactScreen() {
   const router = useRouter();
@@ -51,6 +51,7 @@ export default function ContactScreen() {
     subject: "",
     message: "",
   });
+  const { success, error: showError } = useToast();
 
   useEffect(() => {
     fetchContactInfo();
@@ -90,7 +91,7 @@ export default function ContactScreen() {
 
   const handleSubmit = async () => {
     if (!formData.name || !formData.email || !formData.message) {
-      Alert.alert("Error", "Please fill in all required fields");
+      showError("Please fill in all required fields");
       return;
     }
 
@@ -99,13 +100,10 @@ export default function ContactScreen() {
     setSubmitting(false);
 
     if (result.success) {
-      Alert.alert(
-        "Success",
-        "Thank you for your message! We'll get back to you soon.",
-      );
+      success("Thank you for your message! We'll get back to you soon.");
       setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
     } else {
-      Alert.alert("Error", result.error || "Failed to submit message");
+      showError(result.error || "Failed to submit message");
     }
   };
 

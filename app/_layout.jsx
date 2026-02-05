@@ -13,6 +13,7 @@ import {
   parseNotificationData,
 } from "../store/useNotification";
 import ThemeProvider from "../components/ThemeProvider";
+import ToastContainer from "../components/common/ToastContainer";
 
 // Dynamically import expo-notifications to handle Expo Go
 let Notifications = null;
@@ -195,6 +196,7 @@ export default function RootLayout() {
       <ThemeProvider>
         <BottomSheetModalProvider>
           <RootLayoutNav />
+          <ToastContainer />
         </BottomSheetModalProvider>
       </ThemeProvider>
     </GestureHandlerRootView>

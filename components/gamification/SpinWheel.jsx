@@ -6,7 +6,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
-  Alert,
 } from "react-native";
 import Svg, { Path, G, Text as SvgText } from "react-native-svg";
 import {
@@ -26,6 +25,7 @@ import Animated, {
   FadeInUp,
 } from "react-native-reanimated";
 import { useGamification } from "../../store/useGamification";
+import { useToast } from "../../store/useToast";
 import { X, Sparkles, Loader2, Check, Trophy } from "lucide-react-native";
 
 const { width, height } = Dimensions.get("window");
@@ -335,10 +335,7 @@ export default function SpinWheel({
 
     if (!canSpin) {
       isSpinning.value = false;
-      Alert.alert(
-        "Already Spun",
-        "You've already spun the wheel today. Come back tomorrow!",
-      );
+      warning("You've already spun the wheel today. Come back tomorrow!");
       return;
     }
 
@@ -452,7 +449,7 @@ export default function SpinWheel({
           if (finished) {
             isSpinning.value = false;
             setIsSpinningState(false);
-            runOnJS(Alert.alert)("Error", "Failed to spin. Please try again.");
+            runOnJS(showError)("Failed to spin. Please try again.");
           }
         },
       );

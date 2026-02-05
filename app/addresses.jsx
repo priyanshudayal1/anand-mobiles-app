@@ -6,7 +6,6 @@ import {
     TouchableOpacity,
     TextInput,
     ActivityIndicator,
-    Alert,
     RefreshControl,
     Modal,
     KeyboardAvoidingView,
@@ -18,6 +17,8 @@ import { useRouter } from "expo-router";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { useTheme } from "../store/useTheme";
 import { useAddressStore } from "../store/useAddress";
+import { useToast } from "../store/useToast";
+import CustomModal from "../components/common/CustomModal";
 
 export default function Addresses() {
     const router = useRouter();
@@ -38,6 +39,9 @@ export default function Addresses() {
     const [showForm, setShowForm] = useState(false);
     const [editingAddress, setEditingAddress] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [addressToDelete, setAddressToDelete] = useState(null);
+    const { success, error: showError } = useToast();
 
     // Form state
     const [formData, setFormData] = useState({
@@ -97,27 +101,27 @@ export default function Addresses() {
     const handleSubmit = async () => {
         // Validation
         if (!formData.type.trim()) {
-            Alert.alert("Error", "Please enter address name (e.g., Home, Office)");
+            showError("Please enter address name (e.g., Home, Office)");
             return;
         }
         if (!formData.street_address.trim()) {
-            Alert.alert("Error", "Please enter street address");
+            showError("Please enter street address");
             return;
         }
         if (!formData.city.trim()) {
-            Alert.alert("Error", "Please enter city");
+            showError("Please enter city");
             return;
         }
         if (!formData.state.trim()) {
-            Alert.alert("Error", "Please enter state");
+            showError("Please enter state");
             return;
         }
         if (!formData.postal_code.trim()) {
-            Alert.alert("Error", "Please enter PIN code");
+            showError("Please enter PIN code");
             return;
         }
         if (!formData.phone_number.trim()) {
-            Alert.alert("Error", "Please enter phone number");
+            showError("Please enter phone number");
             return;
         }
 
@@ -132,49 +136,40 @@ export default function Addresses() {
             }
 
             if (result.success) {
-                Alert.alert(
-                    "Success",
-                    editingAddress ? "Address updated successfully" : "Address added successfully"
-                );
+                success(editingAddress ? "Address updated successfully" : "Address added successfully");
                 resetForm();
             } else {
-                Alert.alert("Error", result.error || "Failed to save address");
+                showError(result.error || "Failed to save address");
             }
-        } catch (error) {
-            Alert.alert("Error", "Something went wrong. Please try again.");
+        } catch (err) {
+            showError("Something went wrong. Please try again.");
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const handleDelete = (addressId) => {
-        Alert.alert(
-            "Delete Address",
-            "Are you sure you want to delete this address? This action cannot be undone.",
-            [
-                { text: "Cancel", style: "cancel" },
-                {
-                    text: "Delete",
-                    style: "destructive",
-                    onPress: async () => {
-                        const result = await deleteAddress(addressId);
-                        if (result.success) {
-                            Alert.alert("Success", "Address deleted successfully");
-                        } else {
-                            Alert.alert("Error", result.error || "Failed to delete address");
-                        }
-                    },
-                },
-            ]
-        );
+        setAddressToDelete(addressId);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!addressToDelete) return;
+        const result = await deleteAddress(addressToDelete);
+        setAddressToDelete(null);
+        if (result.success) {
+            success("Address deleted successfully");
+        } else {
+            showError(result.error || "Failed to delete address");
+        }
     };
 
     const handleSetDefault = async (addressId) => {
         const result = await setDefaultAddress(addressId);
         if (result.success) {
-            Alert.alert("Success", "Default address updated");
+            success("Default address updated");
         } else {
-            Alert.alert("Error", result.error || "Failed to set default address");
+            showError(result.error || "Failed to set default address");
         }
     };
 
@@ -670,6 +665,19 @@ export default function Addresses() {
 
             {/* Add/Edit Form Modal */}
             {renderForm()}
+
+            {/* Delete Confirmation Modal */}
+            <CustomModal
+                visible={showDeleteModal}
+                onClose={() => { setShowDeleteModal(false); setAddressToDelete(null); }}
+                type="warning"
+                title="Delete Address"
+                message="Are you sure you want to delete this address? This action cannot be undone."
+                buttons={[
+                    { text: "Cancel", variant: "outline", onPress: () => { setShowDeleteModal(false); setAddressToDelete(null); } },
+                    { text: "Delete", variant: "danger", onPress: confirmDelete },
+                ]}
+            />
         </SafeAreaView>
     );
 }
