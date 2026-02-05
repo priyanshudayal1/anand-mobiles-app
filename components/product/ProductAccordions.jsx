@@ -20,7 +20,8 @@ import {
   MessageSquare,
 } from "lucide-react-native";
 
-if (Platform.OS === "android") {
+// Only enable for old architecture on Android
+if (Platform.OS === "android" && !global.nativeFabricUIManager) {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }

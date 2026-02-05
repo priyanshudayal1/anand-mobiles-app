@@ -23,14 +23,15 @@ function ProductCard({
 }) {
   const { colors } = useTheme();
   const router = useRouter();
-  const { items, addItem, removeItem, isInWishlist } = useWishlistStore(
-    useShallow((state) => ({
-      items: state.items,
-      addItem: state.addItem,
-      removeItem: state.removeItem,
-      isInWishlist: state.isInWishlist,
-    }))
-  );
+  const { items, addToWishlist, removeFromWishlist, isInWishlist } =
+    useWishlistStore(
+      useShallow((state) => ({
+        items: state.items,
+        addToWishlist: state.addToWishlist,
+        removeFromWishlist: state.removeFromWishlist,
+        isInWishlist: state.isInWishlist,
+      })),
+    );
 
   const wishlistItems = items || [];
 
@@ -109,25 +110,12 @@ function ProductCard({
           (item) => item.id === productId || item.product_id === productId,
         );
         const removeId = wishlistItem?.item_id || productId;
-        await removeItem(removeId);
+        await removeFromWishlist(removeId);
       } else {
         const defaultVariant = product.valid_options?.[0] || null;
-        const productWithVariant = {
-          ...product,
-          id: productId,
-          price: displayPrice,
-          variant_id: defaultVariant?.id || null,
-          variant: defaultVariant
-            ? {
-                id: defaultVariant.id,
-                color: defaultVariant.colors,
-                storage: defaultVariant.storage,
-                ram: defaultVariant.ram,
-                price: defaultVariant.discounted_price || defaultVariant.price,
-              }
-            : null,
-        };
-        await addItem(productWithVariant);
+        // In useWishlistStore, addToWishlist only takes productId and optional variantId
+        // It does not take the full product object.
+        await addToWishlist(productId, defaultVariant?.id || null);
       }
     } catch (error) {
       console.error("Wishlist action failed", error);
