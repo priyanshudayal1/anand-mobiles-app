@@ -31,6 +31,8 @@ export const useProducts = create((set, get) => ({
     sortBy: "newest", // 'price_asc', 'price_desc', 'name', 'rating', 'newest'
     inStockOnly: false,
     featuredOnly: false,
+    rating: 0,
+    discount: null,
   },
 
   // Filter options (from backend)
@@ -39,6 +41,7 @@ export const useProducts = create((set, get) => ({
     categories: [],
     storageOptions: [],
     colorOptions: [],
+    ramOptions: [],
     priceRange: { min: 0, max: 100000 },
   },
 
@@ -85,9 +88,15 @@ export const useProducts = create((set, get) => ({
       if (filters.featuredOnly) {
         params.append("featured", "true");
       }
+      if (filters.rating > 0) {
+        params.append("rating", filters.rating.toString());
+      }
+      if (filters.discount) {
+        params.append("discount", filters.discount.toString());
+      }
 
       const response = await api.get(
-        `/products/mobile/products/?${params.toString()}`
+        `/products/mobile/products/?${params.toString()}`,
       );
 
       if (response.data && response.data.success) {
@@ -169,6 +178,8 @@ export const useProducts = create((set, get) => ({
         sortBy: "newest",
         inStockOnly: false,
         featuredOnly: false,
+        rating: 0,
+        discount: null,
       },
       pagination: { ...get().pagination, page: 1 },
     });
@@ -249,6 +260,7 @@ export const useProducts = create((set, get) => ({
             categories: filterData.categories || [],
             storageOptions: filterData.storage_options || [],
             colorOptions: filterData.color_options || [],
+            ramOptions: filterData.ram_options || [],
             priceRange: filterData.price_range || { min: 0, max: 100000 },
           },
         });
@@ -294,7 +306,7 @@ export const useProducts = create((set, get) => ({
 
     try {
       const response = await api.get(
-        `/products/mobile/products/?search=${encodeURIComponent(query)}&limit=10`
+        `/products/mobile/products/?search=${encodeURIComponent(query)}&limit=10`,
       );
 
       if (response.data && response.data.success) {
@@ -311,7 +323,7 @@ export const useProducts = create((set, get) => ({
   getProductsByCategory: async (category, limit = 10) => {
     try {
       const response = await api.get(
-        `/products/mobile/products/?category=${category}&limit=${limit}`
+        `/products/mobile/products/?category=${category}&limit=${limit}`,
       );
 
       if (response.data && response.data.success) {
@@ -328,7 +340,7 @@ export const useProducts = create((set, get) => ({
   getProductsByBrand: async (brand, limit = 10) => {
     try {
       const response = await api.get(
-        `/products/mobile/products/?brand=${brand}&limit=${limit}`
+        `/products/mobile/products/?brand=${brand}&limit=${limit}`,
       );
 
       if (response.data && response.data.success) {

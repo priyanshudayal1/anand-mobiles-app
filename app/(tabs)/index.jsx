@@ -7,10 +7,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MessageCircle, ChevronRight } from "lucide-react-native";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
@@ -27,12 +24,12 @@ import { useTheme } from "../../store/useTheme";
 import { useHome } from "../../store/useHome";
 import { useProducts } from "../../store/useProducts";
 
-// Section Header Component
+// Section Header Component - underline from right to left like web version
 const SectionHeader = ({ title, subtitle, onSeeAll, colors }) => (
   <View
     style={{
       paddingHorizontal: 16,
-      paddingTop: 16,
+      paddingTop: 12,
       paddingBottom: 8,
       backgroundColor: colors.cardBg,
     }}
@@ -41,23 +38,35 @@ const SectionHeader = ({ title, subtitle, onSeeAll, colors }) => (
       style={{
         flexDirection: "row",
         justifyContent: "space-between",
-        alignItems: "center",
+        alignItems: "flex-start",
         marginBottom: 8,
       }}
     >
-      <View>
-        <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.text }}>
-          {title}
-        </Text>
-        <View
-          style={{
-            height: 3,
-            width: 64,
-            marginTop: 4,
-            backgroundColor: colors.primary,
-            borderRadius: 2,
-          }}
-        />
+      <View style={{ flex: 1 }}>
+        <View style={{ alignSelf: "flex-start" }}>
+          <Text
+            style={{ fontSize: 18, fontWeight: "bold", color: colors.text }}
+          >
+            {title}
+          </Text>
+          <View
+            style={{
+              height: 3,
+              width: 40,
+              marginTop: 4,
+              backgroundColor: colors.primary,
+              borderRadius: 2,
+              alignSelf: "flex-start",
+            }}
+          />
+        </View>
+        {subtitle && (
+          <Text
+            style={{ fontSize: 12, color: colors.textSecondary, marginTop: 4 }}
+          >
+            {subtitle}
+          </Text>
+        )}
       </View>
       {onSeeAll && (
         <TouchableOpacity
@@ -71,19 +80,97 @@ const SectionHeader = ({ title, subtitle, onSeeAll, colors }) => (
         </TouchableOpacity>
       )}
     </View>
-    {subtitle && (
-      <Text style={{ fontSize: 12, color: colors.textSecondary }}>
-        {subtitle}
-      </Text>
-    )}
   </View>
 );
 
+// Section Title Component - reusable for dedicated components with custom titles
+const SectionTitle = ({ section, colors, onSeeAll }) => {
+  if (!section.title && !section.show_title) return null;
+  return (
+    <View
+      style={{
+        paddingHorizontal: 16,
+        paddingTop: 12,
+        paddingBottom: 8,
+        backgroundColor: colors.cardBg,
+      }}
+    >
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+        }}
+      >
+        <View style={{ flex: 1 }}>
+          <View style={{ alignSelf: "flex-start" }}>
+            <Text
+              style={{ fontSize: 18, fontWeight: "bold", color: colors.text }}
+            >
+              {section.title || getSectionDefaultTitle(section.section_type)}
+            </Text>
+            <View
+              style={{
+                height: 3,
+                width: 40,
+                marginTop: 4,
+                backgroundColor: colors.primary,
+                borderRadius: 2,
+                alignSelf: "flex-start",
+              }}
+            />
+          </View>
+          {section.description && (
+            <Text
+              style={{
+                fontSize: 12,
+                color: colors.textSecondary,
+                marginTop: 4,
+              }}
+            >
+              {section.description}
+            </Text>
+          )}
+        </View>
+        {onSeeAll && (
+          <TouchableOpacity
+            onPress={onSeeAll}
+            style={{ flexDirection: "row", alignItems: "center" }}
+          >
+            <Text style={{ fontWeight: "500", color: colors.primary }}>
+              See All
+            </Text>
+            <ChevronRight size={16} color={colors.primary} />
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
+};
+
+// Helper to get default title for section types
+const getSectionDefaultTitle = (sectionType) => {
+  const titles = {
+    hero_banner: "Featured",
+    banner_carousel: "Featured",
+    category_list: "Shop by Categories",
+    categories: "Shop by Categories",
+    featured_products: "Featured Products",
+    brands: "Top Brands",
+    whats_trending: "What's Trending",
+    best_selling: "Best Selling",
+    new_releases: "New Releases",
+    flash_deal: "Flash Deals",
+    special_offers_carousel: "Special Offers",
+  };
+  return titles[sectionType] || "";
+};
+
 // Render a section based on its type
-const RenderSection = ({ section, colors }) => {
+const RenderSection = ({ section, colors, router }) => {
   const sectionType = section.section_type;
 
-  // These types have dedicated components
+  // These types have dedicated components with optional custom titles from backend
   switch (sectionType) {
     case "hero_banner":
     case "banner_carousel":
@@ -91,16 +178,52 @@ const RenderSection = ({ section, colors }) => {
 
     case "category_list":
     case "categories":
-      return <CategoryGrid key={section.section_id} />;
+      return (
+        <View
+          key={section.section_id}
+          style={{ backgroundColor: colors.cardBg, marginTop: 0 }}
+        >
+          <SectionTitle section={section} colors={colors} />
+          <CategoryGrid showHeader={false} />
+        </View>
+      );
 
     case "featured_products":
-      return <FeaturedSection key={section.section_id} />;
+      return (
+        <View
+          key={section.section_id}
+          style={{ backgroundColor: colors.cardBg, marginTop: 0 }}
+        >
+          <SectionTitle section={section} colors={colors} />
+          <FeaturedSection showHeader={false} />
+        </View>
+      );
 
     case "brands":
-      return <BrandsSection key={section.section_id} />;
+      return (
+        <View
+          key={section.section_id}
+          style={{ backgroundColor: colors.cardBg, marginTop: 0 }}
+        >
+          <SectionTitle section={section} colors={colors} />
+          <BrandsSection showHeader={false} />
+        </View>
+      );
 
     case "whats_trending":
-      return <VideoCarousel key={section.section_id} />;
+      return (
+        <View
+          key={section.section_id}
+          style={{ backgroundColor: colors.cardBg, marginTop: 0 }}
+        >
+          <SectionTitle section={section} colors={colors} />
+          <VideoCarousel
+            showHeader={false}
+            videos={section.config?.videos}
+            autoPlay={false}
+          />
+        </View>
+      );
 
     default:
       // All other section types go through DynamicSection
@@ -111,7 +234,15 @@ const RenderSection = ({ section, colors }) => {
 export default function Home() {
   const { colors, mode } = useTheme();
   const insets = useSafeAreaInsets();
-  const { initializeHome, refreshHomeData, isRefreshing, isLoading, sections, banners, categories, featuredProducts, brands, promotionVideos } = useHome();
+  const {
+    initializeHome,
+    refreshHomeData,
+    isRefreshing,
+    isLoading,
+    sections,
+    banners,
+    promotionVideos,
+  } = useHome();
   const { products, fetchProducts } = useProducts();
   const router = useRouter();
 
@@ -122,7 +253,7 @@ export default function Home() {
       await fetchProducts(true);
     };
     init();
-  }, []);
+  }, [initializeHome, fetchProducts]);
 
   // Pull to refresh
   const onRefresh = useCallback(async () => {
@@ -136,12 +267,12 @@ export default function Home() {
 
   // Handle see all products
   const handleSeeAllProducts = () => {
-    router.push("/(tabs)/menu");
+    router.push("/products");
   };
 
   // Handle chat press
   const handleChatPress = () => {
-    console.log("Chat pressed");
+    // TODO: Implement chat functionality
   };
 
   // Get products for "All Products" section
@@ -154,23 +285,34 @@ export default function Home() {
   const sortedSections = sections
     ? [...sections]
         .filter((s) => s && s.enabled !== false)
-        .sort((a, b) => (a.display_order || a.order || 0) - (b.display_order || b.order || 0))
+        .sort(
+          (a, b) =>
+            (a.display_order || a.order || 0) -
+            (b.display_order || b.order || 0),
+        )
     : [];
 
   // Check if we have hero/banner at top (most common case)
   const hasHeroBannerSection = sortedSections.some(
-    (s) => s.section_type === "hero_banner" || s.section_type === "banner_carousel"
+    (s) =>
+      s.section_type === "hero_banner" || s.section_type === "banner_carousel",
   );
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}
-      edges={["top"]}
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: colors.backgroundSecondary,
+        paddingTop: insets.top,
+      }}
     >
       <StatusBar
         style={mode === "dark" ? "light" : "light"}
         backgroundColor={colors.primary}
       />
+
+      {/* Header with Search - Sticky at top */}
+      <HomeHeader />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -186,8 +328,8 @@ export default function Home() {
           />
         }
       >
-        {/* Header with Search - Always at top */}
-        <HomeHeader />
+        {/* Video Section - Like Website */}
+        <VideoCarousel showHeader={false} />
 
         {/* Loading State */}
         {isLoading && sortedSections.length === 0 && (
@@ -213,16 +355,17 @@ export default function Home() {
                 key={section.section_id || section.id}
                 section={section}
                 colors={colors}
+                router={router}
               />
             ))}
 
             {/* Always show Brands and Videos at end if not in sections */}
-            {!sortedSections.some((s) => s.section_type === "brands") && brands && brands.length > 0 && (
+            {!sortedSections.some((s) => s.section_type === "brands") && (
               <BrandsSection />
             )}
-            {!sortedSections.some((s) => s.section_type === "whats_trending") && promotionVideos && promotionVideos.length > 0 && (
-              <VideoCarousel />
-            )}
+            {!sortedSections.some((s) => s.section_type === "whats_trending") &&
+              promotionVideos &&
+              promotionVideos.length > 0 && <VideoCarousel />}
           </>
         ) : (
           /* Fallback static layout when no sections from backend */
@@ -237,7 +380,7 @@ export default function Home() {
 
         {/* All Products Section - Always at bottom */}
         {allProducts.length > 0 && (
-          <View style={{ backgroundColor: colors.cardBg, marginTop: 8 }}>
+          <View style={{ backgroundColor: colors.cardBg, marginTop: 0 }}>
             <SectionHeader
               title="All Products"
               subtitle="Explore our complete collection"
@@ -250,18 +393,14 @@ export default function Home() {
               style={{
                 flexDirection: "row",
                 flexWrap: "wrap",
-                paddingHorizontal: 16,
-                paddingBottom: 16,
+                paddingHorizontal: 12,
+                gap: 8,
               }}
             >
-              {allProducts.map((product, index) => (
+              {allProducts.map((product) => (
                 <View
-                  key={product.id || index}
-                  style={{
-                    width: "50%",
-                    paddingRight: index % 2 === 0 ? 6 : 0,
-                    paddingLeft: index % 2 === 1 ? 6 : 0,
-                  }}
+                  key={product.id || product.product_id}
+                  style={{ width: "48%" }}
                 >
                   <ProductCard
                     product={product}
@@ -277,7 +416,8 @@ export default function Home() {
               onPress={handleSeeAllProducts}
               style={{
                 marginHorizontal: 16,
-                marginBottom: 16,
+                marginTop: 8,
+                marginBottom: 0,
                 paddingVertical: 12,
                 borderRadius: 8,
                 borderWidth: 1,
@@ -329,6 +469,6 @@ export default function Home() {
           }}
         />
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 }

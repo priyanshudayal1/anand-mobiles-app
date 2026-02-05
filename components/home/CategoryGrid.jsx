@@ -86,7 +86,7 @@ const getCategoryIcon = (category) => {
   return Smartphone; // Default icon
 };
 
-export default function CategoryGrid() {
+export default function CategoryGrid({ showHeader = true }) {
   const { colors } = useTheme();
   const { categories } = useHome();
   const router = useRouter();
@@ -109,13 +109,13 @@ export default function CategoryGrid() {
 
   const handleCategoryPress = (category) => {
     router.push({
-      pathname: "/(tabs)/menu",
+      pathname: "/products",
       params: { category: category.slug || category.name },
     });
   };
 
   const handleSeeAll = () => {
-    router.push("/(tabs)/menu");
+    router.push("/products");
   };
 
   const renderCategoryItem = (category) => {
@@ -129,19 +129,19 @@ export default function CategoryGrid() {
         style={{
           alignItems: "center",
           marginRight: 16,
-          width: 72,
+          width: 80,
         }}
         activeOpacity={0.7}
       >
         {/* Category Icon/Image Container */}
         <View
           style={{
-            width: 64,
-            height: 48,
+            width: 72,
+            height: 72,
             marginBottom: 8,
             justifyContent: "center",
             alignItems: "center",
-            borderRadius: 8,
+            borderRadius: 12,
             backgroundColor:
               colors.surfaceSecondary || colors.backgroundSecondary,
             overflow: "hidden",
@@ -177,55 +177,58 @@ export default function CategoryGrid() {
   return (
     <View style={{ padding: 16, backgroundColor: colors.cardBg }}>
       {/* Header */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
-        <View>
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: "bold",
-              color: colors.text,
-            }}
-          >
-            Shop by Categories
-          </Text>
-          <View
-            style={{
-              height: 3,
-              width: 64,
-              marginTop: 4,
-              backgroundColor: colors.primary,
-              borderRadius: 2,
-            }}
-          />
-        </View>
-        <TouchableOpacity
-          onPress={handleSeeAll}
-          style={{ flexDirection: "row", alignItems: "center" }}
+      {showHeader && (
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            marginBottom: 16,
+          }}
         >
-          <Text style={{ fontWeight: "500", color: colors.primary }}>
-            See All
-          </Text>
-          <ChevronRight size={16} color={colors.primary} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Description */}
-      <Text
-        style={{
-          fontSize: 12,
-          color: colors.textSecondary,
-          marginBottom: 16,
-        }}
-      >
-        Discover our wide range of products across different categories
-      </Text>
+          <View style={{ flex: 1 }}>
+            <View style={{ alignSelf: "flex-start" }}>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "bold",
+                  color: colors.text,
+                }}
+              >
+                Shop by Categories
+              </Text>
+              <View
+                style={{
+                  height: 3,
+                  width: 40,
+                  marginTop: 4,
+                  backgroundColor: colors.primary,
+                  borderRadius: 2,
+                  alignSelf: "flex-start",
+                }}
+              />
+            </View>
+            <Text
+              style={{
+                fontSize: 12,
+                color: colors.textSecondary,
+                marginTop: 4,
+              }}
+            >
+              Discover our wide range of products across different categories
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={handleSeeAll}
+            style={{ flexDirection: "row", alignItems: "center" }}
+          >
+            <Text style={{ fontWeight: "500", color: colors.primary }}>
+              See All
+            </Text>
+            <ChevronRight size={16} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Categories Scroll */}
       <ScrollView

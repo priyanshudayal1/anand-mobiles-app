@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { Star, ChevronRight, ChevronLeft } from "lucide-react-native";
+import { Star } from "lucide-react-native";
 import { useTheme } from "../../store/useTheme";
 import { useHome } from "../../store/useHome";
 
@@ -16,7 +16,7 @@ const { width } = Dimensions.get("window");
 const CARD_WIDTH = (width - 48) / 2; // 2 cards with padding
 
 // Product Card Component
-const ProductCard = ({ product, colors, onPress }) => {
+const ProductCard = React.memo(({ product, colors, onPress }) => {
   const discountPrice =
     product.discount_price || product.discounted_price || product.price;
   const originalPrice = product.price;
@@ -43,7 +43,7 @@ const ProductCard = ({ product, colors, onPress }) => {
       {/* Product Image */}
       <View
         style={{
-          height: 120,
+          height: 160,
           backgroundColor: colors.white,
           justifyContent: "center",
           alignItems: "center",
@@ -144,9 +144,11 @@ const ProductCard = ({ product, colors, onPress }) => {
       </View>
     </TouchableOpacity>
   );
-};
+});
 
-export default function FeaturedSection() {
+ProductCard.displayName = "ProductCard";
+
+export default function FeaturedSection({ showHeader = true }) {
   const { colors } = useTheme();
   const { featuredProducts } = useHome();
   const router = useRouter();
@@ -178,14 +180,37 @@ export default function FeaturedSection() {
           },
         ];
 
-  const handleProductPress = (product) => {
-    // Navigate to product details
-    router.push(`/product/${product.id || product.product_id}`);
-  };
+  const handleProductPress = React.useCallback(
+    (product) => {
+      // Navigate to product details
+      router.push(`/product/${product.id || product.product_id}`);
+    },
+    [router],
+  );
+
+  const renderItem = React.useCallback(
+    ({ item }) => (
+      <ProductCard
+        product={item}
+        colors={colors}
+        onPress={handleProductPress}
+      />
+    ),
+    [colors, handleProductPress],
+  );
+
+  const getItemLayout = React.useCallback(
+    (data, index) => ({
+      length: CARD_WIDTH + 12,
+      offset: (CARD_WIDTH + 12) * index,
+      index,
+    }),
+    [],
+  );
 
   const handleSeeAll = () => {
     router.push({
-      pathname: "/(tabs)/menu",
+      pathname: "/products",
       params: { featured: "true" },
     });
   };
@@ -199,64 +224,71 @@ export default function FeaturedSection() {
       }}
     >
       {/* Header */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          paddingHorizontal: 16,
-          marginBottom: 12,
-        }}
-      >
-        <View>
-          <Text
-            style={{ fontSize: 18, fontWeight: "bold", color: colors.text }}
-          >
-            Featured Products
-          </Text>
+      {showHeader && (
+        <>
           <View
             style={{
-              height: 3,
-              width: 64,
-              marginTop: 4,
-              backgroundColor: colors.primary,
-              borderRadius: 2,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              paddingHorizontal: 16,
+              marginBottom: 12,
             }}
-          />
-        </View>
-        <TouchableOpacity onPress={handleSeeAll}>
-          <Text style={{ fontWeight: "500", color: colors.primary }}>
-            See All →
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Description */}
-      <Text
-        style={{
-          fontSize: 12,
-          color: colors.textSecondary,
-          paddingHorizontal: 16,
-          marginBottom: 16,
-        }}
-      >
-        Discover our best-selling items handpicked for you
-      </Text>
+          >
+            <View style={{ flex: 1 }}>
+              <View style={{ alignSelf: "flex-start" }}>
+                <Text
+                  style={{
+                    fontSize: 18,
+                    fontWeight: "bold",
+                    color: colors.text,
+                  }}
+                >
+                  Featured Products
+                </Text>
+                <View
+                  style={{
+                    height: 3,
+                    width: 40,
+                    marginTop: 4,
+                    backgroundColor: colors.primary,
+                    borderRadius: 2,
+                    alignSelf: "flex-start",
+                  }}
+                />
+              </View>
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: colors.textSecondary,
+                  marginTop: 4,
+                }}
+              >
+                Discover our best-selling items handpicked for you
+              </Text>
+            </View>
+            <TouchableOpacity onPress={handleSeeAll}>
+              <Text style={{ fontWeight: "500", color: colors.primary }}>
+                See All →
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
 
       {/* Products Horizontal Scroll */}
       <FlatList
         data={displayProducts}
-        renderItem={({ item }) => (
-          <ProductCard
-            product={item}
-            colors={colors}
-            onPress={handleProductPress}
-          />
-        )}
+        renderItem={renderItem}
         keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 16 }}
+        getItemLayout={getItemLayout}
+        initialNumToRender={4}
+        maxToRenderPerBatch={4}
+        windowSize={3}
+        removeClippedSubviews={true}
       />
     </View>
   );

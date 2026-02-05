@@ -34,6 +34,10 @@ yarn-error.*
 .env*.local
 .env
 
+# Firebase credentials (sensitive)
+*firebase-adminsdk*.json
+*serviceAccountKey*.json
+
 # typescript
 *.tsbuildinfo
 
@@ -42,3 +46,5 @@ app-example
 # generated native folders
 /ios
 /android
+google-services.json
+GoogleService-Info.plist

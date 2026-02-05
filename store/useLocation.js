@@ -42,55 +42,6 @@ export const useLocationStore = create(
                 }
             })),
 
-            // Detect current location
-            detectLocation: async () => {
-                const { setLocationLoading, setLocationError, updateLocation } = get();
-
-                try {
-                    setLocationLoading(true);
-
-                    // Request permission
-                    const { status } = await Location.requestForegroundPermissionsAsync();
-
-                    if (status !== 'granted') {
-                        setLocationError('Permission to access location was denied');
-                        return false;
-                    }
-
-                    // Get current position
-                    const location = await Location.getCurrentPositionAsync({
-                        accuracy: Location.Accuracy.Balanced,
-                    });
-
-                    const { latitude, longitude } = location.coords;
-
-                    // Reverse geocode
-                    const [address] = await Location.reverseGeocodeAsync({
-                        latitude,
-                        longitude
-                    });
-
-                    if (address) {
-                        updateLocation({
-                            city: address.city || address.subregion || DEFAULT_LOCATION.city,
-                            state: address.region || DEFAULT_LOCATION.state,
-                            pincode: address.postalCode || DEFAULT_LOCATION.pincode,
-                            country: address.country || DEFAULT_LOCATION.country,
-                            area: address.district || address.street || '',
-                            latitude,
-                            longitude,
-                        });
-                        return true;
-                    } else {
-                        throw new Error('Could not fetch address details');
-                    }
-
-                } catch (error) {
-                    console.error('Location detection error:', error);
-                    setLocationError('Failed to detect location');
-                    return false;
-                }
-            },
 
             // Update location manually by pincode (using Nominatim like web)
             updateLocationByPincode: async (pincode) => {

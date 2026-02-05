@@ -4,84 +4,98 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useTheme } from "../../store/useTheme";
 import { useHome } from "../../store/useHome";
+import { BACKEND_URL } from "../../constants/constants";
 
-export default function BrandsSection() {
+export default function BrandsSection({ showHeader = true }) {
   const { colors } = useTheme();
-  const { brands } = useHome();
+  const { brands, fetchBrands } = useHome();
   const router = useRouter();
 
-  // Fallback brands if no data
-  const displayBrands =
-    brands.length > 0
-      ? brands
-      : [
-          {
-            id: "1",
-            name: "Apple",
-            logo: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",
-          },
-          {
-            id: "2",
-            name: "Samsung",
-            logo: "https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg",
-          },
-          { id: "3", name: "OnePlus", logo: "" },
-          { id: "4", name: "Xiaomi", logo: "" },
-          { id: "5", name: "Realme", logo: "" },
-          { id: "6", name: "Vivo", logo: "" },
-        ];
+  // Fetch brands if not available - runs only once on mount
+  React.useEffect(() => {
+    fetchBrands();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array to prevent infinite loop
+
+  // Filter and sort brands similar to web logic
+  const displayBrands = React.useMemo(() => {
+    // Sort and filter real data - backend already filters by active
+    const featuredBrands = brands.filter((brand) => brand.featured === true);
+    const nonFeaturedBrands = brands.filter((brand) => brand.featured !== true);
+
+    return [...featuredBrands, ...nonFeaturedBrands];
+  }, [brands]);
 
   const handleBrandPress = (brand) => {
     router.push({
-      pathname: "/(tabs)/menu",
+      pathname: "/products",
       params: { brand: brand.slug || brand.name },
     });
   };
 
   const handleSeeAll = () => {
-    router.push("/(tabs)/menu");
+    router.push("/products");
   };
 
-  const renderBrandItem = (brand) => {
-    const hasLogo = brand.logo && brand.logo.startsWith("http");
+  const renderBrandItem = (brand, index) => {
+    let logoUrl = brand.logo_url;
+
+    // Process URL if it's relative
+    if (
+      logoUrl &&
+      !logoUrl.startsWith("http") &&
+      !logoUrl.startsWith("data:")
+    ) {
+      const baseUrl = BACKEND_URL.replace(/\/api\/?$/, ""); // Remove /api suffix
+      const separator = logoUrl.startsWith("/") ? "" : "/";
+      logoUrl = `${baseUrl}${separator}${logoUrl}`;
+    }
+
+    const hasLogo =
+      logoUrl && (logoUrl.startsWith("http") || logoUrl.startsWith("data:"));
 
     return (
       <TouchableOpacity
-        key={brand.id}
+        key={`${brand.brand_id || brand.slug}-${index}`}
         onPress={() => handleBrandPress(brand)}
         style={{
           alignItems: "center",
           marginRight: 16,
-          width: 80,
+          width: 90,
         }}
         activeOpacity={0.7}
       >
         {/* Brand Logo Container */}
         <View
           style={{
-            width: 64,
-            height: 64,
+            width: 80,
+            height: 80,
             marginBottom: 8,
             justifyContent: "center",
             alignItems: "center",
-            borderRadius: 32,
-            backgroundColor: colors.surfaceSecondary,
+            borderRadius: 40,
+            backgroundColor: colors.cardBg,
             borderWidth: 1,
             borderColor: colors.border,
             overflow: "hidden",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 2,
           }}
         >
           {hasLogo ? (
             <Image
-              source={{ uri: brand.logo }}
-              style={{ width: 40, height: 40 }}
+              source={{ uri: logoUrl }}
+              style={{ width: "100%", height: "100%" }}
               contentFit="contain"
               transition={200}
             />
           ) : (
             <Text
               style={{
-                fontSize: 20,
+                fontSize: 24,
                 fontWeight: "bold",
                 color: colors.primary,
               }}
@@ -92,7 +106,7 @@ export default function BrandsSection() {
         </View>
         <Text
           style={{
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: "500",
             color: colors.text,
             textAlign: "center",
@@ -112,56 +126,59 @@ export default function BrandsSection() {
   return (
     <View style={{ padding: 16, backgroundColor: colors.cardBg, marginTop: 8 }}>
       {/* Header */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
-        <View>
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: "bold",
-              color: colors.text,
-            }}
-          >
-            Shop by Brands
-          </Text>
-          <View
-            style={{
-              height: 3,
-              width: 64,
-              marginTop: 4,
-              backgroundColor: colors.primary,
-              borderRadius: 2,
-            }}
-          />
+      {showHeader && (
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            marginBottom: 16,
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <View style={{ alignSelf: "flex-start" }}>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "bold",
+                  color: colors.text,
+                }}
+              >
+                Shop by Brands
+              </Text>
+              <View
+                style={{
+                  height: 3,
+                  width: 40,
+                  marginTop: 4,
+                  backgroundColor: colors.primary,
+                  borderRadius: 2,
+                  alignSelf: "flex-start",
+                }}
+              />
+            </View>
+            <Text
+              style={{
+                fontSize: 12,
+                color: colors.textSecondary,
+                marginTop: 4,
+              }}
+            >
+              Explore top brands with exclusive deals
+            </Text>
+          </View>
+          <TouchableOpacity onPress={handleSeeAll}>
+            <Text
+              style={{
+                fontWeight: "500",
+                color: colors.primary,
+              }}
+            >
+              See All →
+            </Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={handleSeeAll}>
-          <Text
-            style={{
-              fontWeight: "500",
-              color: colors.primary,
-            }}
-          >
-            See All →
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Description */}
-      <Text
-        style={{
-          fontSize: 12,
-          color: colors.textSecondary,
-          marginBottom: 16,
-        }}
-      >
-        Explore top brands with exclusive deals
-      </Text>
+      )}
 
       {/* Brands Scroll */}
       <ScrollView
@@ -169,7 +186,7 @@ export default function BrandsSection() {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingRight: 16 }}
       >
-        {displayBrands.map(renderBrandItem)}
+        {displayBrands.map((brand, index) => renderBrandItem(brand, index))}
       </ScrollView>
     </View>
   );
