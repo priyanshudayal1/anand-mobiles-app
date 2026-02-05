@@ -379,7 +379,6 @@ export default function SpinWheel({
 
       if (response.success && response.data?.reward) {
         const reward = response.data.reward;
-        rewardToShow = reward;
 
         targetSegmentIndex = segments.findIndex(
           (s) => s.type === reward.type && s.value === reward.value,
@@ -394,6 +393,9 @@ export default function SpinWheel({
         if (targetSegmentIndex === -1) {
           targetSegmentIndex = Math.floor(Math.random() * segments.length);
         }
+        
+        // Always use the segment object for display, not the API reward
+        rewardToShow = segments[targetSegmentIndex];
       } else {
         // Fallback to random segment
         targetSegmentIndex = Math.floor(Math.random() * segments.length);
@@ -498,10 +500,6 @@ export default function SpinWheel({
       <GestureHandlerRootView style={{ flex: 1 }}>
         <View style={styles.container}>
           <View style={styles.content}>
-            <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-              <X size={24} color="#FFF" />
-            </TouchableOpacity>
-
             <View style={styles.header}>
               <Sparkles size={28} color="#FFD700" />
               <Text style={styles.title}>Daily Spin & Win</Text>
@@ -647,15 +645,7 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     paddingHorizontal: 20,
-  },
-  closeButton: {
-    position: "absolute",
-    top: -80,
-    right: 10,
-    padding: 12,
-    backgroundColor: "rgba(255,255,255,0.15)",
-    borderRadius: 24,
-    zIndex: 1000,
+    paddingTop: 40,
   },
   header: {
     alignItems: "center",
