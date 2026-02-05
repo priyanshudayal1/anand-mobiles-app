@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { View, Text, TouchableOpacity, FlatList, Dimensions } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -118,6 +118,15 @@ const ProductCard = ({ product, colors, onPress }) => {
   );
 };
 
+// Memoize ProductCard to prevent unnecessary re-renders
+const MemoizedProductCard = React.memo(ProductCard, (prevProps, nextProps) => {
+  return (
+    prevProps.product?.id === nextProps.product?.id &&
+    prevProps.product?.price === nextProps.product?.price &&
+    prevProps.colors === nextProps.colors
+  );
+});
+
 export default function HorizontalProductScroll({
   products = [],
   title,
@@ -128,21 +137,30 @@ export default function HorizontalProductScroll({
   const { colors } = useTheme();
   const router = useRouter();
 
-  if (!products || products.length === 0) {
-    return null;
-  }
-
-  const handleProductPress = (product) => {
+  const handleProductPress = useCallback((product) => {
     router.push(`/product/${product?.id || product?.product_id || "0"}`);
-  };
+  }, [router]);
 
-  const handleSeeAll = () => {
+  const handleSeeAll = useCallback(() => {
     if (onSeeAll) {
       onSeeAll();
     } else {
       router.push("/(tabs)/menu");
     }
-  };
+  }, [onSeeAll, router]);
+
+  const renderItem = useCallback(({ item }) => (
+    <MemoizedProductCard product={item} colors={colors} onPress={handleProductPress} />
+  ), [colors, handleProductPress]);
+
+  const keyExtractor = useCallback(
+    (item, index) => (item?.id?.toString() || index.toString()),
+    [],
+  );
+
+  if (!products || products.length === 0) {
+    return null;
+  }
 
   return (
     <View style={{ marginTop: 8, paddingVertical: 16, backgroundColor: colors.cardBg }}>
@@ -187,13 +205,15 @@ export default function HorizontalProductScroll({
 
       <FlatList
         data={products}
-        renderItem={({ item }) => (
-          <ProductCard product={item} colors={colors} onPress={handleProductPress} />
-        )}
-        keyExtractor={(item, index) => (item?.id?.toString() || index.toString())}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 16 }}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={5}
+        initialNumToRender={5}
+        windowSize={7}
       />
     </View>
   );

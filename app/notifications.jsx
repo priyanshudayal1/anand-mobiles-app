@@ -10,7 +10,6 @@ import {
   Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "../store/useTheme";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
@@ -30,7 +29,6 @@ export default function NotificationsScreen() {
     markAllAsRead,
     deleteNotification,
     deleteAllNotifications,
-    startRealtimeListener,
   } = useNotificationStore();
 
   // Start real-time listener on mount
@@ -52,14 +50,14 @@ export default function NotificationsScreen() {
     };
 
     initializeListener();
-  }, []);
+  }, [fetchNotifications]);
 
   const handleRefresh = useCallback(async () => {
     // Using API polling instead of real-time listener
     fetchNotifications();
-  }, []);
+  }, [fetchNotifications]);
 
-  const handleNotificationPress = async (notification) => {
+  const handleNotificationPress = useCallback(async (notification) => {
     // Haptic feedback
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
@@ -72,9 +70,9 @@ export default function NotificationsScreen() {
     if (notification.order_id) {
       router.push(`/order-tracking/${notification.order_id}`);
     }
-  };
+  }, [markAsRead, router]);
 
-  const handleDeleteNotification = async (notificationId) => {
+  const handleDeleteNotification = useCallback(async (notificationId) => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     Alert.alert(
       "Delete Notification",
@@ -91,15 +89,15 @@ export default function NotificationsScreen() {
         },
       ],
     );
-  };
+  }, [deleteNotification]);
 
-  const handleMarkAllRead = async () => {
+  const handleMarkAllRead = useCallback(async () => {
     if (unreadCount === 0) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     await markAllAsRead();
-  };
+  }, [unreadCount, markAllAsRead]);
 
-  const handleClearAll = async () => {
+  const handleClearAll = useCallback(async () => {
     if (notifications.length === 0) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     Alert.alert(
@@ -117,9 +115,9 @@ export default function NotificationsScreen() {
         },
       ],
     );
-  };
+  }, [notifications.length, deleteAllNotifications]);
 
-  const renderNotification = ({ item }) => {
+  const renderNotification = useCallback(({ item }) => {
     const isUnread = !item.read;
     const productImage = item?.data?.product_image;
     const productName = item?.data?.product_name;
@@ -215,9 +213,20 @@ export default function NotificationsScreen() {
         </View>
       </TouchableOpacity>
     );
-  };
+  }, [colors, handleNotificationPress, handleDeleteNotification]);
 
-  const renderEmptyState = () => (
+  const getItemLayout = useCallback(
+    (data, index) => ({
+      length: 76,
+      offset: 76 * index,
+      index,
+    }),
+    [],
+  );
+
+  const keyExtractor = useCallback((item) => item.id, []);
+
+  const renderEmptyState = useCallback(() => (
     <View
       style={{
         flex: 1,
@@ -264,7 +273,7 @@ export default function NotificationsScreen() {
         You will receive notifications here when your order status changes.
       </Text>
     </View>
-  );
+  ), [colors]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
@@ -355,13 +364,19 @@ export default function NotificationsScreen() {
       ) : (
         <FlatList
           data={notifications}
-          keyExtractor={(item) => item.id}
+          keyExtractor={keyExtractor}
           renderItem={renderNotification}
+          getItemLayout={getItemLayout}
           contentContainerStyle={{
             paddingBottom: 20,
             flexGrow: 1,
           }}
           ListEmptyComponent={renderEmptyState}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          updateCellsBatchingPeriod={50}
+          initialNumToRender={15}
+          windowSize={21}
           refreshControl={
             <RefreshControl
               refreshing={isLoading}

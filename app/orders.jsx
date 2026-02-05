@@ -35,7 +35,7 @@ const toIST = (dateString) => {
 export default function Orders() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
-  const { orders, isLoading, error, getAllOrders } = useOrderStore();
+  const { orders, isLoading, getAllOrders } = useOrderStore();
   const [refreshing, setRefreshing] = useState(false);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [selectedFilter, setSelectedFilter] = useState("All");
@@ -44,7 +44,7 @@ export default function Orders() {
 
   useEffect(() => {
     getAllOrders();
-  }, []);
+  }, [getAllOrders]);
 
   useEffect(() => {
     filterOrders(orders, selectedFilter);
@@ -72,7 +72,7 @@ export default function Orders() {
     }
   }, [getAllOrders]);
 
-  const getStatusColor = (status) => {
+  const getStatusColor = useCallback((status) => {
     const s = (status || "").toLowerCase();
     if (s.includes("delivered") || s.includes("success")) return colors.success;
     if (s.includes("cancelled") || s.includes("failed")) return colors.error;
@@ -80,18 +80,18 @@ export default function Orders() {
     if (s.includes("shipped") || s.includes("out"))
       return colors.info || "#3b82f6"; // Fallback blue
     return colors.primary;
-  };
+  }, [colors]);
 
-  const getStatusIcon = (status) => {
+  const getStatusIcon = useCallback((status) => {
     const s = (status || "").toLowerCase();
     if (s.includes("delivered")) return "check-circle";
     if (s.includes("cancelled")) return "x-circle";
     if (s.includes("shipped")) return "truck";
     if (s.includes("processing")) return "package";
     return "clock";
-  };
+  }, []);
 
-  const renderOrder = ({ item }) => {
+  const renderOrder = useCallback(({ item }) => {
     const statusColor = getStatusColor(item.status);
 
     return (
@@ -286,7 +286,40 @@ export default function Orders() {
         </View>
       </View>
     );
-  };
+  }, [colors, isDarkMode, router, getStatusColor, getStatusIcon]);
+
+  const renderFilterItem = useCallback(({ item }) => (
+    <TouchableOpacity
+      onPress={() => setSelectedFilter(item)}
+      style={{
+        marginRight: 10,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        backgroundColor:
+          selectedFilter === item ? colors.primary : colors.surface,
+        borderWidth: 1,
+        borderColor:
+          selectedFilter === item ? colors.primary : colors.border,
+      }}
+    >
+      <Text
+        style={{
+          color: selectedFilter === item ? "#FFF" : colors.text,
+          fontWeight: selectedFilter === item ? "600" : "400",
+          fontSize: 13,
+        }}
+      >
+        {item}
+      </Text>
+    </TouchableOpacity>
+  ), [selectedFilter, colors]);
+
+  const keyExtractorFilter = useCallback((item) => item, []);
+  const keyExtractorOrder = useCallback(
+    (item, index) => item.order_id || item.id || `order-${index}`,
+    [],
+  );
 
   return (
     <SafeAreaView
@@ -324,34 +357,9 @@ export default function Orders() {
           horizontal
           showsHorizontalScrollIndicator={false}
           estimatedItemSize={80}
-          keyExtractor={(item) => item}
+          keyExtractor={keyExtractorFilter}
           contentContainerStyle={{ paddingHorizontal: 16 }}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => setSelectedFilter(item)}
-              style={{
-                marginRight: 10,
-                paddingHorizontal: 16,
-                paddingVertical: 8,
-                borderRadius: 20,
-                backgroundColor:
-                  selectedFilter === item ? colors.primary : colors.surface,
-                borderWidth: 1,
-                borderColor:
-                  selectedFilter === item ? colors.primary : colors.border,
-              }}
-            >
-              <Text
-                style={{
-                  color: selectedFilter === item ? "#FFF" : colors.text,
-                  fontWeight: selectedFilter === item ? "600" : "400",
-                  fontSize: 13,
-                }}
-              >
-                {item}
-              </Text>
-            </TouchableOpacity>
-          )}
+          renderItem={renderFilterItem}
         />
       </View>
 
@@ -366,11 +374,14 @@ export default function Orders() {
         <FlashList
           data={filteredOrders}
           renderItem={renderOrder}
-          keyExtractor={(item, index) =>
-            item.order_id || item.id || `order-${index}`
-          }
+          keyExtractor={keyExtractorOrder}
           estimatedItemSize={200}
           contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={5}
+          updateCellsBatchingPeriod={50}
+          initialNumToRender={10}
+          windowSize={11}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

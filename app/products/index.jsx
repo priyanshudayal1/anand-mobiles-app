@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -14,7 +14,7 @@ import ProductFilterModal from "../../components/common/ProductFilterModal";
 export default function ProductsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const {
     products,
     isLoading,
@@ -102,32 +102,32 @@ export default function ProductsScreen() {
     return () => {
       // Optional: clear filters on unmount if desired, or keep them cached
     };
-  }, [params.search, params.category, params.brand, params.categoryName]);
+  }, [params, applyFilters, resetFilters]);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     router.back();
-  };
+  }, [router]);
 
-  const handleLoadMore = () => {
+  const handleLoadMore = useCallback(() => {
     if (!isLoadingMore && pagination.hasNext) {
       loadMoreProducts();
     }
-  };
+  }, [isLoadingMore, pagination.hasNext, loadMoreProducts]);
 
-  const renderItem = ({ item }) => (
+  const renderItem = useCallback(({ item }) => (
     <View style={{ flex: 1, padding: 4 }}>
       <ProductCard product={item} />
     </View>
-  );
+  ), []);
 
-  const renderFooter = () => {
+  const renderFooter = useCallback(() => {
     if (!isLoadingMore) return null;
     return (
       <View style={{ paddingVertical: 20, alignItems: "center" }}>
         <ActivityIndicator size="small" color={colors.primary} />
       </View>
     );
-  };
+  }, [isLoadingMore, colors]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>

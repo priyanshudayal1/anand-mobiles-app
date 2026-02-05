@@ -2,7 +2,6 @@ import React, { useEffect, useCallback } from "react";
 import {
   View,
   Text,
-  ScrollView,
   ActivityIndicator,
   TouchableOpacity,
   RefreshControl,
@@ -15,7 +14,7 @@ import {
 } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
-import { Ionicons, Feather } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { useTheme } from "../../store/useTheme";
 import { useCartStore } from "../../store/useCart";
@@ -28,7 +27,6 @@ export default function Cart() {
   const {
     cartItems,
     cartTotal,
-    itemCount,
     isLoading,
     fetchCart,
     incrementQuantity,
@@ -43,7 +41,7 @@ export default function Cart() {
 
   useEffect(() => {
     fetchCart();
-  }, []);
+  }, [fetchCart]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -54,7 +52,7 @@ export default function Cart() {
     }
   }, [fetchCart]);
 
-  const handleRemove = (itemId) => {
+  const handleRemove = useCallback((itemId) => {
     Alert.alert(
       "Remove Item",
       "Are you sure you want to remove this item from your cart?",
@@ -67,7 +65,7 @@ export default function Cart() {
             try {
               setRemovingItemId(itemId);
               await removeFromCart(itemId);
-            } catch (error) {
+            } catch (_error) {
               Alert.alert("Error", "Failed to remove item");
             } finally {
               setRemovingItemId(null);
@@ -76,35 +74,35 @@ export default function Cart() {
         },
       ],
     );
-  };
+  }, [removeFromCart]);
 
-  const handleIncrement = async (itemId) => {
+  const handleIncrement = useCallback(async (itemId) => {
     try {
       setUpdatingItemId(itemId);
       await incrementQuantity(itemId);
-    } catch (error) {
+    } catch (_error) {
       Alert.alert("Error", "Failed to update quantity");
     } finally {
       setUpdatingItemId(null);
     }
-  };
+  }, [incrementQuantity]);
 
-  const handleDecrement = async (itemId) => {
+  const handleDecrement = useCallback(async (itemId) => {
     try {
       setUpdatingItemId(itemId);
       await decrementQuantity(itemId);
-    } catch (error) {
+    } catch (_error) {
       Alert.alert("Error", "Failed to update quantity");
     } finally {
       setUpdatingItemId(null);
     }
-  };
+  }, [decrementQuantity]);
 
-  const handleCheckout = () => {
-    setIsCheckoutVisible(true);
-  };
+  const handleCheckout = useCallback(() => {
+  setIsCheckoutVisible(true);
+}, []);
 
-  const handleProductPress = (item) => {
+  const handleProductPress = useCallback((item) => {
     const productId = item.product_id || item.product?.id;
     if (productId) {
       router.push({
@@ -112,9 +110,9 @@ export default function Cart() {
         params: { productId },
       });
     }
-  };
+  }, [router]);
 
-  const renderCartItem = ({ item }) => {
+  const renderCartItem = useCallback(({ item }) => {
     const product = item.product || item;
     const price =
       item.discounted_price || product.discount_price || product.price || 0;
@@ -330,7 +328,7 @@ export default function Cart() {
         </View>
       </View>
     );
-  };
+  }, [colors, updatingItemId, removingItemId, handleProductPress, handleRemove, handleDecrement, handleIncrement]);
 
   const totalItems = getCartCount();
 
@@ -426,7 +424,7 @@ export default function Cart() {
               marginBottom: 24,
             }}
           >
-            Looks like you haven't added anything to your cart yet.
+            Looks like you haven&apos;t added anything to your cart yet.
           </Text>
           <TouchableOpacity
             onPress={() => router.push("/(tabs)")}
