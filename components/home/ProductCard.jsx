@@ -11,7 +11,7 @@ import { Star, Heart } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useTheme } from "../../store/useTheme";
 import { useWishlistStore } from "../../store/useWishlist";
-import { shallow } from "zustand/shallow";
+import { useShallow } from "zustand/react/shallow";
 
 const { width } = Dimensions.get("window");
 
@@ -24,13 +24,12 @@ function ProductCard({
   const { colors } = useTheme();
   const router = useRouter();
   const { items, addItem, removeItem, isInWishlist } = useWishlistStore(
-    (state) => ({
+    useShallow((state) => ({
       items: state.items,
       addItem: state.addItem,
       removeItem: state.removeItem,
       isInWishlist: state.isInWishlist,
-    }),
-    shallow,
+    }))
   );
 
   const wishlistItems = items || [];
