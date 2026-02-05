@@ -43,7 +43,7 @@ export default function Profile() {
   // Load user data on mount
   useEffect(() => {
     fetchUserProfile().catch((err) => {
-      console.log("Failed to fetch profile on mount", err);
+      console.error("Failed to fetch profile on mount", err);
     });
   }, []);
 

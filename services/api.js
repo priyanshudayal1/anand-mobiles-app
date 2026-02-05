@@ -36,7 +36,6 @@ api.interceptors.response.use(
   },
   async (error) => {
     if (error.response && error.response.status === 401) {
-      console.log("[API] 401 Unauthorized detected - Calling logout callback");
       if (unauthorizedCallback) {
         unauthorizedCallback();
       }

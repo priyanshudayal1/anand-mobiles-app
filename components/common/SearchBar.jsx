@@ -102,10 +102,9 @@ export default function SearchBar({ placeholder = 'Search "Mobile"', autoFocus =
                 return;
             }
 
-            if (Platform.OS === 'web') {
-                 console.log("Voice search not supported on web yet");
-                 return;
-            }
+              if (Platform.OS === 'web') {
+                  return;
+              }
             
             // Request permissions using AudioModule
             const status = await AudioModule.requestRecordingPermissionsAsync();
@@ -123,7 +122,6 @@ export default function SearchBar({ placeholder = 'Search "Mobile"', autoFocus =
     const startRecording = async () => {
         try {
             // Start recording
-            console.log('Starting recording..');
             audioRecorder.record();
             setIsRecording(true);
 
@@ -140,7 +138,6 @@ export default function SearchBar({ placeholder = 'Search "Mobile"', autoFocus =
     };
 
     const stopRecording = async (mockResult = false) => {
-        console.log('Stopping recording..');
         setIsRecording(false);
 
         if (audioRecorder.isRecording) {

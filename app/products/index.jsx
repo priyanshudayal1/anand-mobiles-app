@@ -46,7 +46,6 @@ export default function ProductsScreen() {
   useEffect(() => {
     // Immediate execution function to handle async operations
     const loadData = async () => {
-      console.log("Products Screen - Received params:", params);
       resetFilters();
       const filters = {};
 
@@ -64,7 +63,6 @@ export default function ProductsScreen() {
       if (searchParam) {
         filters.search = searchParam;
         setSearchTitle(`Results for "${searchParam}"`);
-        console.log("Applying search filter:", searchParam);
       }
 
       if (categoryParam) {
@@ -73,12 +71,6 @@ export default function ProductsScreen() {
         if (!searchParam) {
           setSearchTitle(categoryNameParam || "Category");
         }
-        console.log(
-          "Applying category filter:",
-          categoryParam,
-          "Name:",
-          categoryNameParam,
-        );
       }
 
       if (brandParam) {
@@ -86,10 +78,7 @@ export default function ProductsScreen() {
         if (!searchParam && !categoryParam) {
           setSearchTitle(brandParam);
         }
-        console.log("Applying brand filter:", brandParam);
       }
-
-      console.log("Filters to apply:", filters);
 
       // Apply filters only if we have some criteria
       // If empty, it fetches default products which is what we want if no params passed

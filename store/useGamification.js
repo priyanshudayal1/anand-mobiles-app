@@ -23,15 +23,8 @@ export const useGamification = create((set, get) => ({
   // Fetch Gamification Config (public - no auth required)
   fetchGamificationConfig: async () => {
     try {
-      console.log("🔄 Fetching gamification config...");
       const response = await api.get(API_ENDPOINTS.gamificationConfig);
       const config = response.data.config;
-
-      console.log("📦 Gamification config received:", {
-        rewardCount: config.spin_wheel_rewards?.length || 0,
-        enabled: config.spin_wheel_enabled,
-        dailySpins: config.daily_spins,
-      });
 
       set({
         gamificationConfig: config,

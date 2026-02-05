@@ -28,11 +28,9 @@ if (!isExpoGo) {
         shouldShowList: true,
       }),
     });
-  } catch (error) {
-    console.log("Push notifications not available:", error.message);
-  }
+  } catch (error) {}
 } else {
-  console.log("Running in Expo Go - Push notifications disabled");
+  // Push notifications are disabled in Expo Go
 }
 
 export const useNotificationStore = create((set, get) => ({
@@ -52,14 +50,8 @@ export const useNotificationStore = create((set, get) => ({
       get().stopRealtimeListener();
 
       if (!userId) {
-        console.log("No user ID provided for real-time listener");
         return null;
       }
-
-      console.log(
-        "🚀 Starting WebSocket notification listener for user:",
-        userId,
-      );
 
       // Set up WebSocket event listeners
       const unsubscribers = [];
@@ -67,20 +59,12 @@ export const useNotificationStore = create((set, get) => ({
       // Handle new notifications
       unsubscribers.push(
         webSocketService.on("new_notification", (notification) => {
-          console.log(
-            "📬 New notification received via WebSocket:",
-            notification,
-          );
           set((state) => {
             // Check if notification already exists to prevent duplicates
             const exists = state.notifications.some(
               (n) => n.id === notification.id,
             );
             if (exists) {
-              console.log(
-                "⚠️ Notification already exists, skipping:",
-                notification.id,
-              );
               return state;
             }
             return {
@@ -94,20 +78,12 @@ export const useNotificationStore = create((set, get) => ({
       // Handle broadcast notifications from admin
       unsubscribers.push(
         webSocketService.on("broadcast_notification", (notification) => {
-          console.log(
-            "📣 Broadcast notification received via WebSocket:",
-            notification,
-          );
           set((state) => {
             // Check if notification already exists to prevent duplicates
             const exists = state.notifications.some(
               (n) => n.id === notification.id,
             );
             if (exists) {
-              console.log(
-                "⚠️ Broadcast notification already exists, skipping:",
-                notification.id,
-              );
               return state;
             }
             return {
@@ -121,9 +97,6 @@ export const useNotificationStore = create((set, get) => ({
       // Handle notifications list update
       unsubscribers.push(
         webSocketService.on("notifications_list", (notifications) => {
-          console.log(
-            `📋 Received ${notifications.length} notifications via WebSocket`,
-          );
           const unreadCount = notifications.filter((n) => !n.read).length;
           set({
             notifications,
@@ -136,7 +109,6 @@ export const useNotificationStore = create((set, get) => ({
       // Handle unread count update
       unsubscribers.push(
         webSocketService.on("unread_count", (count) => {
-          console.log("🔢 Unread count updated via WebSocket:", count);
           set({ unreadCount: count });
         }),
       );
@@ -144,7 +116,6 @@ export const useNotificationStore = create((set, get) => ({
       // Handle connection status
       unsubscribers.push(
         webSocketService.on("connected", () => {
-          console.log("✅ WebSocket connected");
           set({ isWebSocketConnected: true, error: null });
           // Request initial notifications
           webSocketService.requestNotifications(50);
@@ -153,7 +124,6 @@ export const useNotificationStore = create((set, get) => ({
 
       unsubscribers.push(
         webSocketService.on("disconnected", () => {
-          console.log("🔌 WebSocket disconnected");
           set({ isWebSocketConnected: false });
         }),
       );
@@ -167,7 +137,6 @@ export const useNotificationStore = create((set, get) => ({
 
       unsubscribers.push(
         webSocketService.on("backend_unavailable", () => {
-          console.log("📡 Using API polling for notifications");
           set({ isWebSocketConnected: false });
           // Fetch via API as fallback
           get().fetchNotifications();
@@ -176,7 +145,6 @@ export const useNotificationStore = create((set, get) => ({
 
       unsubscribers.push(
         webSocketService.on("max_reconnect_reached", () => {
-          console.log("📡 WebSocket unavailable, using API polling");
           set({ isWebSocketConnected: false });
           // Fetch via API as fallback
           get().fetchNotifications();
@@ -191,14 +159,9 @@ export const useNotificationStore = create((set, get) => ({
       const connected = await webSocketService.connect();
 
       if (!connected) {
-        console.log(
-          "⚠️ WebSocket connection failed, falling back to API polling",
-        );
         // Fall back to API-based notifications
         await get().fetchNotifications();
       }
-
-      console.log("✅ Real-time notification listener started");
       return () => get().stopRealtimeListener();
     } catch (error) {
       console.error("Error starting real-time listener:", error);
@@ -215,7 +178,6 @@ export const useNotificationStore = create((set, get) => ({
 
     // Unsubscribe from all WebSocket events
     if (wsUnsubscribers && wsUnsubscribers.length > 0) {
-      console.log("🛑 Stopping WebSocket notification listener");
       wsUnsubscribers.forEach((unsub) => {
         if (typeof unsub === "function") {
           unsub();
@@ -234,21 +196,16 @@ export const useNotificationStore = create((set, get) => ({
     try {
       // Check if running in Expo Go
       if (isExpoGo) {
-        console.log(
-          "Push notifications require a development build - skipping in Expo Go",
-        );
         return null;
       }
 
       // Check if notifications module is available
       if (!isNotificationsAvailable || !Notifications) {
-        console.log("Push notifications not available in this environment");
         return null;
       }
 
       // Must use physical device for push notifications
       if (!Device.isDevice) {
-        console.log("Must use physical device for Push Notifications");
         return null;
       }
 
@@ -265,7 +222,6 @@ export const useNotificationStore = create((set, get) => ({
       set({ notificationPermission: finalStatus });
 
       if (finalStatus !== "granted") {
-        console.log("Notification permission not granted");
         return null;
       }
 
@@ -275,10 +231,6 @@ export const useNotificationStore = create((set, get) => ({
         Constants.easConfig?.projectId;
 
       if (!projectId) {
-        console.log(
-          "No EAS project ID found - push notifications require a development build",
-        );
-        console.log("Run: npx expo prebuild && npx expo run:android");
         return null;
       }
 
@@ -307,8 +259,6 @@ export const useNotificationStore = create((set, get) => ({
 
       // Register token with backend
       await get().registerTokenWithBackend(token);
-
-      console.log("✅ Push notifications registered successfully");
       return token;
     } catch (error) {
       // Provide clearer error messages for common issues
@@ -317,18 +267,11 @@ export const useNotificationStore = create((set, get) => ({
         errorMessage.includes("FirebaseApp is not initialized") ||
         errorMessage.includes("FirebaseApp.initializeApp")
       ) {
-        console.log(
-          "📱 Push notifications: Native FCM not configured. This is expected for Expo-managed builds. WebSocket notifications will be used instead.",
-        );
       } else if (
         errorMessage.includes("Expo Go") ||
         errorMessage.includes("projectId")
       ) {
-        console.log(
-          "📱 Push notifications: Not available in Expo Go. Use a development build for full push notification support.",
-        );
       } else {
-        console.log("📱 Push notifications setup:", errorMessage);
         set({ error: errorMessage });
       }
       return null;
@@ -340,14 +283,12 @@ export const useNotificationStore = create((set, get) => ({
     try {
       const userToken = await AsyncStorage.getItem("userToken");
       if (!userToken) {
-        console.log("No user token, skipping FCM token registration");
         return;
       }
 
       await api.post("/users/notifications/register-token/", {
         fcm_token: token,
       });
-      console.log("FCM token registered with backend");
     } catch (error) {
       console.error("Error registering FCM token with backend:", error);
     }

@@ -193,7 +193,6 @@ export default function SpinWheel({
   // Fetch config when wheel becomes visible if not already loaded
   useEffect(() => {
     if (visible && !gamificationConfig?.spin_wheel_rewards && !isLoading) {
-      console.log("🎰 SpinWheel opened - fetching gamification config...");
       fetchGamificationConfig();
     }
   }, [visible, gamificationConfig, isLoading, fetchGamificationConfig]);
@@ -220,19 +219,9 @@ export default function SpinWheel({
       );
       setSegments(backendSegments);
       setConfigLoaded(true);
-      console.log("🎰 SpinWheel config update:", {
-        hasConfig: true,
-        count: backendSegments.length,
-        rewards: backendSegments.map((s) => ({
-          label: s.label,
-          weight: s.weight,
-        })),
-      });
     } else if (configLoaded || (!isLoading && gamificationConfig !== null)) {
       // Only show warning if we've already tried loading or config explicitly has no rewards
-      console.log(
-        "⚠️ Using default spin wheel segments - no backend config found",
-      );
+      // No backend config found; using defaults
     }
   }, [gamificationConfig, isLoading, configLoaded]);
 

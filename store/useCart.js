@@ -104,12 +104,10 @@ export const useCartStore = create((set, get) => ({
     }
 
     try {
-      console.log(`[Cart] Updating item ${itemId} to quantity ${quantity}`);
       const response = await api.put("/users/cart/update/", {
         item_id: itemId,
         quantity: quantity,
       });
-      console.log(`[Cart] Update successful:`, response.data);
 
       // Refresh cart to get updated data from backend
       await get().fetchCart();
@@ -132,11 +130,9 @@ export const useCartStore = create((set, get) => ({
   // Remove from cart
   removeFromCart: async (itemId) => {
     try {
-      console.log(`[Cart] Removing item ${itemId}`);
       // Backend expects item_id in URL path: /users/cart/remove/{itemId}/
       const endpoint = `/users/cart/remove/${itemId}/`;
       const response = await api.delete(endpoint);
-      console.log(`[Cart] Remove successful:`, response.data);
 
       // Refresh cart to get updated data from backend
       await get().fetchCart();
@@ -186,9 +182,6 @@ export const useCartStore = create((set, get) => ({
       console.error(`[Cart] Item not found: ${itemId}`);
       throw new Error("Item not found in cart");
     }
-    console.log(
-      `[Cart] Incrementing item ${itemId} from ${item.quantity} to ${item.quantity + 1}`,
-    );
     return await get().updateQuantity(itemId, item.quantity + 1);
   },
 
@@ -200,9 +193,6 @@ export const useCartStore = create((set, get) => ({
       console.error(`[Cart] Item not found: ${itemId}`);
       throw new Error("Item not found in cart");
     }
-    console.log(
-      `[Cart] Decrementing item ${itemId} from ${item.quantity} to ${item.quantity > 1 ? item.quantity - 1 : "removing"}`,
-    );
     if (item.quantity > 1) {
       return await get().updateQuantity(itemId, item.quantity - 1);
     } else {

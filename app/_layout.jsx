@@ -19,7 +19,6 @@ let Notifications = null;
 try {
   Notifications = require("expo-notifications");
 } catch (error) {
-  console.log("expo-notifications not available");
 }
 
 // Suppress warnings
@@ -72,9 +71,6 @@ function RootLayoutNav() {
     const initializeRealtimeListener = async () => {
       const userId = await AsyncStorage.getItem("userId");
       if (userId) {
-        console.log(
-          "🚀 Initializing WebSocket real-time listener on app start",
-        );
         startRealtimeListener(userId);
       } else {
         // Fallback to API polling if no userId
@@ -85,7 +81,6 @@ function RootLayoutNav() {
 
     // Skip notification listeners if not available (Expo Go)
     if (!Notifications) {
-      console.log("Notification listeners not available in Expo Go");
       return;
     }
 
@@ -94,8 +89,6 @@ function RootLayoutNav() {
       // Listen for incoming notifications (foreground)
       notificationListener.current =
         Notifications.addNotificationReceivedListener((notification) => {
-          console.log("Notification received:", notification);
-
           // Vibrate and play haptic feedback
           if (Platform.OS !== "web") {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -123,8 +116,6 @@ function RootLayoutNav() {
       // Listen for notification interactions (user taps on notification)
       responseListener.current =
         Notifications.addNotificationResponseReceivedListener((response) => {
-          console.log("Notification response:", response);
-
           const data = parseNotificationData(response.notification);
 
           // Navigate based on notification type
@@ -135,10 +126,7 @@ function RootLayoutNav() {
           }
         });
     } catch (error) {
-      console.log(
-        "Notification listeners not available (Expo Go):",
-        error.message,
-      );
+      // Notification listeners may not be available in Expo Go
     }
 
     // Cleanup listeners
@@ -151,7 +139,7 @@ function RootLayoutNav() {
           responseListener.current.remove();
         }
       } catch (error) {
-        console.log("Error cleaning up notification listeners:", error.message);
+        // Ignore cleanup errors
       }
 
       // Stop real-time listener when component unmounts or auth changes

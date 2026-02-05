@@ -135,7 +135,6 @@ export const useAuthStore = create((set, get) => ({
           err.response?.data?.code === "USER_ALREADY_EXISTS"
         ) {
           // Fallback to login
-          console.log("User exists, falling back to Google Login");
           const loginResponse = await api.post("/users/google-login", {
             idToken,
           });
@@ -264,6 +263,5 @@ export const useAuthStore = create((set, get) => ({
 
 // Register callback to handle 401s from API
 setUnauthorizedCallback(() => {
-  console.log("Session expired or unauthorized. Logging out...");
   useAuthStore.getState().logout();
 });

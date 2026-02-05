@@ -23,7 +23,6 @@ class WebSocketService {
    */
   async connect() {
     if (this.isConnecting || this.isConnected) {
-      console.log("🔌 WebSocket: Already connected or connecting");
       return this.isConnected;
     }
 
@@ -32,19 +31,16 @@ class WebSocketService {
     try {
       const token = await AsyncStorage.getItem("userToken");
       if (!token) {
-        console.log("🔌 WebSocket: No user token, skipping connection");
         this.isConnecting = false;
         return false;
       }
 
       const wsUrl = `${getWebSocketURL()}?token=${token}`;
-      console.log("🔌 WebSocket: Connecting to", getWebSocketURL());
 
       return new Promise((resolve) => {
         this.socket = new WebSocket(wsUrl);
 
         this.socket.onopen = () => {
-          console.log("✅ WebSocket: Connected successfully");
           this.isConnected = true;
           this.isConnecting = false;
           this.reconnectAttempts = 0;
@@ -63,21 +59,10 @@ class WebSocketService {
         };
 
         this.socket.onerror = (error) => {
-          // Only log on first error to reduce console noise
-          if (this.reconnectAttempts === 0) {
-            console.log("⚠️ WebSocket: Connection unavailable (backend may be offline)");
-          }
           this.emit("error", error);
         };
 
         this.socket.onclose = (event) => {
-          // Only log significant close events to reduce noise
-          if (event.code === 1000) {
-            console.log("🔌 WebSocket: Disconnected cleanly");
-          } else if (this.reconnectAttempts === 0) {
-            console.log("🔌 WebSocket: Connection closed (code: " + event.code + ")");
-          }
-          
           this.isConnected = false;
           this.isConnecting = false;
           this.stopPingInterval();
@@ -86,7 +71,6 @@ class WebSocketService {
           // For abnormal closures (1006), don't reconnect - likely backend is down
           // For other errors, attempt reconnection if not a clean close
           if (event.code === 1006) {
-            console.log("⚠️ WebSocket: Backend unavailable, using API fallback");
             this.emit("backend_unavailable", null);
           } else if (
             event.code !== 1000 &&
@@ -102,7 +86,6 @@ class WebSocketService {
         // Timeout for connection
         setTimeout(() => {
           if (!this.isConnected && this.isConnecting) {
-            console.log("🔌 WebSocket: Connection timeout");
             this.socket?.close();
             this.isConnecting = false;
             resolve(false);
@@ -120,7 +103,6 @@ class WebSocketService {
    * Disconnect from the WebSocket server
    */
   disconnect() {
-    console.log("🔌 WebSocket: Disconnecting...");
     this.stopPingInterval();
     if (this.socket) {
       this.socket.close(1000, "User disconnect");
@@ -136,7 +118,6 @@ class WebSocketService {
    */
   attemptReconnect() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.log("⚠️ WebSocket: Max reconnect attempts reached, using API fallback");
       this.emit("max_reconnect_reached", null);
       return;
     }
@@ -145,11 +126,6 @@ class WebSocketService {
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1); // Exponential backoff
 
     // Only log first few attempts
-    if (this.reconnectAttempts <= 2) {
-      console.log(
-        `🔌 WebSocket: Reconnect attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}...`,
-      );
-    }
 
     setTimeout(() => {
       if (!this.isConnected && !this.isConnecting) {
@@ -166,33 +142,22 @@ class WebSocketService {
 
     switch (type) {
       case "connection_established":
-        console.log("🔌 WebSocket: Connection acknowledged by server");
         break;
 
       case "new_notification":
-        console.log(
-          "📬 WebSocket: New notification received",
-          data.notification,
-        );
         this.emit("new_notification", data.notification);
         break;
 
       case "broadcast_notification":
-        console.log(
-          "📣 WebSocket: Broadcast notification received",
-          data.notification,
-        );
         this.emit("broadcast_notification", data.notification);
         break;
 
       case "notifications_list":
-        console.log("📋 WebSocket: Notifications list received", data.total);
         this.emit("notifications_list", data.notifications);
         break;
 
       case "unread_count":
       case "unread_count_update":
-        console.log("🔢 WebSocket: Unread count update", data.unread_count);
         this.emit("unread_count", data.unread_count);
         break;
 
@@ -214,7 +179,7 @@ class WebSocketService {
         break;
 
       default:
-        console.log("🔌 WebSocket: Unknown message type", type, data);
+        // Unknown message types are ignored
     }
   }
 

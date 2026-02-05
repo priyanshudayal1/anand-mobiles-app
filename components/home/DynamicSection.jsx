@@ -76,7 +76,6 @@ const TabbedSection = ({ section }) => {
   const handleLinkPress = (url) => {
     if (!url) return;
     if (url.startsWith("http")) {
-      console.log("Opening external link:", url);
     } else {
       router.push("/products");
     }
@@ -261,7 +260,6 @@ export default function DynamicSection({ section }) {
   const handleLinkPress = (url) => {
     if (!url) return;
     if (url.startsWith("http")) {
-      console.log("Opening external link:", url);
     } else {
       router.push("/products");
     }

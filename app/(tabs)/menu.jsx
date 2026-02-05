@@ -200,7 +200,7 @@ export default function Menu() {
         router.push('/wishlist');
         break;
       default:
-        console.log('Action:', action);
+        break;
     }
   };
 

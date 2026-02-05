@@ -37,14 +37,6 @@ export default function NotificationsScreen() {
       // TODO: Real-time Firestore listener disabled (needs Firebase Auth)
       // Using API polling for now - see FIRESTORE_SETUP.md
 
-      // const userId = await AsyncStorage.getItem("userId");
-      // if (userId) {
-      //   console.log("🔥 Starting real-time listener in notifications screen");
-      //   startRealtimeListener(userId);
-      // } else {
-      //   fetchNotifications();
-      // }
-
       // Using API approach instead
       fetchNotifications();
     };

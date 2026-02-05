@@ -43,7 +43,6 @@ export const useOrderStore = create((set, get) => ({
         RazorpayCheckout.open(options)
           .then(async (data) => {
             // handle success
-            console.log("Payment Success:", data);
 
             try {
               // Verify payment with backend
@@ -58,7 +57,6 @@ export const useOrderStore = create((set, get) => ({
                 "/users/order/razorpay/verify/",
                 paymentData,
               );
-              console.log("Payment verified:", verifyResponse.data);
 
               // Update local state
               set((state) => ({
@@ -144,7 +142,6 @@ export const useOrderStore = create((set, get) => ({
         product_ids: productIds,
       };
 
-      console.log("Placing order with data:", JSON.stringify(orderData));
       const response = await api.post(
         "/users/order/razorpay/create/",
         orderData,
