@@ -7,10 +7,9 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Image } from "expo-image";
-import { Star, Heart, ShoppingCart } from "lucide-react-native";
+import { Star, Heart } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useTheme } from "../../store/useTheme";
-import { useCartStore } from "../../store/useCart";
 import { useWishlistStore } from "../../store/useWishlist";
 
 const { width } = Dimensions.get("window");
@@ -23,9 +22,6 @@ function ProductCard({
 }) {
   const { colors } = useTheme();
   const router = useRouter();
-
-  // Store Integration
-  const { addItem: addToCart } = useCartStore();
   const wishlistStore = useWishlistStore();
 
   // Safe access to wishlist store methods
@@ -51,7 +47,7 @@ function ProductCard({
         : (width - 48) / 2;
 
   const imageHeight = size === "small" ? 100 : size === "large" ? 200 : 140;
-  const cardHeight = size === "small" ? 270 : size === "large" ? 380 : 310;
+  const cardHeight = size === "small" ? 210 : size === "large" ? 320 : 250;
 
   // Price & Variant Logic (Matching Web)
   const firstVariant = product.valid_options?.[0];
@@ -91,31 +87,6 @@ function ProductCard({
         `/product/${product.id || product.product_id || product._id}`,
       );
     }
-  };
-
-  const handleAddToCart = (e) => {
-    // Stop propagation if possible (though View doesn't support it directly in RN like Web)
-    // In RN, we just handle the touchable separately
-
-    const defaultVariant = product.valid_options?.[0] || null;
-    const productWithVariant = {
-      ...product,
-      id: product.id || product._id,
-      price: displayPrice,
-      variant_id: defaultVariant?.id || null,
-      variant: defaultVariant
-        ? {
-            id: defaultVariant.id,
-            color: defaultVariant.colors,
-            storage: defaultVariant.storage,
-            ram: defaultVariant.ram,
-            price: defaultVariant.discounted_price || defaultVariant.price,
-          }
-        : null,
-    };
-
-    addToCart(productWithVariant, 1);
-    // Optional: Show toast or feedback
   };
 
   const handleWishlistToggle = async () => {
@@ -231,6 +202,52 @@ function ProductCard({
           </View>
         )}
 
+        {/* Rating Pill */}
+        {showRating && (
+          <View
+            style={{
+              position: "absolute",
+              bottom: 8,
+              left: 8,
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: colors.cardBg,
+              paddingHorizontal: 6,
+              paddingVertical: 4,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: colors.border,
+              gap: 4,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 11,
+                fontWeight: "700",
+                color: colors.text,
+              }}
+            >
+              {ratingValue.toFixed(1)}
+            </Text>
+            <Star size={10} color={colors.success} fill={colors.success} />
+            {reviewsCount > 0 && (
+              <>
+                <View
+                  style={{
+                    width: 1,
+                    height: 12,
+                    backgroundColor: colors.textSecondary,
+                    marginHorizontal: 2,
+                  }}
+                />
+                <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+                  {reviewsCount}
+                </Text>
+              </>
+            )}
+          </View>
+        )}
+
         {/* Out of Stock Badge */}
         {!inStock && (
           <View
@@ -280,21 +297,6 @@ function ProductCard({
         >
           {/* Text Information */}
           <View style={{ flex: 1 }}>
-            {/* Brand & Category */}
-            <View style={{ height: 16, justifyContent: "center" }}>
-              <Text
-                style={{
-                  fontSize: 10,
-                  color: colors.textSecondary,
-                  lineHeight: 14,
-                }}
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
-                {[brandName, categoryName].filter(Boolean).join(" • ") || " "}
-              </Text>
-            </View>
-
             {/* Title */}
             <View style={{ height: size === "small" ? 32 : 36, marginTop: 4 }}>
               <Text
@@ -311,46 +313,19 @@ function ProductCard({
               </Text>
             </View>
 
-            {/* Rating */}
-            <View
-              style={{ height: 20, marginTop: 4, justifyContent: "center" }}
-            >
-              {showRating ? (
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      backgroundColor: colors.success + "20",
-                      paddingHorizontal: 4,
-                      paddingVertical: 2,
-                      borderRadius: 4,
-                      marginRight: 6,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 10,
-                        fontWeight: "700",
-                        color: colors.success,
-                        marginRight: 2,
-                      }}
-                    >
-                      {ratingValue.toFixed(1)}
-                    </Text>
-                    <Star
-                      size={8}
-                      color={colors.success}
-                      fill={colors.success}
-                    />
-                  </View>
-                  {reviewsCount > 0 && (
-                    <Text style={{ fontSize: 10, color: colors.textSecondary }}>
-                      ({reviewsCount})
-                    </Text>
-                  )}
-                </View>
-              ) : null}
+            {/* Brand & Category */}
+            <View style={{ height: 16, justifyContent: "center" }}>
+              <Text
+                style={{
+                  fontSize: 10,
+                  color: colors.textSecondary,
+                  lineHeight: 14,
+                }}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {[brandName, categoryName].filter(Boolean).join(" • ") || " "}
+              </Text>
             </View>
 
             {/* Price */}
@@ -414,30 +389,6 @@ function ProductCard({
             )}
           </TouchableOpacity>
         </View>
-
-        {/* Add to Cart Button */}
-        <TouchableOpacity
-          onPress={handleAddToCart}
-          disabled={!inStock}
-          style={{
-            marginTop: 12,
-            backgroundColor: inStock ? colors.primary : colors.border,
-            borderRadius: 8,
-            paddingVertical: 8,
-            flexDirection: "row",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: 6,
-            opacity: inStock ? 1 : 0.7,
-          }}
-        >
-          <ShoppingCart size={14} color={colors.white} />
-          <Text
-            style={{ color: colors.white, fontSize: 12, fontWeight: "600" }}
-          >
-            {inStock ? "Add to Cart" : "Out of Stock"}
-          </Text>
-        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
