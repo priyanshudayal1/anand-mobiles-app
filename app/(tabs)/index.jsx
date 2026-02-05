@@ -29,8 +29,8 @@ const SectionHeader = ({ title, subtitle, onSeeAll, colors }) => (
   <View
     style={{
       paddingHorizontal: 16,
-      paddingTop: 12,
-      paddingBottom: 8,
+      paddingTop: 0,
+      paddingBottom: 0,
       backgroundColor: colors.cardBg,
     }}
   >
@@ -113,7 +113,8 @@ const SectionTitle = ({ section, colors, onSeeAll }) => {
               style={{
                 height: 3,
                 width: 40,
-                marginTop: 4,
+                marginTop: 0,
+                marginBottom: 6,
                 backgroundColor: colors.primary,
                 borderRadius: 2,
                 alignSelf: "flex-start",
@@ -125,7 +126,7 @@ const SectionTitle = ({ section, colors, onSeeAll }) => {
               style={{
                 fontSize: 12,
                 color: colors.textSecondary,
-                marginTop: 4,
+                marginTop: 0,
               }}
             >
               {section.description}
@@ -181,7 +182,7 @@ const RenderSection = ({ section, colors, router }) => {
       return (
         <View
           key={section.section_id}
-          style={{ backgroundColor: colors.cardBg, marginTop: 0 }}
+          style={{ backgroundColor: colors.cardBg, marginTop: 0, marginBottom: 0 }}
         >
           <SectionTitle section={section} colors={colors} />
           <CategoryGrid showHeader={false} />
@@ -192,7 +193,7 @@ const RenderSection = ({ section, colors, router }) => {
       return (
         <View
           key={section.section_id}
-          style={{ backgroundColor: colors.cardBg, marginTop: 0 }}
+          style={{ backgroundColor: colors.cardBg, marginTop: 0, marginBottom: 0 }}
         >
           <SectionTitle section={section} colors={colors} />
           <FeaturedSection showHeader={false} />
@@ -203,7 +204,7 @@ const RenderSection = ({ section, colors, router }) => {
       return (
         <View
           key={section.section_id}
-          style={{ backgroundColor: colors.cardBg, marginTop: 0 }}
+          style={{ backgroundColor: colors.cardBg, marginTop: 0, marginBottom: 0 }}
         >
           <SectionTitle section={section} colors={colors} />
           <BrandsSection showHeader={false} />
@@ -284,12 +285,12 @@ export default function Home() {
   // Sort sections by display_order
   const sortedSections = sections
     ? [...sections]
-        .filter((s) => s && s.enabled !== false)
-        .sort(
-          (a, b) =>
-            (a.display_order || a.order || 0) -
-            (b.display_order || b.order || 0),
-        )
+      .filter((s) => s && s.enabled !== false)
+      .sort(
+        (a, b) =>
+          (a.display_order || a.order || 0) -
+          (b.display_order || b.order || 0),
+      )
     : [];
 
   // Check if we have hero/banner at top (most common case)

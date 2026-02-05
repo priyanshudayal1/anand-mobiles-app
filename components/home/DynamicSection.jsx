@@ -320,7 +320,8 @@ export default function DynamicSection({ section }) {
                   style={{
                     height: 3,
                     width: 40,
-                    marginTop: 6,
+                    marginTop: 0,
+                    marginBottom: 0,
                     backgroundColor: colors.primary,
                     borderRadius: 2,
                     alignSelf: "flex-start",
