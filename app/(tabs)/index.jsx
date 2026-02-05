@@ -167,7 +167,7 @@ const getSectionDefaultTitle = (sectionType) => {
 };
 
 // Render a section based on its type
-const RenderSection = ({ section, colors, router }) => {
+const RenderSection = ({ section, colors, router, featuredProducts }) => {
   const sectionType = section.section_type;
 
   // These types have dedicated components with optional custom titles from backend
@@ -195,7 +195,43 @@ const RenderSection = ({ section, colors, router }) => {
           style={{ backgroundColor: colors.cardBg, marginTop: 0 }}
         >
           <SectionTitle section={section} colors={colors} />
-          <FeaturedSection showHeader={false} />
+          {(section.config?.products?.length || featuredProducts?.length) >
+          0 ? (
+            <View
+              style={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+                paddingHorizontal: 12,
+                gap: 8,
+              }}
+            >
+              {(section.config?.products?.length
+                ? section.config.products
+                : featuredProducts
+              ).map((product) => (
+                <View
+                  key={product.id || product.product_id}
+                  style={{ width: "48%" }}
+                >
+                  <ProductCard
+                    product={product}
+                    size="medium"
+                    onPress={(item) =>
+                      router.push(`/product/${item.id || item.product_id}`)
+                    }
+                  />
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View style={{ padding: 16 }}>
+              <Text
+                style={{ color: colors.textSecondary, textAlign: "center" }}
+              >
+                No products available
+              </Text>
+            </View>
+          )}
         </View>
       );
 
@@ -242,6 +278,7 @@ export default function Home() {
     sections,
     banners,
     promotionVideos,
+    featuredProducts,
   } = useHome();
   const { products, fetchProducts } = useProducts();
   const router = useRouter();
@@ -356,6 +393,7 @@ export default function Home() {
                 section={section}
                 colors={colors}
                 router={router}
+                featuredProducts={featuredProducts}
               />
             ))}
 

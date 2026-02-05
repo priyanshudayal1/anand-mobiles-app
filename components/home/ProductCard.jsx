@@ -11,6 +11,7 @@ import { Star, Heart } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useTheme } from "../../store/useTheme";
 import { useWishlistStore } from "../../store/useWishlist";
+import { shallow } from "zustand/shallow";
 
 const { width } = Dimensions.get("window");
 
@@ -22,18 +23,24 @@ function ProductCard({
 }) {
   const { colors } = useTheme();
   const router = useRouter();
-  const wishlistStore = useWishlistStore();
+  const { items, addItem, removeItem, isInWishlist } = useWishlistStore(
+    (state) => ({
+      items: state.items,
+      addItem: state.addItem,
+      removeItem: state.removeItem,
+      isInWishlist: state.isInWishlist,
+    }),
+    shallow,
+  );
 
-  // Safe access to wishlist store methods
-  const wishlistItems = wishlistStore.items || [];
-  const addToWishlist = wishlistStore.addItem;
-  const removeFromWishlist = wishlistStore.removeItem;
+  const wishlistItems = items || [];
 
   // Determine if item is in wishlist
-  const isWishlisted = wishlistStore.isInWishlist
-    ? wishlistStore.isInWishlist(product.id || product._id)
+  const productId = product.id || product.product_id || product._id;
+  const isWishlisted = isInWishlist
+    ? isInWishlist(productId)
     : wishlistItems.some(
-        (item) => item.id === product.id || item.product_id === product.id,
+        (item) => item.id === productId || item.product_id === productId,
       );
 
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
@@ -65,6 +72,7 @@ function ProductCard({
   const originalPrice = Number(
     firstVariant?.price || product.price || product.original_price || 0,
   );
+  const strikePrice = originalPrice > 0 ? originalPrice : displayPrice;
 
   const hasDiscount =
     originalPrice > 0 && displayPrice > 0 && originalPrice > displayPrice;
@@ -99,15 +107,15 @@ function ProductCard({
         // If the store handles logic by product ID, passing product.id is fine.
         // Assuming removeItem takes product ID or we find the item ID
         const wishlistItem = wishlistItems.find(
-          (item) => item.id === product.id || item.product_id === product.id,
+          (item) => item.id === productId || item.product_id === productId,
         );
-        const removeId = wishlistItem?.item_id || product.id;
-        await removeFromWishlist(removeId);
+        const removeId = wishlistItem?.item_id || productId;
+        await removeItem(removeId);
       } else {
         const defaultVariant = product.valid_options?.[0] || null;
         const productWithVariant = {
           ...product,
-          id: product.id || product._id,
+          id: productId,
           price: displayPrice,
           variant_id: defaultVariant?.id || null,
           variant: defaultVariant
@@ -120,7 +128,7 @@ function ProductCard({
               }
             : null,
         };
-        await addToWishlist(productWithVariant);
+        await addItem(productWithVariant);
       }
     } catch (error) {
       console.error("Wishlist action failed", error);
@@ -347,17 +355,27 @@ function ProductCard({
               >
                 ₹{displayPrice.toLocaleString()}
               </Text>
+              <Text
+                style={{
+                  fontSize: 11,
+                  color: colors.textSecondary,
+                  textDecorationLine: "line-through",
+                  marginLeft: 6,
+                }}
+                numberOfLines={1}
+              >
+                ₹{strikePrice.toLocaleString()}
+              </Text>
               {hasDiscount && (
                 <Text
                   style={{
                     fontSize: 11,
-                    color: colors.textSecondary,
-                    textDecorationLine: "line-through",
+                    color: colors.success,
                     marginLeft: 6,
                   }}
                   numberOfLines={1}
                 >
-                  ₹{originalPrice.toLocaleString()}
+                  {discountPercent}% OFF
                 </Text>
               )}
             </View>
