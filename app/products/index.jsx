@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -43,55 +43,66 @@ export default function ProductsScreen() {
 
   const activeFilterCount = getActiveFilterCount();
 
+  const getParamValue = useCallback((param) => {
+    if (Array.isArray(param)) return param[0];
+    return param;
+  }, []);
+
+  const searchParam = useMemo(
+    () => getParamValue(params.search),
+    [params.search, getParamValue],
+  );
+  const categoryParam = useMemo(
+    () => getParamValue(params.category),
+    [params.category, getParamValue],
+  );
+  const brandParam = useMemo(
+    () => getParamValue(params.brand),
+    [params.brand, getParamValue],
+  );
+  const categoryNameParam = useMemo(
+    () => getParamValue(params.categoryName),
+    [params.categoryName, getParamValue],
+  );
+
   useEffect(() => {
-    // Immediate execution function to handle async operations
     const loadData = async () => {
       resetFilters();
-      const filters = {};
-
-      // Helper to get string value from param (handles array or string)
-      const getParamValue = (param) => {
-        if (Array.isArray(param)) return param[0];
-        return param;
-      };
-
-      const searchParam = getParamValue(params.search);
-      const categoryParam = getParamValue(params.category);
-      const brandParam = getParamValue(params.brand);
-      const categoryNameParam = getParamValue(params.categoryName);
+      const nextFilters = {};
 
       if (searchParam) {
-        filters.search = searchParam;
+        nextFilters.search = searchParam;
         setSearchTitle(`Results for "${searchParam}"`);
+      } else if (!categoryParam && !brandParam) {
+        setSearchTitle("Products");
       }
 
       if (categoryParam) {
-        filters.category = categoryParam;
-        // If we also have a brand, the categoryName param likely contains the specific model/subcat name
+        nextFilters.category = categoryParam;
         if (!searchParam) {
           setSearchTitle(categoryNameParam || "Category");
         }
       }
 
       if (brandParam) {
-        filters.brands = [brandParam];
+        nextFilters.brands = [brandParam];
         if (!searchParam && !categoryParam) {
           setSearchTitle(brandParam);
         }
       }
 
-      // Apply filters only if we have some criteria
-      // If empty, it fetches default products which is what we want if no params passed
-      await applyFilters(filters);
+      await applyFilters(nextFilters);
     };
 
     loadData();
-
-    // Cleanup function
-    return () => {
-      // Optional: clear filters on unmount if desired, or keep them cached
-    };
-  }, [params, applyFilters, resetFilters]);
+  }, [
+    searchParam,
+    categoryParam,
+    brandParam,
+    categoryNameParam,
+    applyFilters,
+    resetFilters,
+  ]);
 
   const handleBack = useCallback(() => {
     router.back();
@@ -103,11 +114,19 @@ export default function ProductsScreen() {
     }
   }, [isLoadingMore, pagination.hasNext, loadMoreProducts]);
 
-  const renderItem = useCallback(({ item }) => (
-    <View style={{ flex: 1, padding: 4 }}>
-      <ProductCard product={item} />
-    </View>
-  ), []);
+  const renderItem = useCallback(
+    ({ item }) => (
+      <View style={{ flex: 1, padding: 4 }}>
+        <ProductCard product={item} />
+      </View>
+    ),
+    [],
+  );
+
+  const keyExtractor = useCallback(
+    (item) => (item?.id || item?.product_id || item?._id)?.toString(),
+    [],
+  );
 
   const renderFooter = useCallback(() => {
     if (!isLoadingMore) return null;
@@ -262,6 +281,7 @@ export default function ProductsScreen() {
         <FlashList
           data={products}
           renderItem={renderItem}
+          keyExtractor={keyExtractor}
           estimatedItemSize={280}
           numColumns={2}
           contentContainerStyle={{ padding: 8 }}
