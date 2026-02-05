@@ -40,8 +40,8 @@ function ProductCard({
   const isWishlisted = isInWishlist
     ? isInWishlist(productId)
     : wishlistItems.some(
-        (item) => item.id === productId || item.product_id === productId,
-      );
+      (item) => item.id === productId || item.product_id === productId,
+    );
 
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
 
@@ -61,12 +61,12 @@ function ProductCard({
 
   const displayPrice = Number(
     firstVariant?.discounted_price ||
-      firstVariant?.price ||
-      product.discount_price ||
-      product.discounted_price ||
-      product.offer_price ||
-      product.price ||
-      0,
+    firstVariant?.price ||
+    product.discount_price ||
+    product.discounted_price ||
+    product.offer_price ||
+    product.price ||
+    0,
   );
 
   const originalPrice = Number(
@@ -120,12 +120,12 @@ function ProductCard({
           variant_id: defaultVariant?.id || null,
           variant: defaultVariant
             ? {
-                id: defaultVariant.id,
-                color: defaultVariant.colors,
-                storage: defaultVariant.storage,
-                ram: defaultVariant.ram,
-                price: defaultVariant.discounted_price || defaultVariant.price,
-              }
+              id: defaultVariant.id,
+              color: defaultVariant.colors,
+              storage: defaultVariant.storage,
+              ram: defaultVariant.ram,
+              price: defaultVariant.discounted_price || defaultVariant.price,
+            }
             : null,
         };
         await addItem(productWithVariant);

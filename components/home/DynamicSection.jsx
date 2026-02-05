@@ -312,6 +312,7 @@ export default function DynamicSection({ section }) {
                     fontSize: 18,
                     fontWeight: "bold",
                     color: colors.text,
+                    marginTop: 6,
                   }}
                 >
                   {title || ""}
@@ -321,7 +322,7 @@ export default function DynamicSection({ section }) {
                     height: 3,
                     width: 40,
                     marginTop: 0,
-                    marginBottom: 0,
+                    marginBottom: description ? 0 : 6,
                     backgroundColor: colors.primary,
                     borderRadius: 2,
                     alignSelf: "flex-start",
@@ -335,6 +336,7 @@ export default function DynamicSection({ section }) {
                   fontSize: 12,
                   color: colors.textSecondary,
                   marginTop: 4,
+                  marginBottom: 6,
                 }}
               >
                 {description}
