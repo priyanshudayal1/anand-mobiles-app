@@ -26,7 +26,7 @@ import ProductInfo from "../../components/product/ProductInfo";
 import ProductVariantSelector from "../../components/product/ProductVariantSelector";
 import ProductQuantitySelector from "../../components/product/ProductQuantitySelector";
 import ProductActions from "../../components/product/ProductActions";
-import ProductTabs from "../../components/product/ProductTabs";
+import ProductAccordions from "../../components/product/ProductAccordions";
 import RelatedProducts from "../../components/home/RelatedProducts";
 
 export default function ProductDetailScreen() {
@@ -644,8 +644,8 @@ export default function ProductDetailScreen() {
           style={{ height: 8, backgroundColor: colors.backgroundSecondary }}
         />
 
-        {/* Product Tabs (Description, Specifications, Reviews) */}
-        <ProductTabs product={normalizedProduct} />
+        {/* Product Accordions (Description, Specifications, Reviews) */}
+        <ProductAccordions product={normalizedProduct} />
 
         {/* Separator */}
         <View
