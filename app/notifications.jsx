@@ -53,20 +53,23 @@ export default function NotificationsScreen() {
     fetchNotifications();
   }, [fetchNotifications]);
 
-  const handleNotificationPress = useCallback(async (notification) => {
-    // Haptic feedback
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  const handleNotificationPress = useCallback(
+    async (notification) => {
+      // Haptic feedback
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    // Mark as read if unread
-    if (!notification.read) {
-      await markAsRead(notification.id);
-    }
+      // Mark as read if unread
+      if (!notification.read) {
+        await markAsRead(notification.id);
+      }
 
-    // Navigate to order tracking if it's an order notification
-    if (notification.order_id) {
-      router.push(`/order-tracking/${notification.order_id}`);
-    }
-  }, [markAsRead, router]);
+      // Navigate to order tracking if it's an order notification
+      if (notification.order_id) {
+        router.push(`/order-tracking/${notification.order_id}`);
+      }
+    },
+    [markAsRead, router],
+  );
 
   const handleDeleteNotification = useCallback(async (notificationId) => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -98,103 +101,108 @@ export default function NotificationsScreen() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   }, [deleteAllNotifications]);
 
-  const renderNotification = useCallback(({ item }) => {
-    const isUnread = !item.read;
-    const productImage = item?.data?.product_image;
-    const productName = item?.data?.product_name;
+  const renderNotification = useCallback(
+    ({ item }) => {
+      const isUnread = !item.read;
+      const productImage = item?.data?.product_image;
+      const productName = item?.data?.product_name;
 
-    return (
-      <TouchableOpacity
-        onPress={() => handleNotificationPress(item)}
-        onLongPress={() => handleDeleteNotification(item.id)}
-        activeOpacity={0.7}
-        style={{
-          paddingVertical: 16,
-          paddingHorizontal: 16,
-          backgroundColor: isUnread ? `${colors.primary}08` : colors.surface,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border,
-          flexDirection: "row",
-          alignItems: "center",
-        }}
-      >
-        {/* Image / Icon */}
-        <View style={{ marginRight: 16 }}>
-          {productImage ? (
-            <Image
-              source={{ uri: productImage }}
-              style={{ width: 44, height: 44 }}
-              resizeMode="contain"
-            />
-          ) : (
-            <View
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 22,
-                backgroundColor: `${colors.primary}15`,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Ionicons
-                name={item.icon || "notifications-outline"}
-                size={22}
-                color={colors.primary}
+      return (
+        <TouchableOpacity
+          onPress={() => handleNotificationPress(item)}
+          onLongPress={() => handleDeleteNotification(item.id)}
+          activeOpacity={0.7}
+          style={{
+            paddingVertical: 16,
+            paddingHorizontal: 16,
+            backgroundColor: isUnread ? `${colors.primary}08` : colors.surface,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border,
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+        >
+          {/* Image / Icon */}
+          <View style={{ marginRight: 16 }}>
+            {productImage ? (
+              <Image
+                source={{ uri: productImage }}
+                style={{ width: 44, height: 44 }}
+                resizeMode="contain"
               />
-            </View>
-          )}
-        </View>
-
-        {/* Content */}
-        <View style={{ flex: 1 }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-            <Text
-              style={{
-                fontSize: 15,
-                fontWeight: isUnread ? "700" : "500",
-                color: colors.text,
-                flex: 1,
-                marginBottom: 4,
-              }}
-              numberOfLines={1}
-            >
-              {productName || item.title}
-            </Text>
-            {isUnread && (
+            ) : (
               <View
                 style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: 4,
-                  backgroundColor: colors.primary,
-                  marginLeft: 8,
-                  marginTop: 6,
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
+                  backgroundColor: `${colors.primary}15`,
+                  justifyContent: "center",
+                  alignItems: "center",
                 }}
-              />
+              >
+                <Ionicons
+                  name={item.icon || "notifications-outline"}
+                  size={22}
+                  color={colors.primary}
+                />
+              </View>
             )}
           </View>
 
-          {/* Secondary Text */}
-          <Text
-            style={{
-              fontSize: 13,
-              color: colors.textSecondary,
-              marginBottom: 4,
-            }}
-            numberOfLines={2}
-          >
-            {productName ? item.message : item.message}
-          </Text>
+          {/* Content */}
+          <View style={{ flex: 1 }}>
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
+              <Text
+                style={{
+                  fontSize: 15,
+                  fontWeight: isUnread ? "700" : "500",
+                  color: colors.text,
+                  flex: 1,
+                  marginBottom: 4,
+                }}
+                numberOfLines={1}
+              >
+                {productName || item.title}
+              </Text>
+              {isUnread && (
+                <View
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: colors.primary,
+                    marginLeft: 8,
+                    marginTop: 6,
+                  }}
+                />
+              )}
+            </View>
 
-          {/* Time */}
-          <Text style={{ fontSize: 11, color: colors.textSecondary }}>
-            {getTimeAgo(item.created_at)}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    );
-  }, [colors, handleNotificationPress, handleDeleteNotification]);
+            {/* Secondary Text */}
+            <Text
+              style={{
+                fontSize: 13,
+                color: colors.textSecondary,
+                marginBottom: 4,
+              }}
+              numberOfLines={2}
+            >
+              {productName ? item.message : item.message}
+            </Text>
+
+            {/* Time */}
+            <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+              {getTimeAgo(item.created_at)}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      );
+    },
+    [colors, handleNotificationPress, handleDeleteNotification],
+  );
 
   const getItemLayout = useCallback(
     (data, index) => ({
@@ -207,54 +215,57 @@ export default function NotificationsScreen() {
 
   const keyExtractor = useCallback((item) => item.id, []);
 
-  const renderEmptyState = useCallback(() => (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 40,
-      }}
-    >
+  const renderEmptyState = useCallback(
+    () => (
       <View
         style={{
-          width: 120,
-          height: 120,
-          borderRadius: 60,
-          backgroundColor: `${colors.primary}15`,
+          flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          marginBottom: 24,
+          padding: 40,
         }}
       >
-        <Ionicons
-          name="notifications-outline"
-          size={60}
-          color={colors.primary}
-        />
+        <View
+          style={{
+            width: 120,
+            height: 120,
+            borderRadius: 60,
+            backgroundColor: `${colors.primary}15`,
+            justifyContent: "center",
+            alignItems: "center",
+            marginBottom: 24,
+          }}
+        >
+          <Ionicons
+            name="notifications-outline"
+            size={60}
+            color={colors.primary}
+          />
+        </View>
+        <Text
+          style={{
+            fontSize: 20,
+            fontWeight: "700",
+            color: colors.text,
+            marginBottom: 8,
+          }}
+        >
+          No Notifications Yet
+        </Text>
+        <Text
+          style={{
+            fontSize: 14,
+            color: colors.textSecondary,
+            textAlign: "center",
+            lineHeight: 20,
+          }}
+        >
+          You will receive notifications here when your order status changes.
+        </Text>
       </View>
-      <Text
-        style={{
-          fontSize: 20,
-          fontWeight: "700",
-          color: colors.text,
-          marginBottom: 8,
-        }}
-      >
-        No Notifications Yet
-      </Text>
-      <Text
-        style={{
-          fontSize: 14,
-          color: colors.textSecondary,
-          textAlign: "center",
-          lineHeight: 20,
-        }}
-      >
-        You will receive notifications here when your order status changes.
-      </Text>
-    </View>
-  ), [colors]);
+    ),
+    [colors],
+  );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
@@ -373,12 +384,22 @@ export default function NotificationsScreen() {
       {/* Delete Single Notification Modal */}
       <CustomModal
         visible={showDeleteModal}
-        onClose={() => { setShowDeleteModal(false); setNotificationToDelete(null); }}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setNotificationToDelete(null);
+        }}
         type="warning"
         title="Delete Notification"
         message="Are you sure you want to delete this notification?"
         buttons={[
-          { text: "Cancel", variant: "outline", onPress: () => { setShowDeleteModal(false); setNotificationToDelete(null); } },
+          {
+            text: "Cancel",
+            variant: "outline",
+            onPress: () => {
+              setShowDeleteModal(false);
+              setNotificationToDelete(null);
+            },
+          },
           { text: "Delete", variant: "danger", onPress: confirmDelete },
         ]}
       />
@@ -391,7 +412,11 @@ export default function NotificationsScreen() {
         title="Clear All Notifications"
         message="Are you sure you want to delete all notifications? This action cannot be undone."
         buttons={[
-          { text: "Cancel", variant: "outline", onPress: () => setShowClearAllModal(false) },
+          {
+            text: "Cancel",
+            variant: "outline",
+            onPress: () => setShowClearAllModal(false),
+          },
           { text: "Clear All", variant: "danger", onPress: confirmClearAll },
         ]}
       />

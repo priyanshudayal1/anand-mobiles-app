@@ -1,11 +1,17 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Modal, ScrollView } from "react-native";
 import { useTheme } from "../../store/useTheme";
-import { X, AlertCircle, CheckCircle, Info, AlertTriangle } from "lucide-react-native";
+import {
+  X,
+  AlertCircle,
+  CheckCircle,
+  Info,
+  AlertTriangle,
+} from "lucide-react-native";
 
 /**
  * Reusable Modal Component with Theme Support
- * 
+ *
  * @param {boolean} visible - Controls modal visibility
  * @param {function} onClose - Callback when modal is closed
  * @param {string} title - Modal title
@@ -133,7 +139,9 @@ const CustomModal = ({
               borderBottomColor: colors.border,
             }}
           >
-            <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
+            >
               <View
                 style={{
                   width: 40,
@@ -228,13 +236,14 @@ const CustomModal = ({
                     paddingVertical: 14,
                     paddingHorizontal: 20,
                     borderRadius: 10,
-                    backgroundColor: isOutline || isGhost
-                      ? "transparent"
-                      : variant === "secondary"
-                      ? colors.secondary
-                      : variant === "danger"
-                      ? colors.error
-                      : colors.primary,
+                    backgroundColor:
+                      isOutline || isGhost
+                        ? "transparent"
+                        : variant === "secondary"
+                          ? colors.secondary
+                          : variant === "danger"
+                            ? colors.error
+                            : colors.primary,
                     borderWidth: isOutline ? 1.5 : 0,
                     borderColor: isOutline ? colors.border : "transparent",
                     alignItems: "center",

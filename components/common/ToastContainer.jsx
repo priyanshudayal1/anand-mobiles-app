@@ -12,7 +12,17 @@ const ToastContainer = () => {
   const { toasts, hideToast } = useToast();
 
   return (
-    <View pointerEvents="box-none" style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999 }}>
+    <View
+      pointerEvents="box-none"
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9999,
+      }}
+    >
       {toasts.map((toast) => (
         <CustomToast
           key={toast.id}

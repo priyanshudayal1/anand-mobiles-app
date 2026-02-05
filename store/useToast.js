@@ -6,10 +6,15 @@ import { create } from "zustand";
  */
 export const useToast = create((set) => ({
   toasts: [],
-  
-  showToast: ({ type = "info", message, duration = 3000, position = "top" }) => {
+
+  showToast: ({
+    type = "info",
+    message,
+    duration = 3000,
+    position = "top",
+  }) => {
     const id = Date.now() + Math.random();
-    
+
     set((state) => ({
       toasts: [
         ...state.toasts,
@@ -28,7 +33,7 @@ export const useToast = create((set) => ({
     setTimeout(() => {
       set((state) => ({
         toasts: state.toasts.map((toast) =>
-          toast.id === id ? { ...toast, visible: false } : toast
+          toast.id === id ? { ...toast, visible: false } : toast,
         ),
       }));
 
@@ -46,7 +51,7 @@ export const useToast = create((set) => ({
   hideToast: (id) => {
     set((state) => ({
       toasts: state.toasts.map((toast) =>
-        toast.id === id ? { ...toast, visible: false } : toast
+        toast.id === id ? { ...toast, visible: false } : toast,
       ),
     }));
 
@@ -59,7 +64,9 @@ export const useToast = create((set) => ({
   },
 
   success: (message, duration) => {
-    return useToast.getState().showToast({ type: "success", message, duration });
+    return useToast
+      .getState()
+      .showToast({ type: "success", message, duration });
   },
 
   error: (message, duration) => {
@@ -71,6 +78,8 @@ export const useToast = create((set) => ({
   },
 
   warning: (message, duration) => {
-    return useToast.getState().showToast({ type: "warning", message, duration });
+    return useToast
+      .getState()
+      .showToast({ type: "warning", message, duration });
   },
 }));

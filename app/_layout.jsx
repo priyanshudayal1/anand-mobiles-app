@@ -19,8 +19,7 @@ import ToastContainer from "../components/common/ToastContainer";
 let Notifications = null;
 try {
   Notifications = require("expo-notifications");
-} catch (error) {
-}
+} catch (error) {}
 
 // Suppress warnings
 LogBox.ignoreLogs([

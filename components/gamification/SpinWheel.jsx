@@ -379,7 +379,7 @@ export default function SpinWheel({
         if (targetSegmentIndex === -1) {
           targetSegmentIndex = Math.floor(Math.random() * segments.length);
         }
-        
+
         // Always use the segment object for display, not the API reward
         rewardToShow = segments[targetSegmentIndex];
       } else {

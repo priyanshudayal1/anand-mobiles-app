@@ -1,7 +1,19 @@
 import React, { useEffect, useRef } from "react";
-import { View, Text, Animated, TouchableOpacity, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  Animated,
+  TouchableOpacity,
+  Dimensions,
+} from "react-native";
 import { useTheme } from "../../store/useTheme";
-import { CheckCircle, AlertCircle, Info, AlertTriangle, X } from "lucide-react-native";
+import {
+  CheckCircle,
+  AlertCircle,
+  Info,
+  AlertTriangle,
+  X,
+} from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
@@ -9,17 +21,25 @@ const { width } = Dimensions.get("window");
 /**
  * Toast Component
  * Usage: Import and use the showToast function
- * 
+ *
  * @param {string} type - 'success' | 'error' | 'info' | 'warning'
  * @param {string} message - Toast message
  * @param {number} duration - Display duration in ms (default: 3000)
  * @param {string} position - 'top' | 'bottom' (default: 'top')
  */
-const Toast = ({ visible, type = "info", message, onHide, position = "top" }) => {
+const Toast = ({
+  visible,
+  type = "info",
+  message,
+  onHide,
+  position = "top",
+}) => {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(position === "top" ? -100 : 100)).current;
+  const translateY = useRef(
+    new Animated.Value(position === "top" ? -100 : 100),
+  ).current;
 
   useEffect(() => {
     if (visible) {
