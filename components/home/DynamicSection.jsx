@@ -174,7 +174,13 @@ const TabbedSection = ({ section }) => {
   return (
     <View style={{ paddingHorizontal: 0 }}>
       {/* Tab Header inside section */}
-      <View style={{ paddingHorizontal: 16, marginBottom: 0 }}>
+      <View
+        style={{
+          paddingHorizontal: 16,
+          paddingTop: 12,
+          paddingBottom: 6,
+        }}
+      >
         <View
           style={{
             flexDirection: "row",
@@ -289,7 +295,8 @@ export default function DynamicSection({ section }) {
       <View
         style={{
           paddingHorizontal: 16,
-          marginBottom: 0,
+          paddingTop: 12,
+          paddingBottom: 6,
         }}
       >
         <View
@@ -315,7 +322,7 @@ export default function DynamicSection({ section }) {
                   style={{
                     height: 3,
                     width: 40,
-                    marginTop: 4,
+                    marginTop: 6,
                     backgroundColor: colors.primary,
                     borderRadius: 2,
                     alignSelf: "flex-start",
