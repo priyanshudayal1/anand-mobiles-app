@@ -105,6 +105,7 @@ export const useTheme = create((set, get) => ({
   isInitialized: false,
   error: null,
   lastFetched: null,
+  appearanceSubscription: null, // Store the subscription reference
 
   // Initialize theme from storage and fetch from backend
   initializeTheme: async () => {
@@ -145,10 +146,11 @@ export const useTheme = create((set, get) => ({
 
       // Listen to system theme changes if preference is 'system'
       if (themePreference === "system") {
-        Appearance.addChangeListener(({ colorScheme }) => {
+        const subscription = Appearance.addChangeListener(({ colorScheme }) => {
           const newMode = colorScheme === "dark" ? "dark" : "light";
           get().applyMode(newMode);
         });
+        set({ appearanceSubscription: subscription });
       }
 
       // Fetch latest theme from backend
@@ -241,6 +243,13 @@ export const useTheme = create((set, get) => ({
   setThemePreference: async (preference) => {
     if (!["system", "light", "dark"].includes(preference)) return;
 
+    // Remove existing appearance listener if any
+    const currentSubscription = get().appearanceSubscription;
+    if (currentSubscription) {
+      currentSubscription.remove();
+      set({ appearanceSubscription: null });
+    }
+
     set({ themePreference: preference });
     await AsyncStorage.setItem(THEME_PREFERENCE_KEY, preference);
 
@@ -251,14 +260,13 @@ export const useTheme = create((set, get) => ({
       actualMode = systemColorScheme === "dark" ? "dark" : "light";
 
       // Add listener for system changes
-      Appearance.addChangeListener(({ colorScheme }) => {
+      const subscription = Appearance.addChangeListener(({ colorScheme }) => {
         const newMode = colorScheme === "dark" ? "dark" : "light";
         get().applyMode(newMode);
       });
+      set({ appearanceSubscription: subscription });
     } else {
       actualMode = preference;
-      // Remove listener if not using system
-      Appearance.removeChangeListener(() => {});
     }
 
     await get().applyMode(actualMode);

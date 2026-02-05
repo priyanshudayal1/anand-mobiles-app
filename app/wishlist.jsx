@@ -272,7 +272,7 @@ export default function Wishlist() {
                         color: colors.primary,
                       }}
                     >
-                      ₹{item.price?.toLocaleString()}
+                      ₹{item.price ? item.price.toLocaleString() : "0"}
                     </Text>
                     {item.original_price &&
                       item.original_price > item.price && (
@@ -284,7 +284,10 @@ export default function Wishlist() {
                             marginLeft: 8,
                           }}
                         >
-                          ₹{item.original_price?.toLocaleString()}
+                          ₹
+                          {item.original_price
+                            ? item.original_price.toLocaleString()
+                            : "0"}
                         </Text>
                       )}
                   </View>
