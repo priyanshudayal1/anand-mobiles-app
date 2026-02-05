@@ -10,7 +10,6 @@ import {
   MapPin,
   Bell,
   Heart,
-  User,
   ChevronDown,
   Check,
   Plus,
@@ -280,11 +279,6 @@ export default function HomeHeader() {
           {/* Wishlist */}
           <TouchableOpacity onPress={() => router.push("/wishlist")}>
             <Heart size={24} color={colors.white} />
-          </TouchableOpacity>
-
-          {/* Profile */}
-          <TouchableOpacity onPress={() => router.push("/(tabs)/profile")}>
-            <User size={24} color={colors.white} />
           </TouchableOpacity>
         </View>
       </View>

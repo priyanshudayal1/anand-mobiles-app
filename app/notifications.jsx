@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -118,27 +119,10 @@ export default function NotificationsScreen() {
     );
   };
 
-  const getStatusColor = (type) => {
-    const colorMap = {
-      order_pending: "#F59E0B",
-      order_payment: "#3B82F6",
-      order_confirmed: "#10B981",
-      order_processing: "#8B5CF6",
-      order_packed: "#6366F1",
-      order_shipped: "#0EA5E9",
-      order_out_for_delivery: "#F97316",
-      order_delivered: "#22C55E",
-      order_cancelled: "#EF4444",
-      order_failed_attempt: "#F59E0B",
-      order_returning: "#6B7280",
-      broadcast: "#7C3AED",
-    };
-    return colorMap[type] || colors.primary;
-  };
-
   const renderNotification = ({ item }) => {
-    const statusColor = getStatusColor(item.type);
     const isUnread = !item.read;
+    const productImage = item?.data?.product_image;
+    const productName = item?.data?.product_name;
 
     return (
       <TouchableOpacity
@@ -146,137 +130,88 @@ export default function NotificationsScreen() {
         onLongPress={() => handleDeleteNotification(item.id)}
         activeOpacity={0.7}
         style={{
-          marginHorizontal: 16,
-          marginVertical: 6,
-          backgroundColor: isUnread ? `${statusColor}15` : colors.surface,
-          borderRadius: 16,
-          padding: 16,
-          borderLeftWidth: 4,
-          borderLeftColor: statusColor,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: isDarkMode ? 0.3 : 0.1,
-          shadowRadius: 4,
-          elevation: 3,
+          paddingVertical: 16,
+          paddingHorizontal: 16,
+          backgroundColor: isUnread ? `${colors.primary}08` : colors.surface,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+          flexDirection: "row",
+          alignItems: "center",
         }}
       >
-        <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-          {/* Icon */}
-          <View
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: `${statusColor}20`,
-              justifyContent: "center",
-              alignItems: "center",
-              marginRight: 12,
-            }}
-          >
-            <Ionicons
-              name={item.icon || "notifications-outline"}
-              size={22}
-              color={statusColor}
+        {/* Image / Icon */}
+        <View style={{ marginRight: 16 }}>
+          {productImage ? (
+            <Image
+              source={{ uri: productImage }}
+              style={{ width: 44, height: 44 }}
+              resizeMode="contain"
             />
-          </View>
-
-          {/* Content */}
-          <View style={{ flex: 1 }}>
+          ) : (
             <View
               style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 15,
-                  fontWeight: isUnread ? "700" : "600",
-                  color: colors.text,
-                  flex: 1,
-                  marginRight: 8,
-                }}
-              >
-                {item.title}
-              </Text>
-              {isUnread && (
-                <View
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: 4,
-                    backgroundColor: statusColor,
-                    marginTop: 6,
-                  }}
-                />
-              )}
-            </View>
-
-            <Text
-              style={{
-                fontSize: 13,
-                color: colors.textSecondary,
-                marginTop: 4,
-                lineHeight: 18,
-              }}
-              numberOfLines={2}
-            >
-              {item.message}
-            </Text>
-
-            <View
-              style={{
-                flexDirection: "row",
+                width: 44,
+                height: 44,
+                borderRadius: 22,
+                backgroundColor: `${colors.primary}15`,
+                justifyContent: "center",
                 alignItems: "center",
-                marginTop: 8,
               }}
             >
               <Ionicons
-                name="time-outline"
-                size={12}
-                color={colors.textSecondary}
+                name={item.icon || "notifications-outline"}
+                size={22}
+                color={colors.primary}
               />
-              <Text
-                style={{
-                  fontSize: 11,
-                  color: colors.textSecondary,
-                  marginLeft: 4,
-                }}
-              >
-                {getTimeAgo(item.created_at)}
-              </Text>
-
-              {item.order_id && (
-                <>
-                  <View
-                    style={{
-                      width: 3,
-                      height: 3,
-                      borderRadius: 1.5,
-                      backgroundColor: colors.textSecondary,
-                      marginHorizontal: 8,
-                    }}
-                  />
-                  <Ionicons
-                    name="receipt-outline"
-                    size={12}
-                    color={colors.textSecondary}
-                  />
-                  <Text
-                    style={{
-                      fontSize: 11,
-                      color: statusColor,
-                      marginLeft: 4,
-                      fontWeight: "500",
-                    }}
-                  >
-                    Order #{item.order_id.slice(0, 8)}
-                  </Text>
-                </>
-              )}
             </View>
+          )}
+        </View>
+
+        {/* Content */}
+        <View style={{ flex: 1 }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+            <Text
+              style={{
+                fontSize: 15,
+                fontWeight: isUnread ? "700" : "500",
+                color: colors.text,
+                flex: 1,
+                marginBottom: 4,
+              }}
+              numberOfLines={1}
+            >
+              {productName || item.title}
+            </Text>
+            {isUnread && (
+              <View
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: colors.primary,
+                  marginLeft: 8,
+                  marginTop: 6,
+                }}
+              />
+            )}
           </View>
+
+          {/* Secondary Text */}
+          <Text
+            style={{
+              fontSize: 13,
+              color: colors.textSecondary,
+              marginBottom: 4,
+            }}
+            numberOfLines={2}
+          >
+            {productName ? item.message : item.message}
+          </Text>
+
+          {/* Time */}
+          <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+            {getTimeAgo(item.created_at)}
+          </Text>
         </View>
       </TouchableOpacity>
     );
@@ -423,7 +358,7 @@ export default function NotificationsScreen() {
           keyExtractor={(item) => item.id}
           renderItem={renderNotification}
           contentContainerStyle={{
-            paddingVertical: 12,
+            paddingBottom: 20,
             flexGrow: 1,
           }}
           ListEmptyComponent={renderEmptyState}
