@@ -1,7 +1,11 @@
 // services/emiService.js
 
-// This mirrors the logic likely found in Ecommerce_FL_React/src/services/emiService.js
-// based on the fallback behavior described in EMIOffers.jsx
+import api from "./api";
+
+/**
+ * EMI Service - Fetches EMI offers from backend API
+ * Uses Firebase-stored bank data with fallback to default rates
+ */
 
 class EMIService {
   // Basic banks info
@@ -49,12 +53,91 @@ class EMIService {
     return Math.ceil(emi);
   }
 
-  getDefaultEMIOffers(price) {
-    if (!price || price < 3000) return { offers: [] }; // No EMI for small amounts
+  /**
+   * Get EMI offers from backend API
+   * Falls back to default data if API fails
+   * @param {number} price - The product price
+   * @returns {Promise<Object>} - EMI offers with bank options
+   */
+  async getEMIOffers(price) {
+    try {
+      const response = await api.get("/admin/emi/offers/", {
+        params: { price },
+      });
 
-    return {
-      status: "success",
-      offers: this.banks.map((bank) => {
+      if (response.data && response.data.status === "success") {
+        return response.data;
+      }
+
+      // Fall back if response is not successful
+      return this.getDefaultEMIOffers(price);
+    } catch (error) {
+      console.warn(
+        "Error fetching EMI offers from API, using fallback:",
+        error.message,
+      );
+      // Return fallback data if API fails
+      return this.getDefaultEMIOffers(price);
+    }
+  }
+
+  getDefaultEMIOffers(price) {
+    if (!price || price < 3000) {
+      return {
+        status: "success",
+        price: price,
+        offers: [],
+        total_banks: 0,
+        emi_available: false,
+        message: "EMI available on orders above ₹3,000",
+        min_emi_amount: 3000,
+        available_card_types: [],
+        available_tabs: [],
+      };
+    }
+
+    const banksWithTypes = [
+      {
+        id: "hdfc",
+        name: "HDFC Bank",
+        card_types: ["credit", "debit"],
+        min_amount: 3000,
+      },
+      {
+        id: "icici",
+        name: "ICICI Bank",
+        card_types: ["credit", "debit"],
+        min_amount: 2500,
+      },
+      {
+        id: "sbi",
+        name: "SBI Card",
+        card_types: ["credit"],
+        min_amount: 3000,
+      },
+      {
+        id: "axis",
+        name: "Axis Bank",
+        card_types: ["credit", "debit"],
+        min_amount: 2000,
+      },
+      {
+        id: "kotak",
+        name: "Kotak Bank",
+        card_types: ["credit", "debit"],
+        min_amount: 2500,
+      },
+      {
+        id: "bajaj",
+        name: "Bajaj Finserv",
+        card_types: ["emi_card"],
+        min_amount: 3000,
+      },
+    ];
+
+    const offers = banksWithTypes
+      .filter((bank) => price >= bank.min_amount)
+      .map((bank) => {
         const isBajaj = bank.id === "bajaj";
         let options = [];
 
@@ -63,16 +146,18 @@ class EMIService {
           options = [
             { tenure_months: 3, interest_rate: 0, is_no_cost: true },
             { tenure_months: 6, interest_rate: 0, is_no_cost: true },
+            { tenure_months: 9, interest_rate: 0, is_no_cost: true },
+            { tenure_months: 12, interest_rate: 0, is_no_cost: true },
           ];
         } else {
           // Standard Credit Card EMIs
           options = [
-            { tenure_months: 3, interest_rate: 13, is_no_cost: price > 10000 }, // Maybe No Cost for expensive items
-            { tenure_months: 6, interest_rate: 14, is_no_cost: price > 30000 },
-            { tenure_months: 9, interest_rate: 15, is_no_cost: false },
-            { tenure_months: 12, interest_rate: 15, is_no_cost: false },
-            { tenure_months: 18, interest_rate: 16, is_no_cost: false },
-            { tenure_months: 24, interest_rate: 16, is_no_cost: false },
+            { tenure_months: 3, interest_rate: 0, is_no_cost: price > 10000 },
+            { tenure_months: 6, interest_rate: 0, is_no_cost: price > 30000 },
+            { tenure_months: 9, interest_rate: 12, is_no_cost: false },
+            { tenure_months: 12, interest_rate: 13, is_no_cost: false },
+            { tenure_months: 18, interest_rate: 14, is_no_cost: false },
+            { tenure_months: 24, interest_rate: 15, is_no_cost: false },
           ];
         }
 
@@ -97,10 +182,63 @@ class EMIService {
         return {
           bank_id: bank.id,
           bank_name: bank.name,
-          logo_url: bank.logo,
+          bank_code: bank.id.toUpperCase(),
+          logo_url: this.banks.find((b) => b.id === bank.id)?.logo || "",
+          card_types: bank.card_types,
+          min_amount: bank.min_amount,
+          processing_fee: 0,
+          processing_fee_type: "fixed",
           emi_options: emiOptions,
         };
-      }),
+      });
+
+    // Collect available card types from offers
+    const availableCardTypes = new Set();
+    offers.forEach((offer) => {
+      offer.card_types.forEach((type) => availableCardTypes.add(type));
+    });
+
+    // Card type metadata with display names (matching backend)
+    const cardTypeMetadata = {
+      emi_card: {
+        id: "emi_card",
+        name: "EMI Card",
+        label: "EMI Card",
+        description: "Pre-approved EMI cards like Bajaj Finserv, ZestMoney",
+      },
+      debit: {
+        id: "debit",
+        name: "Debit Card EMI",
+        label: "Debit Card EMI",
+        description: "EMI on select debit cards",
+      },
+      credit: {
+        id: "credit",
+        name: "Credit Card EMI",
+        label: "Credit Card EMI",
+        description: "Standard credit card EMI options",
+      },
+    };
+
+    // Build available tabs based on what card types are present
+    const availableTabs = [];
+    const tabOrder = ["emi_card", "debit", "credit"]; // Preferred display order
+    tabOrder.forEach((cardType) => {
+      if (availableCardTypes.has(cardType)) {
+        availableTabs.push(cardTypeMetadata[cardType]);
+      }
+    });
+
+    return {
+      status: "success",
+      price: price,
+      offers: offers,
+      total_banks: offers.length,
+      emi_available: offers.length > 0,
+      available_card_types: Array.from(availableCardTypes),
+      card_type_metadata: cardTypeMetadata,
+      available_tabs: availableTabs,
+      source: "fallback",
     };
   }
 }

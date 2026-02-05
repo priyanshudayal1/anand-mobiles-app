@@ -600,21 +600,22 @@ export default function ProductDetailScreen() {
           onSharePress={handleShare}
         />
 
-        {/* Product Info */}
-        <ProductInfo
-          product={normalizedProduct}
-          selectedVariant={selectedVariant}
-          onShare={handleShare}
-        />
-
         {/* Variant Selector */}
         {normalizedProduct.validOptions.length > 0 && (
           <ProductVariantSelector
             validOptions={normalizedProduct.validOptions}
             selectedVariant={selectedVariant}
             onSelect={setSelectedVariant}
+            productImages={normalizedProduct.images}
           />
         )}
+
+        {/* Product Info (Price & EMI) */}
+        <ProductInfo
+          product={normalizedProduct}
+          selectedVariant={selectedVariant}
+          onShare={handleShare}
+        />
 
         {/* Quantity Selector */}
         <ProductQuantitySelector

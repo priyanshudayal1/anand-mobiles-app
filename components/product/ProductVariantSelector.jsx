@@ -1,309 +1,207 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { Image } from "expo-image";
 import { useTheme } from "../../store/useTheme";
-import { Check, AlertCircle } from "lucide-react-native";
 
 const ProductVariantSelector = ({
   validOptions = [],
   selectedVariant,
   onSelect,
+  productImages = [],
 }) => {
   const { colors } = useTheme();
 
   if (!validOptions || validOptions.length === 0) return null;
 
-  // Extract unique variant attributes from options
-  const variantAttributes = useMemo(() => {
-    const attributes = {};
-    const allKeys = new Set();
+  // Extract relevant attributes that define the variants (Color, RAM, Storage, etc.)
+  const variantKeys = useMemo(() => {
+    const keys = new Set();
+    const ignoredKeys = [
+      "price",
+      "discounted_price",
+      "stock",
+      "id",
+      "product_id",
+      "image",
+      "created_at",
+      "updated_at",
+      "sku",
+      "name",
+      "slug",
+    ];
 
     validOptions.forEach((option) => {
       Object.keys(option).forEach((key) => {
-        // Filter out system fields
         if (
-          ![
-            "price",
-            "discounted_price",
-            "stock",
-            "id",
-            "product_id",
-            "image",
-          ].includes(key) &&
+          !ignoredKeys.includes(key) &&
           option[key] !== undefined &&
           option[key] !== null &&
           option[key] !== "" &&
-          typeof option[key] === "string" &&
-          option[key].trim() !== ""
+          typeof option[key] === "string"
         ) {
-          allKeys.add(key);
+          keys.add(key);
         }
       });
     });
 
-    // Get unique values for each key
-    allKeys.forEach((key) => {
-      const values = [
-        ...new Set(
-          validOptions
-            .map((option) => option[key])
-            .filter(
-              (value) =>
-                value !== undefined &&
-                value !== null &&
-                value !== "" &&
-                typeof value === "string" &&
-                value.trim() !== "" &&
-                value.length < 100,
-            ),
-        ),
-      ];
-
-      if (values.length > 0) {
-        attributes[key] = values;
-      }
+    // Sort keys to ensure consistent order (e.g. Color first if possible)
+    return Array.from(keys).sort((a, b) => {
+      if (a.toLowerCase().includes("color")) return -1;
+      if (b.toLowerCase().includes("color")) return 1;
+      return a.localeCompare(b);
     });
-
-    return attributes;
   }, [validOptions]);
 
-  const getDisplayName = (key) => {
-    const keyMap = {
-      colors: "Color",
-      storage: "Storage",
-      ram: "RAM",
-      size: "Size",
-    };
-    return (
-      keyMap[key] ||
-      key.charAt(0).toUpperCase() +
-        key
-          .slice(1)
-          .replace(/([A-Z])/g, " $1")
-          .trim()
-    );
-  };
-
   const formatValue = (key, value) => {
+    if (!value) return "";
+    const strVal = value.toString();
     if (key === "storage") {
-      return value.toString().toUpperCase();
+      return strVal.toUpperCase();
     }
     if (key === "ram") {
-      return value.toString().includes("GB") ? value : `${value} GB`;
+      return strVal.includes("GB") ? strVal : `${strVal} GB`;
     }
-    if (key === "colors") {
-      return value.charAt(0).toUpperCase() + value.slice(1);
+    if (key.toLowerCase().includes("color")) {
+      return strVal.charAt(0).toUpperCase() + strVal.slice(1);
     }
-    return value.toString();
+    return strVal.charAt(0).toUpperCase() + strVal.slice(1);
   };
 
-  // Find option matching specific attribute value
-  const findOptionWithAttribute = (key, value) => {
-    return validOptions.find((option) => option[key] === value);
+  const getVariantLabel = (option) => {
+    return variantKeys.map((key) => formatValue(key, option[key])).join(" • ");
   };
-
-  // Check if an option exists and has stock
-  const getOptionStatus = (key, value) => {
-    const option = findOptionWithAttribute(key, value);
-    if (!option) return { exists: false, inStock: false, stock: 0, price: 0 };
-    return {
-      exists: true,
-      inStock: option.stock > 0,
-      stock: option.stock || 0,
-      price: option.discounted_price || option.price || 0,
-    };
-  };
-
-  // Handle attribute selection
-  const handleAttributeSelect = (key, value) => {
-    // Find the option that matches this attribute
-    let matchingOption = validOptions.find((option) => {
-      // Match selected attribute
-      if (option[key] !== value) return false;
-
-      // Also try to match other currently selected attributes
-      for (const otherKey of Object.keys(variantAttributes)) {
-        if (otherKey !== key && selectedVariant && selectedVariant[otherKey]) {
-          if (option[otherKey] !== selectedVariant[otherKey]) {
-            // If exact match not found, we still use this option
-          }
-        }
-      }
-      return true;
-    });
-
-    // If no exact match, find any option with the selected value
-    if (!matchingOption) {
-      matchingOption = validOptions.find((option) => option[key] === value);
-    }
-
-    if (matchingOption) {
-      onSelect(matchingOption);
-    }
-  };
-
-  if (Object.keys(variantAttributes).length === 0) return null;
 
   return (
     <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
-      {Object.entries(variantAttributes).map(([key, values]) => (
-        <View key={key} style={{ marginBottom: 16 }}>
-          {/* Attribute Label */}
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: 10,
-            }}
-          >
-            <Text
-              style={{ fontSize: 14, fontWeight: "600", color: colors.text }}
+      <Text
+        style={{
+          fontSize: 14,
+          fontWeight: "bold",
+          color: colors.text,
+          marginBottom: 10,
+        }}
+      >
+        Available Options:
+      </Text>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingRight: 16 }}
+      >
+        {validOptions.map((option, index) => {
+          const isSelected =
+            selectedVariant &&
+            (selectedVariant.id === option.id ||
+              JSON.stringify(selectedVariant) === JSON.stringify(option));
+          
+          const inStock = option.stock > 0;
+          const price = option.discounted_price || option.price || 0;
+          const originalPrice = option.price || 0;
+          const hasDiscount = price < originalPrice;
+          const image = option.image || (productImages && productImages[0]);
+          const label = getVariantLabel(option);
+
+          return (
+            <TouchableOpacity
+              key={option.id || index}
+              onPress={() => inStock && onSelect(option)}
+              disabled={!inStock}
+              activeOpacity={0.7}
+              style={{
+                width: 120, // Decreased width from 150
+                padding: 8, // Decreased padding from 10
+                marginRight: 10, // Decreased margin form 12
+                borderRadius: 10, // Decreased radius from 12
+                borderWidth: isSelected ? 2 : 1,
+                borderColor: isSelected ? "#007185" : colors.border,
+                backgroundColor: isSelected ? "#f0f8fa" : colors.white,
+                opacity: inStock ? 1 : 0.6,
+                // Shadow for cards
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.05,
+                shadowRadius: 2,
+                elevation: 2,
+              }}
             >
-              {getDisplayName(key)}:
-            </Text>
-            {selectedVariant && selectedVariant[key] && (
-              <Text
+              {/* Image Area */}
+              <View
                 style={{
-                  fontSize: 14,
-                  color: colors.primary,
-                  marginLeft: 6,
-                  fontWeight: "500",
+                  width: "100%",
+                  aspectRatio: 1,
+                  marginBottom: 6, // Decreased margin from 8
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "#fff",
+                  borderRadius: 6, // Decreased radius from 8
+                  overflow: 'hidden'
                 }}
               >
-                {formatValue(key, selectedVariant[key])}
+                {image ? (
+                  <Image
+                    source={{ uri: typeof image === "string" ? image : "" }}
+                    style={{ width: "100%", height: "100%" }}
+                    contentFit="contain"
+                  />
+                ) : (
+                  <View
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      backgroundColor: "#f5f5f5",
+                    }}
+                  />
+                )}
+              </View>
+
+              {/* Variant Details (Combined) */}
+              <Text
+                numberOfLines={2}
+                style={{
+                  fontSize: 12, // Decreased font size from 13
+                  fontWeight: "700",
+                  color: colors.text,
+                  marginBottom: 4, // Decreased margin from 6
+                  height: 32, // Decreased height from 36
+                  textAlign: 'left'
+                }}
+              >
+                {label}
               </Text>
-            )}
-          </View>
 
-          {/* Attribute Options */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingRight: 16 }}
-          >
-            {values.map((value, index) => {
-              const isSelected =
-                selectedVariant && selectedVariant[key] === value;
-              const status = getOptionStatus(key, value);
-
-              return (
-                <TouchableOpacity
-                  key={`${key}-${value}-${index}`}
-                  onPress={() =>
-                    status.inStock && handleAttributeSelect(key, value)
-                  }
-                  disabled={!status.inStock}
-                  activeOpacity={0.7}
-                  style={{
-                    minWidth: 80,
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                    marginRight: 10,
-                    borderRadius: 8,
-                    borderWidth: isSelected ? 2 : 1,
-                    borderColor: isSelected
-                      ? colors.primary
-                      : !status.inStock
-                        ? colors.border
-                        : colors.border,
-                    backgroundColor: isSelected
-                      ? colors.primary + "10"
-                      : !status.inStock
-                        ? colors.backgroundSecondary
-                        : colors.white,
-                    opacity: !status.inStock ? 0.6 : 1,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    position: "relative",
-                  }}
+              {/* Price */}
+              <View style={{ marginBottom: 2 }}>
+                <View
+                  style={{ flexDirection: "row", alignItems: "baseline" }}
                 >
-                  {/* Selected Check Mark */}
-                  {isSelected && (
-                    <View
-                      style={{
-                        position: "absolute",
-                        top: -6,
-                        right: -6,
-                        width: 20,
-                        height: 20,
-                        borderRadius: 10,
-                        backgroundColor: colors.primary,
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Check size={12} color={colors.white} />
-                    </View>
-                  )}
-
-                  {/* Value Text */}
                   <Text
                     style={{
-                      fontSize: 14,
-                      fontWeight: isSelected ? "600" : "500",
-                      color: !status.inStock
-                        ? colors.textSecondary
-                        : isSelected
-                          ? colors.primary
-                          : colors.text,
-                      textAlign: "center",
+                      fontSize: 14, // Decreased font size from 15
+                      fontWeight: "700",
+                      color: colors.text,
+                      marginRight: 4,
                     }}
                   >
-                    {formatValue(key, value)}
+                    ₹{price.toLocaleString()}
                   </Text>
-
-                  {/* Price if available */}
-                  {status.price > 0 && key === "storage" && (
-                    <Text
-                      style={{
-                        fontSize: 11,
-                        color: colors.textSecondary,
-                        marginTop: 2,
-                      }}
-                    >
-                      ₹{status.price.toLocaleString()}
-                    </Text>
-                  )}
-
-                  {/* Stock status */}
-                  {!status.inStock && (
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        marginTop: 4,
-                      }}
-                    >
-                      <AlertCircle size={10} color={colors.error} />
-                      <Text
-                        style={{
-                          fontSize: 10,
-                          color: colors.error,
-                          marginLeft: 3,
-                        }}
-                      >
-                        Out of Stock
-                      </Text>
-                    </View>
-                  )}
-
-                  {status.inStock && status.stock <= 5 && (
-                    <Text
-                      style={{
-                        fontSize: 10,
-                        color: colors.warning,
-                        marginTop: 4,
-                      }}
-                    >
-                      Only {status.stock} left
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </View>
-      ))}
+                </View>
+                {hasDiscount && (
+                  <Text
+                    style={{
+                      fontSize: 10, // Decreased from 11
+                      color: colors.textSecondary,
+                      textDecorationLine: "line-through",
+                    }}
+                  >
+                    ₹{originalPrice.toLocaleString()}
+                  </Text>
+                )}
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
     </View>
   );
 };

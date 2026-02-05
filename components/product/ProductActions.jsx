@@ -99,11 +99,6 @@ const ProductActions = ({
         backgroundColor: colors.white,
       }}
     >
-      {/* EMI Offers */}
-      <View style={{ marginBottom: 16 }}>
-        <EMIOffers price={price} />
-      </View>
-
       {/* Price Summary Card */}
       <View
         style={{
