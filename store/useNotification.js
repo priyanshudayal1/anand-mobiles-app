@@ -160,8 +160,26 @@ export const useNotificationStore = create((set, get) => ({
 
       unsubscribers.push(
         webSocketService.on("error", (error) => {
-          console.error("❌ WebSocket error:", error);
-          set({ error: "WebSocket connection error" });
+          // Silently handle WebSocket errors - we'll fallback to API
+          set({ isWebSocketConnected: false });
+        }),
+      );
+
+      unsubscribers.push(
+        webSocketService.on("backend_unavailable", () => {
+          console.log("📡 Using API polling for notifications");
+          set({ isWebSocketConnected: false });
+          // Fetch via API as fallback
+          get().fetchNotifications();
+        }),
+      );
+
+      unsubscribers.push(
+        webSocketService.on("max_reconnect_reached", () => {
+          console.log("📡 WebSocket unavailable, using API polling");
+          set({ isWebSocketConnected: false });
+          // Fetch via API as fallback
+          get().fetchNotifications();
         }),
       );
 

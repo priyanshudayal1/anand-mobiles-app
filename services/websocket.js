@@ -63,23 +63,32 @@ class WebSocketService {
         };
 
         this.socket.onerror = (error) => {
-          console.error("❌ WebSocket: Error", error);
+          // Only log on first error to reduce console noise
+          if (this.reconnectAttempts === 0) {
+            console.log("⚠️ WebSocket: Connection unavailable (backend may be offline)");
+          }
           this.emit("error", error);
         };
 
         this.socket.onclose = (event) => {
-          console.log(
-            "🔌 WebSocket: Connection closed",
-            event.code,
-            event.reason,
-          );
+          // Only log significant close events to reduce noise
+          if (event.code === 1000) {
+            console.log("🔌 WebSocket: Disconnected cleanly");
+          } else if (this.reconnectAttempts === 0) {
+            console.log("🔌 WebSocket: Connection closed (code: " + event.code + ")");
+          }
+          
           this.isConnected = false;
           this.isConnecting = false;
           this.stopPingInterval();
           this.emit("disconnected", { code: event.code, reason: event.reason });
 
-          // Attempt reconnection if not a clean close
-          if (
+          // For abnormal closures (1006), don't reconnect - likely backend is down
+          // For other errors, attempt reconnection if not a clean close
+          if (event.code === 1006) {
+            console.log("⚠️ WebSocket: Backend unavailable, using API fallback");
+            this.emit("backend_unavailable", null);
+          } else if (
             event.code !== 1000 &&
             event.code !== 4001 &&
             event.code !== 4002 &&
@@ -127,7 +136,7 @@ class WebSocketService {
    */
   attemptReconnect() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.log("🔌 WebSocket: Max reconnect attempts reached");
+      console.log("⚠️ WebSocket: Max reconnect attempts reached, using API fallback");
       this.emit("max_reconnect_reached", null);
       return;
     }
@@ -135,9 +144,12 @@ class WebSocketService {
     this.reconnectAttempts++;
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1); // Exponential backoff
 
-    console.log(
-      `🔌 WebSocket: Attempting reconnect ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delay}ms`,
-    );
+    // Only log first few attempts
+    if (this.reconnectAttempts <= 2) {
+      console.log(
+        `🔌 WebSocket: Reconnect attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}...`,
+      );
+    }
 
     setTimeout(() => {
       if (!this.isConnected && !this.isConnecting) {
