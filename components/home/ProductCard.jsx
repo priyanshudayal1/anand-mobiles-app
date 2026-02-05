@@ -15,7 +15,7 @@ import { useWishlistStore } from "../../store/useWishlist";
 
 const { width } = Dimensions.get("window");
 
-export default function ProductCard({
+function ProductCard({
   product,
   size = "medium", // 'small', 'medium', 'large'
   showRating = true,
@@ -442,3 +442,14 @@ export default function ProductCard({
     </TouchableOpacity>
   );
 }
+
+export default React.memo(ProductCard, (prevProps, nextProps) => {
+  // Only re-render if product data or key props changed
+  return (
+    prevProps.product?.id === nextProps.product?.id &&
+    prevProps.product?.stock === nextProps.product?.stock &&
+    prevProps.product?.price === nextProps.product?.price &&
+    prevProps.size === nextProps.size &&
+    prevProps.showRating === nextProps.showRating
+  );
+});

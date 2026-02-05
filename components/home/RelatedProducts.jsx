@@ -1,10 +1,22 @@
-import React from "react";
+import { useCallback } from "react";
 import { View, Text, FlatList } from "react-native";
 import { useTheme } from "../../store/useTheme";
 import ProductCard from "./ProductCard";
 
 export default function RelatedProducts({ products, currentProductId }) {
   const { colors } = useTheme();
+
+  const renderItem = useCallback(({ item }) => (
+    <View style={{ marginRight: 16 }}>
+      <ProductCard product={item} size="small" />
+    </View>
+  ), []);
+
+  const keyExtractor = useCallback(
+    (item, index) =>
+      item.id?.toString() || item.product_id?.toString() || index.toString(),
+    [],
+  );
 
   // Filter out current product and limit to 8
   const related = products
@@ -35,14 +47,12 @@ export default function RelatedProducts({ products, currentProductId }) {
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 16 }}
-        keyExtractor={(item, index) =>
-          item.id?.toString() || item.product_id?.toString() || index.toString()
-        }
-        renderItem={({ item }) => (
-          <View style={{ marginRight: 16 }}>
-            <ProductCard product={item} size="small" />
-          </View>
-        )}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={5}
+        initialNumToRender={5}
+        windowSize={7}
       />
     </View>
   );
