@@ -12,7 +12,7 @@ export const useCartStore = create((set, get) => ({
   fetchCart: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.get(API_ENDPOINTS.cart || "/users/cart/");
+      const response = await api.get("/users/cart/");
       const data = response.data;
 
       const items = data.cart_items || data.items || data.cart || [];
