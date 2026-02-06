@@ -19,7 +19,10 @@ import ToastContainer from "../components/common/ToastContainer";
 let Notifications = null;
 try {
   Notifications = require("expo-notifications");
-} catch (error) {}
+  console.log("[App Layout] ✅ expo-notifications loaded");
+} catch (error) {
+  console.error("[App Layout] ❌ Failed to load expo-notifications:", error);
+}
 
 // Suppress warnings
 LogBox.ignoreLogs([
@@ -58,11 +61,21 @@ function RootLayoutNav() {
 
   // Setup push notifications when authenticated
   useEffect(() => {
+    console.log("[App Layout] 🔄 Auth state changed:", {
+      isAuthenticated,
+      authInitialized,
+    });
+
     if (!isAuthenticated || !authInitialized) {
+      console.log(
+        "[App Layout] ⏹️ Stopping real-time listener (not authenticated)",
+      );
       // Stop real-time listener when logged out
       stopRealtimeListener();
       return;
     }
+
+    console.log("[App Layout] 🚀 Starting notification setup...");
 
     // Register for push notifications (will gracefully handle Expo Go)
     registerForPushNotifications();
@@ -70,9 +83,12 @@ function RootLayoutNav() {
     // Start WebSocket real-time listener for notifications
     const initializeRealtimeListener = async () => {
       const userId = await AsyncStorage.getItem("userId");
+      console.log("[App Layout] User ID from storage:", userId);
       if (userId) {
+        console.log("[App Layout] 🔌 Starting WebSocket listener...");
         startRealtimeListener(userId);
       } else {
+        console.warn("[App Layout] ⚠️ No userId, falling back to API polling");
         // Fallback to API polling if no userId
         fetchUnreadCount();
       }
@@ -81,21 +97,40 @@ function RootLayoutNav() {
 
     // Skip notification listeners if not available (Expo Go)
     if (!Notifications) {
+      console.warn(
+        "[App Layout] ⚠️ Notifications module unavailable, skipping listeners",
+      );
       return;
     }
 
     // Try to setup notification listeners (may not work in Expo Go)
     try {
+      console.log("[App Layout] 🎧 Setting up notification listeners...");
+
       // Listen for incoming notifications (foreground)
       notificationListener.current =
         Notifications.addNotificationReceivedListener((notification) => {
+          console.log("[App Layout] 📬 NOTIFICATION RECEIVED:", {
+            title: notification.request?.content?.title,
+            body: notification.request?.content?.body,
+            data: notification.request?.content?.data,
+          });
+
           // Vibrate and play haptic feedback
           if (Platform.OS !== "web") {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            try {
+              Haptics.notificationAsync(
+                Haptics.NotificationFeedbackType.Success,
+              );
+              console.log("[App Layout] 📣 Haptic feedback triggered");
+            } catch (err) {
+              console.error("[App Layout] ❌ Haptic feedback error:", err);
+            }
           }
 
           // Parse notification data
           const data = parseNotificationData(notification);
+          console.log("[App Layout] 📖 Parsed notification data:", data);
 
           // Add to local state
           addNotificationLocally({
@@ -111,39 +146,62 @@ function RootLayoutNav() {
               notification.request?.content?.data?.icon ||
               "notifications-outline",
           });
+          console.log("[App Layout] ✅ Notification added to local state");
         });
 
       // Listen for notification interactions (user taps on notification)
       responseListener.current =
         Notifications.addNotificationResponseReceivedListener((response) => {
+          console.log("[App Layout] 👆 NOTIFICATION TAPPED:", {
+            notification: response.notification.request.content,
+            actionIdentifier: response.actionIdentifier,
+          });
+
           const data = parseNotificationData(response.notification);
+          console.log(
+            "[App Layout] 📍 Navigating based on notification data:",
+            data,
+          );
 
           // Navigate based on notification type
           if (data.orderId && data.type?.startsWith("order_")) {
+            console.log(`[App Layout] ➡️ Navigating to order: ${data.orderId}`);
             router.push(`/order-tracking/${data.orderId}`);
           } else {
+            console.log("[App Layout] ➡️ Navigating to notifications screen");
             router.push("/notifications");
           }
         });
+
+      console.log(
+        "[App Layout] ✅ Notification listeners registered successfully",
+      );
     } catch (error) {
-      // Notification listeners may not be available in Expo Go
+      console.error(
+        "[App Layout] ❌ Error setting up notification listeners:",
+        error,
+      );
     }
 
     // Cleanup listeners
     return () => {
+      console.log("[App Layout] 🧹 Cleaning up notification listeners...");
       try {
         if (notificationListener.current?.remove) {
           notificationListener.current.remove();
+          console.log("[App Layout] ✅ Notification listener removed");
         }
         if (responseListener.current?.remove) {
           responseListener.current.remove();
+          console.log("[App Layout] ✅ Response listener removed");
         }
       } catch (error) {
-        // Ignore cleanup errors
+        console.error("[App Layout] ❌ Error cleaning up listeners:", error);
       }
 
       // Stop real-time listener when component unmounts or auth changes
       stopRealtimeListener();
+      console.log("[App Layout] ✅ Cleanup complete");
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, authInitialized]);

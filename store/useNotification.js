@@ -13,25 +13,90 @@ let isNotificationsAvailable = false;
 // Check if running in Expo Go
 const isExpoGo = Constants.appOwnership === "expo";
 
+console.log("[Notification] App ownership:", Constants.appOwnership);
+console.log("[Notification] Is Expo Go:", isExpoGo);
+console.log("[Notification] Platform:", Platform.OS);
+
 if (!isExpoGo) {
   try {
     Notifications = require("expo-notifications");
     isNotificationsAvailable = true;
+    console.log("[Notification] ✅ expo-notifications loaded successfully");
 
     // Configure how notifications are handled when app is in foreground
     Notifications.setNotificationHandler({
-      handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: true,
-        shouldShowBanner: true,
-        shouldShowList: true,
-      }),
+      handleNotification: async (notification) => {
+        console.log("[Notification] 📬 Notification received:", {
+          title: notification.request.content.title,
+          body: notification.request.content.body,
+          data: notification.request.content.data,
+        });
+        return {
+          shouldPlaySound: true,
+          shouldSetBadge: true,
+          shouldShowBanner: true,
+          shouldShowList: true,
+        };
+      },
     });
-  } catch (error) {}
+    console.log("[Notification] ✅ Notification handler configured");
+  } catch (error) {
+    console.error(
+      "[Notification] ❌ Failed to load expo-notifications:",
+      error,
+    );
+  }
 } else {
-  // Push notifications are disabled in Expo Go
+  console.warn("[Notification] ⚠️ Push notifications are disabled in Expo Go");
 }
+
+// Helper function to show local push notification
+const showLocalNotification = async (notification) => {
+  try {
+    if (!isNotificationsAvailable || !Notifications) {
+      console.log(
+        "[Notification] ⚠️ Notifications unavailable, skipping local push",
+      );
+      return;
+    }
+
+    const { status } = await Notifications.getPermissionsAsync();
+    if (status !== "granted") {
+      console.log(
+        "[Notification] ⚠️ Permissions not granted, skipping local push",
+      );
+      return;
+    }
+
+    console.log(
+      "[Notification] 📢 Showing local push notification:",
+      notification.title,
+    );
+
+    // Schedule a local notification immediately
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: notification.title || "New Notification",
+        body: notification.message || notification.body || "",
+        data: {
+          type: notification.type || "general",
+          order_id: notification.order_id || null,
+          status: notification.status || null,
+          notification_id: notification.id || null,
+          product_image: notification.data?.product_image || null,
+          product_name: notification.data?.product_name || null,
+        },
+        sound: true,
+        priority: Notifications.AndroidNotificationPriority.HIGH,
+      },
+      trigger: null, // null means show immediately
+    });
+
+    console.log("[Notification] ✅ Local push notification displayed");
+  } catch (error) {
+    console.error("[Notification] ❌ Error showing local notification:", error);
+  }
+};
 
 export const useNotificationStore = create((set, get) => ({
   notifications: [],
@@ -59,14 +124,24 @@ export const useNotificationStore = create((set, get) => ({
       // Handle new notifications
       unsubscribers.push(
         webSocketService.on("new_notification", (notification) => {
+          console.log(
+            "[Notification] 📨 New notification from WebSocket:",
+            notification,
+          );
+
           set((state) => {
             // Check if notification already exists to prevent duplicates
             const exists = state.notifications.some(
               (n) => n.id === notification.id,
             );
             if (exists) {
+              console.log("[Notification] ⚠️ Duplicate notification, skipping");
               return state;
             }
+
+            // Show local push notification
+            showLocalNotification(notification);
+
             return {
               notifications: [notification, ...state.notifications],
               unreadCount: state.unreadCount + 1,
@@ -78,14 +153,24 @@ export const useNotificationStore = create((set, get) => ({
       // Handle broadcast notifications from admin
       unsubscribers.push(
         webSocketService.on("broadcast_notification", (notification) => {
+          console.log(
+            "[Notification] 📢 Broadcast notification from admin:",
+            notification,
+          );
+
           set((state) => {
             // Check if notification already exists to prevent duplicates
             const exists = state.notifications.some(
               (n) => n.id === notification.id,
             );
             if (exists) {
+              console.log("[Notification] ⚠️ Duplicate broadcast, skipping");
               return state;
             }
+
+            // Show local push notification
+            showLocalNotification(notification);
+
             return {
               notifications: [notification, ...state.notifications],
               unreadCount: state.unreadCount + 1,
@@ -193,58 +278,83 @@ export const useNotificationStore = create((set, get) => ({
 
   // Register for push notifications (SDK 54 compatible)
   registerForPushNotifications: async () => {
+    console.log("[Notification] 🔔 Starting push notification registration...");
     try {
       // Check if running in Expo Go
       if (isExpoGo) {
+        console.warn(
+          "[Notification] ⚠️ Cannot register push notifications in Expo Go",
+        );
         return null;
       }
 
       // Check if notifications module is available
       if (!isNotificationsAvailable || !Notifications) {
+        console.error("[Notification] ❌ Notifications module not available");
         return null;
       }
 
       // Must use physical device for push notifications
       if (!Device.isDevice) {
+        console.warn(
+          "[Notification] ⚠️ Push notifications require a physical device",
+        );
         return null;
       }
+      console.log("[Notification] ✅ Running on physical device");
 
       // Request permissions
+      console.log("[Notification] 📱 Checking notification permissions...");
       const { status: existingStatus } =
         await Notifications.getPermissionsAsync();
+      console.log("[Notification] Current permission status:", existingStatus);
       let finalStatus = existingStatus;
 
       if (existingStatus !== "granted") {
+        console.log("[Notification] 🔐 Requesting notification permissions...");
         const { status } = await Notifications.requestPermissionsAsync();
         finalStatus = status;
+        console.log("[Notification] New permission status:", finalStatus);
       }
 
       set({ notificationPermission: finalStatus });
 
       if (finalStatus !== "granted") {
+        console.error(
+          "[Notification] ❌ Notification permissions denied:",
+          finalStatus,
+        );
         return null;
       }
+      console.log("[Notification] ✅ Notification permissions granted");
 
       // Get EAS project ID (required for Expo push tokens)
       const projectId =
         Constants.expoConfig?.extra?.eas?.projectId ||
         Constants.easConfig?.projectId;
 
+      console.log("[Notification] EAS Project ID:", projectId);
       if (!projectId) {
+        console.error("[Notification] ❌ No EAS project ID found in app.json");
         return null;
       }
 
       // Get Expo push token
+      console.log("[Notification] 🎫 Getting Expo push token...");
       const token = (
         await Notifications.getExpoPushTokenAsync({
           projectId: projectId,
         })
       ).data;
 
+      console.log("[Notification] ✅ Got Expo push token:", token);
       set({ expoPushToken: token });
 
       // Setup Android notification channel (SDK 54 required)
       if (Platform.OS === "android") {
+        console.log(
+          "[Notification] 🤖 Setting up Android notification channel...",
+        );
         await Notifications.setNotificationChannelAsync("default", {
           name: "Order Updates",
           importance: Notifications.AndroidImportance.MAX,
@@ -255,25 +365,46 @@ export const useNotificationStore = create((set, get) => ({
           enableLights: true,
           showBadge: true,
         });
+        console.log(
+          "[Notification] ✅ Android notification channel configured",
+        );
       }
 
       // Register token with backend
+      console.log("[Notification] 📤 Registering token with backend...");
       await get().registerTokenWithBackend(token);
+      console.log("[Notification] ✅ Push notification registration complete!");
       return token;
     } catch (error) {
-      // Provide clearer error messages for common issues
+      // Silently handle common expected errors
       const errorMessage = error.message || "";
+
+      // Firebase errors are expected when not using FCM (Expo handles push without FCM)
       if (
         errorMessage.includes("FirebaseApp is not initialized") ||
         errorMessage.includes("FirebaseApp.initializeApp")
       ) {
-      } else if (
+        // Silently ignore - Expo push notifications work without FCM
+        return null;
+      }
+
+      // Expo Go limitations are expected
+      if (
         errorMessage.includes("Expo Go") ||
         errorMessage.includes("projectId")
       ) {
-      } else {
-        set({ error: errorMessage });
+        console.warn(
+          "[Notification] ⚠️ Project ID issue or Expo Go limitation",
+        );
+        return null;
       }
+
+      // Log unexpected errors only
+      console.error(
+        "[Notification] ❌ Error registering push notifications:",
+        errorMessage,
+      );
+      set({ error: errorMessage });
       return null;
     }
   },
@@ -281,16 +412,28 @@ export const useNotificationStore = create((set, get) => ({
   // Register token with backend
   registerTokenWithBackend: async (token) => {
     try {
+      console.log("[Notification] 🔑 Getting user token from storage...");
       const userToken = await AsyncStorage.getItem("userToken");
       if (!userToken) {
+        console.warn(
+          "[Notification] ⚠️ No user token found, skipping backend registration",
+        );
         return;
       }
 
-      await api.post("/users/notifications/register-token/", {
+      console.log("[Notification] 📤 Sending push token to backend...");
+      const response = await api.post("/users/notifications/register-token/", {
         fcm_token: token,
       });
+      console.log(
+        "[Notification] ✅ Token registered with backend:",
+        response.data,
+      );
     } catch (error) {
-      console.error("Error registering FCM token with backend:", error);
+      console.error(
+        "[Notification] ❌ Error registering token with backend:",
+        error.response?.data || error.message,
+      );
     }
   },
 
@@ -452,14 +595,78 @@ export const useNotificationStore = create((set, get) => ({
 
   // Add a notification locally (from push notification)
   addNotificationLocally: (notification) => {
+    console.log(
+      "[Notification] \u2795 Adding notification locally:",
+      notification,
+    );
     set((state) => ({
       notifications: [notification, ...state.notifications],
       unreadCount: state.unreadCount + 1,
     }));
   },
 
+  // Test push notification (for debugging)
+  sendTestNotification: async () => {
+    console.log("[Notification] \ud83e\uddea Sending test notification...");
+    try {
+      if (!isNotificationsAvailable || !Notifications) {
+        console.error("[Notification] \u274c Notifications not available");
+        return { success: false, error: "Notifications not available" };
+      }
+
+      const { status } = await Notifications.getPermissionsAsync();
+      console.log("[Notification] Permission status:", status);
+
+      if (status !== "granted") {
+        console.error("[Notification] \u274c Permissions not granted");
+        return { success: false, error: "Permissions not granted" };
+      }
+
+      // Schedule a local notification immediately
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "\ud83d\udce6 Test Notification",
+          body: "This is a test notification to verify push notifications are working!",
+          data: {
+            type: "test",
+            timestamp: Date.now(),
+          },
+          sound: true,
+          priority: Notifications.AndroidNotificationPriority.HIGH,
+        },
+        trigger: null, // null means show immediately
+      });
+
+      console.log("[Notification] \u2705 Test notification scheduled");
+      return { success: true };
+    } catch (error) {
+      console.error(
+        "[Notification] \u274c Error sending test notification:",
+        error,
+      );
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Get notification permission status (for debugging)
+  getPermissionStatus: async () => {
+    console.log("[Notification] \ud83d\udd10 Checking permission status...");
+    try {
+      if (!isNotificationsAvailable || !Notifications) {
+        return "unavailable";
+      }
+      const { status } = await Notifications.getPermissionsAsync();
+      console.log("[Notification] Current permission status:", status);
+      return status;
+    } catch (error) {
+      console.error("[Notification] \u274c Error checking permissions:", error);
+      return "error";
+    }
+  },
+
   // Clear all local state and stop listeners
   reset: () => {
+    console.log("[Notification] \ud83d\udd04 Resetting notification store...");
     // Stop WebSocket listener
     get().stopRealtimeListener();
 
@@ -471,6 +678,7 @@ export const useNotificationStore = create((set, get) => ({
       wsUnsubscribers: [],
       isWebSocketConnected: false,
     });
+    console.log("[Notification] \u2705 Store reset complete");
   },
 }));
 
