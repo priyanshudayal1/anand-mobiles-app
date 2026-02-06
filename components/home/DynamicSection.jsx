@@ -510,9 +510,9 @@ export default function DynamicSection({ section }) {
           <View style={{ paddingHorizontal: 0, gap: 0 }}>
             {slots.main
               ? renderBannerImage(slots.main, {
-                width: "100%",
-                height: width * 0.5,
-              })
+                  width: "100%",
+                  height: width * 0.5,
+                })
               : null}
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 0 }}>
               <View style={{ flexDirection: "row", gap: 0, width: "100%" }}>
