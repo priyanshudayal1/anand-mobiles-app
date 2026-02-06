@@ -29,6 +29,7 @@ import ProductQuantitySelector from "../../components/product/ProductQuantitySel
 import ProductActions from "../../components/product/ProductActions";
 import ProductAccordions from "../../components/product/ProductAccordions";
 import RelatedProducts from "../../components/home/RelatedProducts";
+import FrequentlyBoughtTogether from "../../components/product/FrequentlyBoughtTogether";
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -61,6 +62,8 @@ export default function ProductDetailScreen() {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [isBuyingNow, setIsBuyingNow] = useState(false);
   const [showCartModal, setShowCartModal] = useState(false);
+  const [bundleProducts, setBundleProducts] = useState([]);
+  const [addingBundle, setAddingBundle] = useState(false);
   const { success, error } = useToast();
 
   const loadProduct = useCallback(async () => {
@@ -79,6 +82,8 @@ export default function ProductDetailScreen() {
         (currentProduct.id || currentProduct.product_id),
     );
     setRelatedProducts(filtered.slice(0, 10));
+    // Set bundle products (first 2-3 related products)
+    setBundleProducts(filtered.slice(0, 3));
   }, [currentProduct?.category, currentProduct?.id, getProductsByCategory]);
 
   // Fetch product on mount or id change
@@ -233,6 +238,38 @@ export default function ProductDetailScreen() {
 
   const handleWishlistFromGallery = () => {
     handleAddToWishlist();
+  };
+
+  const handleAddBundle = async () => {
+    if (!isAuthenticated) {
+      router.push("/(auth)/login");
+      return;
+    }
+
+    if (!currentProduct || bundleProducts.length === 0) return;
+
+    setAddingBundle(true);
+    try {
+      // Add current product
+      const variantId = selectedVariant ? selectedVariant.id : null;
+      await addToCart(
+        currentProduct.id || currentProduct.product_id,
+        quantity,
+        variantId,
+      );
+
+      // Add all bundle products
+      for (const product of bundleProducts) {
+        await addToCart(product.id || product.product_id, 1, null);
+      }
+
+      success(`All ${bundleProducts.length + 1} items added to cart!`);
+      setShowCartModal(true);
+    } catch (err) {
+      error(err.message || "Failed to add bundle to cart");
+    } finally {
+      setAddingBundle(false);
+    }
   };
 
   // Cart item count for header badge
@@ -604,6 +641,13 @@ export default function ProductDetailScreen() {
           onShare={handleShare}
         />
 
+        {/* Frequently Bought Together */}
+        <FrequentlyBoughtTogether
+          currentProduct={normalizedProduct}
+          bundleProducts={bundleProducts}
+          onAddBundle={handleAddBundle}
+        />
+
         {/* Quantity Selector */}
         <ProductQuantitySelector
           quantity={quantity}
@@ -678,8 +722,19 @@ export default function ProductDetailScreen() {
         title="Added to Cart"
         message={`${normalizedProduct.name} has been added to your cart.`}
         buttons={[
-          { text: "Continue Shopping", variant: "outline", onPress: () => setShowCartModal(false) },
-          { text: "View Cart", variant: "primary", onPress: () => { setShowCartModal(false); router.push("/cart"); } },
+          {
+            text: "Continue Shopping",
+            variant: "outline",
+            onPress: () => setShowCartModal(false),
+          },
+          {
+            text: "View Cart",
+            variant: "primary",
+            onPress: () => {
+              setShowCartModal(false);
+              router.push("/cart");
+            },
+          },
         ]}
       />
     </SafeAreaView>

@@ -50,12 +50,15 @@ const Login = () => {
   const [localLoading, setLocalLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  // Google Auth Request - using ID token for Firebase
+  // Google Auth Request - Firebase OAuth with native Android client
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    // Web client ID (for fallback)
     clientId:
       "403268549781-6c4gvnrgol3v8mf81bj025mc8fs04nkh.apps.googleusercontent.com",
+    // Android OAuth client ID (configured with SHA-1 fingerprint)
     androidClientId:
-      "403268549781-6c4gvnrgol3v8mf81bj025mc8fs04nkh.apps.googleusercontent.com",
+      "403268549781-ap66ler0ic5vua4dle16pikm1suqec15.apps.googleusercontent.com",
+    // iOS client ID - update after creating iOS OAuth client
     iosClientId:
       "403268549781-mi92udu70ovm0f861ilks4kks6r2bvra.apps.googleusercontent.com",
   });

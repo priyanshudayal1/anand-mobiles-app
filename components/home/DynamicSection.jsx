@@ -176,8 +176,8 @@ const TabbedSection = ({ section }) => {
       <View
         style={{
           paddingHorizontal: 16,
-          paddingTop: 12,
-          paddingBottom: 6,
+          paddingTop: 16,
+          paddingBottom: 12,
         }}
       >
         <View
@@ -185,7 +185,7 @@ const TabbedSection = ({ section }) => {
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: 0,
+            marginBottom: 12,
           }}
         >
           <Text
@@ -202,14 +202,14 @@ const TabbedSection = ({ section }) => {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 16 }}
+          contentContainerStyle={{ gap: 20, paddingRight: 16 }}
         >
           {tabs.map((tab, index) => (
             <TouchableOpacity
               key={tab.id}
               onPress={() => setActiveTab(index)}
               style={{
-                paddingBottom: 8,
+                paddingVertical: 8,
                 borderBottomWidth: activeTab === index ? 2 : 0,
                 borderColor: colors.primary,
               }}
