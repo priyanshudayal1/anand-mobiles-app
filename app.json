@@ -2,16 +2,16 @@
   "expo": {
     "name": "anand-mobiles",
     "slug": "anand-mobiles",
+    "owner": "priyanshudayal1",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "anandmobiles",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true
-    },
+    "plugins": ["@react-native-google-signin/google-signin"],
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/logo.png"
@@ -25,47 +25,24 @@
       ],
       "package": "com.priyanshudayal1.anandmobiles"
     },
+    "ios": {
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anandmobiles.anandmobiles"
+    },
     "web": {
       "output": "static",
       "favicon": "./assets/images/logo.png"
-    },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/logo.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
-          "dark": {
-            "backgroundColor": "#000000"
-          }
-        }
-      ],
-      "expo-secure-store",
-      "expo-web-browser",
-      "expo-audio",
-      "expo-video",
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/images/logo.png",
-          "color": "#FF6B35",
-          "sounds": [],
-          "defaultChannel": "default"
-        }
-      ]
-    ],
-    "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
     },
     "extra": {
       "router": {},
       "eas": {
         "projectId": "42cefa72-d20b-4fcc-a499-ac782210a8e8"
       }
+    },
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
     }
   }
 }

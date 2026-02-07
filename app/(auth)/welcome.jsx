@@ -65,13 +65,19 @@ const Welcome = () => {
         <View className="w-full gap-4">
           <CustomButton
             title="Login"
-            onPress={() => router.push("/login")}
+            onPress={() => router.push("/(auth)/login")}
             fullWidth
           />
 
           <CustomButton
             title="Create Account"
-            onPress={() => router.push("/register")}
+            onPress={() => router.push("/(auth)/register")}
+            variant="outline"
+            fullWidth
+          />
+          <CustomButton
+            title="Create Account"
+            onPress={() => router.push("/(auth)/google")}
             variant="outline"
             fullWidth
           />

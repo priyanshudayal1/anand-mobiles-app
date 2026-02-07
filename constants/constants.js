@@ -27,7 +27,6 @@ export const API_ENDPOINTS = {
   // Auth
   login: "/users/login/",
   register: "/users/register/",
-  googleLogin: "/users/google-login/",
   logout: "/users/logout/",
   profile: "/users/profile/",
 

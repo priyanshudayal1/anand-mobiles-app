@@ -214,7 +214,7 @@ function RootLayoutNav() {
 
     if (!isAuthenticated && !inAuthGroup) {
       // Redirect to welcome if not authenticated and not in auth group
-      router.replace("/welcome");
+      router.replace("/(auth)/welcome");
     } else if (isAuthenticated && inAuthGroup) {
       // Redirect to tabs if authenticated and in auth group
       router.replace("/(tabs)");

@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
 import { auth } from "../services/firebaseConfig";
 import api, { setUnauthorizedCallback } from "../services/api";
 import { useCartStore } from "./useCart";
@@ -101,72 +100,88 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  googleLogin: async (idToken) => {
+  googleLogin: async (firebaseToken, googleUser) => {
     set({ isLoading: true, error: null });
     try {
-      // 1. Sign in to Firebase with the ID token
-      const credential = GoogleAuthProvider.credential(idToken);
-      const userCredential = await signInWithCredential(auth, credential);
-      const firebaseUser = userCredential.user;
-
-      // 2. Prepare data for backend
-      // Note: We need to get a fresh ID token or reuse the one we have?
-      // The backend expects 'idToken' to verify with Google.
-      // We can use the one passed in, or get a fresh one from firebaseUser.
-
-      const backendPayload = {
-        idToken: idToken, // Using the token we got from Google Sign-In
-        email: firebaseUser.email,
-        firstName: firebaseUser.displayName?.split(" ")[0] || "",
-        lastName: firebaseUser.displayName?.split(" ").slice(1).join(" ") || "",
-        photoURL: firebaseUser.photoURL,
-        uid: firebaseUser.uid,
+      const response = await api.post("/users/google-login", {
+        idToken: firebaseToken,
+        email: googleUser.email,
+        firstName: googleUser.displayName?.split(" ")[0] || "",
+        lastName: googleUser.displayName?.split(" ").slice(1).join(" ") || "",
+        photoURL: googleUser.photoURL || "",
+        uid: googleUser.uid,
         authProvider: "google",
-      };
+      });
 
-      // 3. Send to backend (Try signup logic first as per web app)
-      let data;
-      try {
-        const response = await api.post("/users/signup", backendPayload);
-        data = response.data;
-      } catch (err) {
-        if (
-          err.response?.status === 409 &&
-          err.response?.data?.code === "USER_ALREADY_EXISTS"
-        ) {
-          // Fallback to login
-          const loginResponse = await api.post("/users/google-login", {
-            idToken,
-          });
-          data = loginResponse.data;
-        } else {
-          throw err;
-        }
-      }
-
+      const data = response.data;
       const user = {
         id: data.user_id,
         email: data.email,
         firstName: data.first_name,
         lastName: data.last_name,
-        phone: data.phone_number,
-        photoURL: firebaseUser.photoURL,
+        phone: data.phone_number || data.phone,
+        photoURL: googleUser.photoURL || "",
         token: data.token,
       };
 
       await AsyncStorage.setItem("userToken", data.token);
       await AsyncStorage.setItem("userData", JSON.stringify(user));
-      await AsyncStorage.setItem("userId", data.user_id); // For Firestore listener
+      await AsyncStorage.setItem("userId", data.user_id);
 
       set({ user, isAuthenticated: true, isLoading: false });
-      return user;
+      return { success: true, user };
     } catch (error) {
-      console.error("Google Login Flow Failed:", error);
+      const errorData = error.response?.data;
+      const status = error.response?.status;
+
+      // Backend returns 404 with redirect_to_signup if user doesn't exist
+      if (status === 404 && errorData?.redirect_to_signup) {
+        set({ isLoading: false, error: null });
+        return { success: false, redirect_to_signup: true };
+      }
+
+      const msg =
+        errorData?.error || errorData?.detail || "Google login failed";
+      set({ error: msg, isLoading: false });
+      throw error;
+    }
+  },
+
+  googleSignup: async (firebaseToken, googleUser) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.post("/users/signup", {
+        idToken: firebaseToken,
+        email: googleUser.email,
+        first_name: googleUser.displayName?.split(" ")[0] || "",
+        last_name: googleUser.displayName?.split(" ").slice(1).join(" ") || "",
+        photoURL: googleUser.photoURL || "",
+        uid: googleUser.uid,
+        authProvider: "google",
+      });
+
+      const data = response.data;
+      const user = {
+        id: data.user_id,
+        email: data.email,
+        firstName: data.first_name,
+        lastName: data.last_name,
+        phone: data.phone_number || data.phone,
+        photoURL: googleUser.photoURL || "",
+        token: data.token,
+      };
+
+      await AsyncStorage.setItem("userToken", data.token);
+      await AsyncStorage.setItem("userData", JSON.stringify(user));
+      await AsyncStorage.setItem("userId", data.user_id);
+
+      set({ user, isAuthenticated: true, isLoading: false });
+      return { success: true, user };
+    } catch (error) {
       const msg =
         error.response?.data?.error ||
         error.response?.data?.detail ||
-        error.message ||
-        "Google Login failed";
+        "Google signup failed";
       set({ error: msg, isLoading: false });
       throw error;
     }

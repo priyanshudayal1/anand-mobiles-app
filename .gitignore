@@ -38,6 +38,9 @@ yarn-error.*
 *firebase-adminsdk*.json
 *serviceAccountKey*.json
 
+# Google OAuth credentials (sensitive)
+client_secret*.json
+
 # typescript
 *.tsbuildinfo
 
