@@ -75,12 +75,12 @@ const Welcome = () => {
             variant="outline"
             fullWidth
           />
-          <CustomButton
-            title="Create Account"
+          {/* <CustomButton
+            title="Google Test"
             onPress={() => router.push("/(auth)/google")}
             variant="outline"
             fullWidth
-          />
+          /> */}
         </View>
       </View>
     </SafeAreaView>
