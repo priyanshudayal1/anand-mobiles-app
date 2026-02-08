@@ -54,10 +54,14 @@ export default function GoogleAuthButton({
   // Initial check for environment (synchronous)
   const isExpoGo = Constants.appOwnership === "expo";
 
-  // Let makeRedirectUri generate the correct URI for the current environment
-  // In Expo Go: MUST use auth.expo.io proxy since Google rejects exp:// schemes
-  // In dev build/production: use custom scheme
-  const redirectUri = isExpoGo
+  // If native Google Sign-In module isn't available, we must use the web/proxy flow
+  // This covers both Expo Go AND dev builds without native module linked
+  const useWebFlow = isExpoGo || !GoogleSignin;
+
+  // When using web flow (no native module), we MUST use the Expo auth proxy
+  // because Google rejects custom scheme redirects for Web client types,
+  // and Android/iOS client IDs don't work with browser-based OAuth
+  const redirectUri = useWebFlow
     ? "https://auth.expo.io/@priyanshudayal1/anand-mobiles"
     : makeRedirectUri({
         scheme: "anandmobiles",
@@ -84,19 +88,21 @@ export default function GoogleAuthButton({
       nativeModuleAvailable: !!GoogleSignin,
       platform: Platform.OS,
     });
-  }, [isExpoGo, redirectUri]);
+  }, [useWebFlow, redirectUri]);
+
+  // Web client ID, native client IDs, and request config defined below
+  // Web client ID (client_type: 3) — works with browser-based OAuth + Expo proxy
+  const WEB_CLIENT_ID = "403268549781-6c4gvnrgol3v8mf81bj025mc8fs04nkh.apps.googleusercontent.com";
+  // Native client IDs — only work with native Google Sign-In (SHA-1 verified)
+  const ANDROID_CLIENT_ID = "403268549781-cmp7gl6om3l1d44j5nh40re9aaeis5lp.apps.googleusercontent.com";
+  const IOS_CLIENT_ID = "403268549781-lmnfnklpa9bqs0s3hu2favqen86h8acd.apps.googleusercontent.com";
 
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    // When in Expo Go (Proxy/Web flow), we MUST use the Web Client ID for all platforms.
-    // The Android/iOS Client IDs are for native flows which check package names, not Redirect URIs.
-    clientId:
-      "403268549781-lsqsntlonidq8suavgclol4l8cl0m5o4.apps.googleusercontent.com",
-    androidClientId: isExpoGo
-      ? "403268549781-lsqsntlonidq8suavgclol4l8cl0m5o4.apps.googleusercontent.com" // Use Web ID in Expo Go
-      : "403268549781-ap66ler0ic5vua4dle16pikm1suqec15.apps.googleusercontent.com", // Use Native ID in Prod
-    iosClientId: isExpoGo
-      ? "403268549781-lsqsntlonidq8suavgclol4l8cl0m5o4.apps.googleusercontent.com" // Use Web ID in Expo Go
-      : "403268549781-mi92udu70ovm0f861ilks4kks6r2bvra.apps.googleusercontent.com", // Use Native ID in Prod
+    // When using web flow (no native module), use Web client ID for all platforms
+    // Web client ID accepts https:// redirect URIs (Expo auth proxy)
+    clientId: useWebFlow ? WEB_CLIENT_ID : undefined,
+    androidClientId: useWebFlow ? WEB_CLIENT_ID : ANDROID_CLIENT_ID,
+    iosClientId: useWebFlow ? WEB_CLIENT_ID : IOS_CLIENT_ID,
     redirectUri,
     scopes: ["profile", "email", "openid"],
   });
@@ -119,7 +125,7 @@ export default function GoogleAuthButton({
   useEffect(() => {
     const checkEnvironment = () => {
       // Configure native Google Sign-In for production if not in Expo Go and module is available
-      if (!isExpoGo && GoogleSignin) {
+      if (!useWebFlow && GoogleSignin) {
         try {
           GoogleSignin.configure({
             webClientId:
@@ -137,7 +143,7 @@ export default function GoogleAuthButton({
     };
 
     checkEnvironment();
-  }, [isExpoGo]);
+  }, [useWebFlow]);
 
   // Handle expo-auth-session response
   const handleExpoAuth = useCallback(
@@ -316,12 +322,12 @@ export default function GoogleAuthButton({
   // Main handler - chooses between native and expo auth
   const handlePress = async () => {
     console.log("=== GOOGLE SIGN-IN BUTTON PRESSED ===");
-    console.log("isExpoGo:", isExpoGo);
+    console.log("useWebFlow:", useWebFlow);
     console.log("GoogleSignin available:", !!GoogleSignin);
     console.log("Request ready:", !!request);
 
     // Use Expo auth-session for Expo Go OR if native module isn't available
-    if (isExpoGo || !GoogleSignin) {
+    if (useWebFlow) {
       // Use expo-auth-session (Browser OAuth)
       console.log("Using Expo Auth Session for Google Sign-In");
       console.log("Redirect URI:", redirectUri);
