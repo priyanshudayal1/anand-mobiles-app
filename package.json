@@ -8,9 +8,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "lint": "expo lint",
-    "encode:google-services": "node ./scripts/encode-google-services.js",
-    "restore:google-services": "node ./scripts/restore-google-services.js"
+    "lint": "expo lint"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

@@ -1,10 +1,10 @@
-export const BACKEND_URL = "http://192.168.29.7:8000/api";
 // export const BACKEND_URL = "http://192.168.29.7:8000/api";
+export const BACKEND_URL = "https://anandmobiles.com/api";
 
 // WebSocket URL for real-time notifications
 export const getWebSocketURL = () => {
-  // Convert HTTP URL to WebSocket URL
-  let wsUrl = BACKEND_URL.replace(/^http/, "ws");
+  // Convert HTTP/HTTPS URL to WebSocket URL (http -> ws, https -> wss)
+  let wsUrl = BACKEND_URL.replace(/^https/, "wss").replace(/^http/, "ws");
   // Remove /api suffix if present to get base URL
   wsUrl = wsUrl.replace(/\/api$/, "");
   return `${wsUrl}/ws/notifications/`;
