@@ -128,8 +128,7 @@ export default function GoogleAuthButton({
       if (!useWebFlow && GoogleSignin) {
         try {
           GoogleSignin.configure({
-            webClientId:
-              "403268549781-lsqsntlonidq8suavgclol4l8cl0m5o4.apps.googleusercontent.com",
+            webClientId: WEB_CLIENT_ID, // Must be Web client ID for Firebase token exchange
             offlineAccess: true,
             forceCodeForRefreshToken: true,
           });
