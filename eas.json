@@ -22,6 +22,11 @@
       "env": {
         "GOOGLE_SERVICES_JSON": "@google-services-json"
       }
+    },
+    "apk": {
+      "android": {
+        "buildType": "apk"
+      }
     }
   },
   "submit": {
