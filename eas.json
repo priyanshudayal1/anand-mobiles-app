@@ -9,22 +9,19 @@
       "distribution": "internal",
       "env": {
         "GOOGLE_SERVICES_JSON": "@google-services-json"
-      },
-      "prebuildCommand": "npm run restore:google-services"
+      }
     },
     "preview": {
       "distribution": "internal",
       "env": {
         "GOOGLE_SERVICES_JSON": "@google-services-json"
-      },
-      "prebuildCommand": "npm run restore:google-services"
+      }
     },
     "production": {
       "autoIncrement": true,
       "env": {
         "GOOGLE_SERVICES_JSON": "@google-services-json"
-      },
-      "prebuildCommand": "npm run restore:google-services"
+      }
     }
   },
   "submit": {
