@@ -41,7 +41,7 @@ export default function FrequentlyBoughtTogether({
   return (
     <View
       style={{
-        backgroundColor: colors.white,
+        backgroundColor: colors.surface,
         marginTop: 12,
         borderTopWidth: 1,
         borderBottomWidth: 1,
@@ -57,7 +57,7 @@ export default function FrequentlyBoughtTogether({
           justifyContent: "space-between",
           paddingHorizontal: 16,
           paddingVertical: 14,
-          backgroundColor: colors.white,
+          backgroundColor: colors.surface,
         }}
         activeOpacity={0.7}
       >

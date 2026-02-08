@@ -94,7 +94,7 @@ const ProductVariantSelector = ({
             selectedVariant &&
             (selectedVariant.id === option.id ||
               JSON.stringify(selectedVariant) === JSON.stringify(option));
-          
+
           const inStock = option.stock > 0;
           const price = option.discounted_price || option.price || 0;
           const originalPrice = option.price || 0;
@@ -114,8 +114,10 @@ const ProductVariantSelector = ({
                 marginRight: 10, // Decreased margin form 12
                 borderRadius: 10, // Decreased radius from 12
                 borderWidth: isSelected ? 2 : 1,
-                borderColor: isSelected ? "#007185" : colors.border,
-                backgroundColor: isSelected ? "#f0f8fa" : colors.white,
+                borderColor: isSelected ? colors.primary : colors.border,
+                backgroundColor: isSelected
+                  ? colors.primaryLight
+                  : colors.cardBg,
                 opacity: inStock ? 1 : 0.6,
                 // Shadow for cards
                 shadowColor: "#000",
@@ -133,9 +135,9 @@ const ProductVariantSelector = ({
                   marginBottom: 6, // Decreased margin from 8
                   alignItems: "center",
                   justifyContent: "center",
-                  backgroundColor: "#fff",
+                  backgroundColor: colors.surface,
                   borderRadius: 6, // Decreased radius from 8
-                  overflow: 'hidden'
+                  overflow: "hidden",
                 }}
               >
                 {image ? (
@@ -149,7 +151,7 @@ const ProductVariantSelector = ({
                     style={{
                       width: "100%",
                       height: "100%",
-                      backgroundColor: "#f5f5f5",
+                      backgroundColor: colors.surfaceSecondary,
                     }}
                   />
                 )}
@@ -164,7 +166,7 @@ const ProductVariantSelector = ({
                   color: colors.text,
                   marginBottom: 4, // Decreased margin from 6
                   height: 32, // Decreased height from 36
-                  textAlign: 'left'
+                  textAlign: "left",
                 }}
               >
                 {label}
@@ -172,9 +174,7 @@ const ProductVariantSelector = ({
 
               {/* Price */}
               <View style={{ marginBottom: 2 }}>
-                <View
-                  style={{ flexDirection: "row", alignItems: "baseline" }}
-                >
+                <View style={{ flexDirection: "row", alignItems: "baseline" }}>
                   <Text
                     style={{
                       fontSize: 14, // Decreased font size from 15

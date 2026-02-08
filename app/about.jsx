@@ -28,6 +28,7 @@ import { usePageContent } from "../store/usePageContent";
 export default function AboutScreen() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
+  const isDark = isDarkMode();
   const { width } = useWindowDimensions();
   const { content, loading, fetchPageContent, clearContent } = usePageContent();
   const [refreshing, setRefreshing] = React.useState(false);
@@ -101,7 +102,7 @@ export default function AboutScreen() {
       style={{ flex: 1, backgroundColor: colors.background }}
       edges={["top"]}
     >
-      <StatusBar style={isDarkMode ? "light" : "dark"} />
+      <StatusBar style={isDark ? "light" : "dark"} />
 
       {/* Header */}
       <View

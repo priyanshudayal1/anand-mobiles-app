@@ -183,6 +183,7 @@ export default function PolicyScreen() {
   const { type } = useLocalSearchParams();
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
+  const isDark = isDarkMode();
   const { content, loading, fetchPageContent, clearContent } = usePageContent();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -298,7 +299,7 @@ export default function PolicyScreen() {
       style={{ flex: 1, backgroundColor: colors.background }}
       edges={["top"]}
     >
-      <StatusBar style={isDarkMode ? "light" : "dark"} />
+      <StatusBar style={isDark ? "light" : "dark"} />
 
       {/* Header */}
       <View

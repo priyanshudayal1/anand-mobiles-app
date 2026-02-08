@@ -156,7 +156,7 @@ export default function Cart() {
               style={{
                 width: 80,
                 height: 80,
-                backgroundColor: colors.white,
+                backgroundColor: colors.cardBg,
                 borderRadius: 8,
                 justifyContent: "center",
                 alignItems: "center",
@@ -395,7 +395,9 @@ export default function Cart() {
               marginLeft: 8,
             }}
           >
-            <Text style={{ color: "#FFF", fontSize: 12, fontWeight: "bold" }}>
+            <Text
+              style={{ color: colors.white, fontSize: 12, fontWeight: "bold" }}
+            >
               {totalItems}
             </Text>
           </View>
@@ -466,7 +468,7 @@ export default function Cart() {
               borderRadius: 8,
             }}
           >
-            <Text style={{ color: "#FFF", fontWeight: "600" }}>
+            <Text style={{ color: colors.white, fontWeight: "600" }}>
               Start Shopping
             </Text>
           </TouchableOpacity>
@@ -591,10 +593,16 @@ export default function Cart() {
                 gap: 8,
               }}
             >
-              <Text style={{ color: "#FFF", fontSize: 16, fontWeight: "bold" }}>
+              <Text
+                style={{
+                  color: colors.white,
+                  fontSize: 16,
+                  fontWeight: "bold",
+                }}
+              >
                 Proceed to Checkout
               </Text>
-              <Feather name="arrow-right" size={20} color="#FFF" />
+              <Feather name="arrow-right" size={20} color={colors.white} />
             </TouchableOpacity>
           </View>
         </>

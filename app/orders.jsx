@@ -72,15 +72,18 @@ export default function Orders() {
     }
   }, [getAllOrders]);
 
-  const getStatusColor = useCallback((status) => {
-    const s = (status || "").toLowerCase();
-    if (s.includes("delivered") || s.includes("success")) return colors.success;
-    if (s.includes("cancelled") || s.includes("failed")) return colors.error;
-    if (s.includes("pending") || s.includes("hold")) return colors.warning;
-    if (s.includes("shipped") || s.includes("out"))
-      return colors.info || "#3b82f6"; // Fallback blue
-    return colors.primary;
-  }, [colors]);
+  const getStatusColor = useCallback(
+    (status) => {
+      const s = (status || "").toLowerCase();
+      if (s.includes("delivered") || s.includes("success"))
+        return colors.success;
+      if (s.includes("cancelled") || s.includes("failed")) return colors.error;
+      if (s.includes("pending") || s.includes("hold")) return colors.warning;
+      if (s.includes("shipped") || s.includes("out")) return colors.info;
+      return colors.primary;
+    },
+    [colors],
+  );
 
   const getStatusIcon = useCallback((status) => {
     const s = (status || "").toLowerCase();
@@ -91,229 +94,246 @@ export default function Orders() {
     return "clock";
   }, []);
 
-  const renderOrder = useCallback(({ item }) => {
-    const statusColor = getStatusColor(item.status);
+  const renderOrder = useCallback(
+    ({ item }) => {
+      const statusColor = getStatusColor(item.status);
 
-    return (
-      <View
-        style={{
-          backgroundColor: colors.surface,
-          marginBottom: 16,
-          borderRadius: 16,
-          borderWidth: 1,
-          borderColor: colors.border,
-          overflow: "hidden",
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: isDarkMode() ? 0.3 : 0.05,
-          shadowRadius: 8,
-          elevation: 3,
-        }}
-      >
-        {/* Header */}
+      return (
         <View
           style={{
-            padding: 16,
-            borderBottomWidth: 1,
-            borderBottomColor: colors.border,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
+            backgroundColor: colors.surface,
+            marginBottom: 16,
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: colors.border,
+            overflow: "hidden",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: isDarkMode() ? 0.3 : 0.05,
+            shadowRadius: 8,
+            elevation: 3,
           }}
         >
-          <View>
-            <Text
-              style={{ fontSize: 16, fontWeight: "bold", color: colors.text }}
-            >
-              Order #
-              {item.order_id ? item.order_id.slice(0, 8).toUpperCase() : "N/A"}
-            </Text>
-            <Text
-              style={{
-                fontSize: 12,
-                color: colors.textSecondary,
-                marginTop: 2,
-              }}
-            >
-              {toIST(item.created_at)}
-            </Text>
-          </View>
+          {/* Header */}
           <View
             style={{
-              backgroundColor: statusColor + "20", // 20% opacity
-              paddingHorizontal: 10,
-              paddingVertical: 5,
-              borderRadius: 20,
+              padding: 16,
+              borderBottomWidth: 1,
+              borderBottomColor: colors.border,
               flexDirection: "row",
+              justifyContent: "space-between",
               alignItems: "center",
-              borderWidth: 1,
-              borderColor: statusColor + "40",
             }}
           >
-            <Feather
-              name={getStatusIcon(item.status)}
-              size={12}
-              color={statusColor}
-              style={{ marginRight: 4 }}
-            />
-            <Text
-              style={{
-                color: statusColor,
-                fontSize: 12,
-                fontWeight: "600",
-                textTransform: "capitalize",
-              }}
-            >
-              {item.status?.replace(/_/g, " ")}
-            </Text>
-          </View>
-        </View>
-
-        {/* Content */}
-        <View style={{ padding: 16, flexDirection: "row" }}>
-          {item.preview_image ? (
-            <Image
-              source={{ uri: item.preview_image }}
-              style={{
-                width: 70,
-                height: 70,
-                borderRadius: 10,
-                backgroundColor: colors.backgroundSecondary,
-              }}
-            />
-          ) : (
-            <View
-              style={{
-                width: 70,
-                height: 70,
-                borderRadius: 10,
-                backgroundColor: colors.backgroundSecondary,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Feather name="package" size={24} color={colors.textSecondary} />
+            <View>
+              <Text
+                style={{ fontSize: 16, fontWeight: "bold", color: colors.text }}
+              >
+                Order #
+                {item.order_id
+                  ? item.order_id.slice(0, 8).toUpperCase()
+                  : "N/A"}
+              </Text>
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: colors.textSecondary,
+                  marginTop: 2,
+                }}
+              >
+                {toIST(item.created_at)}
+              </Text>
             </View>
-          )}
-
-          <View style={{ marginLeft: 16, flex: 1, justifyContent: "center" }}>
             <View
               style={{
+                backgroundColor: statusColor + "20", // 20% opacity
+                paddingHorizontal: 10,
+                paddingVertical: 5,
+                borderRadius: 20,
                 flexDirection: "row",
                 alignItems: "center",
-                marginBottom: 6,
+                borderWidth: 1,
+                borderColor: statusColor + "40",
               }}
             >
               <Feather
-                name="shopping-bag"
-                size={14}
-                color={colors.textSecondary}
-                style={{ marginRight: 6 }}
+                name={getStatusIcon(item.status)}
+                size={12}
+                color={statusColor}
+                style={{ marginRight: 4 }}
               />
-              <Text style={{ color: colors.text, fontSize: 14 }}>
-                {item.item_count} Item{item.item_count !== 1 ? "s" : ""}
-              </Text>
-            </View>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Text
-                style={{ color: colors.text, fontSize: 18, fontWeight: "700" }}
+                style={{
+                  color: statusColor,
+                  fontSize: 12,
+                  fontWeight: "600",
+                  textTransform: "capitalize",
+                }}
               >
-                ₹{item.total_amount}
+                {item.status?.replace(/_/g, " ")}
               </Text>
             </View>
           </View>
-        </View>
 
-        {/* Footer */}
-        <View
-          style={{
-            padding: 12,
-            backgroundColor: colors.backgroundSecondary,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            {item.estimated_delivery && (
-              <>
+          {/* Content */}
+          <View style={{ padding: 16, flexDirection: "row" }}>
+            {item.preview_image ? (
+              <Image
+                source={{ uri: item.preview_image }}
+                style={{
+                  width: 70,
+                  height: 70,
+                  borderRadius: 10,
+                  backgroundColor: colors.backgroundSecondary,
+                }}
+              />
+            ) : (
+              <View
+                style={{
+                  width: 70,
+                  height: 70,
+                  borderRadius: 10,
+                  backgroundColor: colors.backgroundSecondary,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
                 <Feather
-                  name="truck"
+                  name="package"
+                  size={24}
+                  color={colors.textSecondary}
+                />
+              </View>
+            )}
+
+            <View style={{ marginLeft: 16, flex: 1, justifyContent: "center" }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginBottom: 6,
+                }}
+              >
+                <Feather
+                  name="shopping-bag"
                   size={14}
-                  color={colors.primary}
+                  color={colors.textSecondary}
                   style={{ marginRight: 6 }}
                 />
-                <Text style={{ fontSize: 12, color: colors.textSecondary }}>
-                  Expected:{" "}
-                  {new Date(
-                    new Date(item.estimated_delivery).getTime() +
-                      5.5 * 60 * 60 * 1000,
-                  ).toLocaleDateString("en-IN", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })}
+                <Text style={{ color: colors.text, fontSize: 14 }}>
+                  {item.item_count} Item{item.item_count !== 1 ? "s" : ""}
                 </Text>
-              </>
-            )}
+              </View>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text
+                  style={{
+                    color: colors.text,
+                    fontSize: 18,
+                    fontWeight: "700",
+                  }}
+                >
+                  ₹{item.total_amount}
+                </Text>
+              </View>
+            </View>
           </View>
 
-          <TouchableOpacity
+          {/* Footer */}
+          <View
             style={{
-              backgroundColor: colors.primary,
-              paddingHorizontal: 16,
-              paddingVertical: 8,
-              borderRadius: 8,
+              padding: 12,
+              backgroundColor: colors.backgroundSecondary,
               flexDirection: "row",
+              justifyContent: "space-between",
               alignItems: "center",
             }}
-            onPress={() => {
-              if (item.order_id) {
-                router.push(`/order-tracking/${item.order_id}`);
-              }
-            }}
           >
-            <Feather
-              name="eye"
-              size={14}
-              color="#FFF"
-              style={{ marginRight: 6 }}
-            />
-            <Text style={{ color: "#FFF", fontSize: 12, fontWeight: "600" }}>
-              Track Order
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  }, [colors, isDarkMode, router, getStatusColor, getStatusIcon]);
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              {item.estimated_delivery && (
+                <>
+                  <Feather
+                    name="truck"
+                    size={14}
+                    color={colors.primary}
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+                    Expected:{" "}
+                    {new Date(
+                      new Date(item.estimated_delivery).getTime() +
+                        5.5 * 60 * 60 * 1000,
+                    ).toLocaleDateString("en-IN", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </Text>
+                </>
+              )}
+            </View>
 
-  const renderFilterItem = useCallback(({ item }) => (
-    <TouchableOpacity
-      onPress={() => setSelectedFilter(item)}
-      style={{
-        marginRight: 10,
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
-        backgroundColor:
-          selectedFilter === item ? colors.primary : colors.surface,
-        borderWidth: 1,
-        borderColor:
-          selectedFilter === item ? colors.primary : colors.border,
-      }}
-    >
-      <Text
+            <TouchableOpacity
+              style={{
+                backgroundColor: colors.primary,
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+                borderRadius: 8,
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+              onPress={() => {
+                if (item.order_id) {
+                  router.push(`/order-tracking/${item.order_id}`);
+                }
+              }}
+            >
+              <Feather
+                name="eye"
+                size={14}
+                color={colors.white}
+                style={{ marginRight: 6 }}
+              />
+              <Text
+                style={{ color: colors.white, fontSize: 12, fontWeight: "600" }}
+              >
+                Track Order
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    },
+    [colors, isDarkMode, router, getStatusColor, getStatusIcon],
+  );
+
+  const renderFilterItem = useCallback(
+    ({ item }) => (
+      <TouchableOpacity
+        onPress={() => setSelectedFilter(item)}
         style={{
-          color: selectedFilter === item ? "#FFF" : colors.text,
-          fontWeight: selectedFilter === item ? "600" : "400",
-          fontSize: 13,
+          marginRight: 10,
+          paddingHorizontal: 16,
+          paddingVertical: 8,
+          borderRadius: 20,
+          backgroundColor:
+            selectedFilter === item ? colors.primary : colors.surface,
+          borderWidth: 1,
+          borderColor: selectedFilter === item ? colors.primary : colors.border,
         }}
       >
-        {item}
-      </Text>
-    </TouchableOpacity>
-  ), [selectedFilter, colors]);
+        <Text
+          style={{
+            color: selectedFilter === item ? colors.white : colors.text,
+            fontWeight: selectedFilter === item ? "600" : "400",
+            fontSize: 13,
+          }}
+        >
+          {item}
+        </Text>
+      </TouchableOpacity>
+    ),
+    [selectedFilter, colors],
+  );
 
   const keyExtractorFilter = useCallback((item) => item, []);
   const keyExtractorOrder = useCallback(

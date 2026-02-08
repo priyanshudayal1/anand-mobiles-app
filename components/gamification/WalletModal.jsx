@@ -32,18 +32,18 @@ export default function WalletModal({ visible, onClose }) {
     if (type === "earned") {
       switch (action) {
         case "signup":
-          return <User size={20} color="#3B82F6" />;
+          return <User size={20} color={colors.info} />;
         case "add_wishlist":
-          return <Heart size={20} color="#EF4444" />;
+          return <Heart size={20} color={colors.error} />;
         case "first_purchase":
-          return <ShoppingCart size={20} color="#10B981" />;
+          return <ShoppingCart size={20} color={colors.success} />;
         case "spin_wheel":
-          return <Gift size={20} color="#8B5CF6" />;
+          return <Gift size={20} color={colors.accent} />;
         default:
-          return <Coins size={20} color="#F59E0B" />;
+          return <Coins size={20} color={colors.warning} />;
       }
     }
-    return <ArrowDown size={20} color="#EF4444" />;
+    return <ArrowDown size={20} color={colors.error} />;
   };
 
   const formatDate = (dateString) => {
@@ -101,18 +101,21 @@ export default function WalletModal({ visible, onClose }) {
               <View
                 style={[
                   styles.statBox,
-                  { backgroundColor: "#F0FDF4", borderColor: "#BBF7D0" },
+                  {
+                    backgroundColor: colors.successLight,
+                    borderColor: colors.success,
+                  },
                 ]}
               >
-                <Text style={[styles.statLabel, { color: "#166534" }]}>
+                <Text style={[styles.statLabel, { color: colors.success }]}>
                   Current Balance
                 </Text>
-                <Text style={[styles.statValue, { color: "#166534" }]}>
+                <Text style={[styles.statValue, { color: colors.success }]}>
                   {wallet?.balance || 0}
                 </Text>
                 <Coins
                   size={16}
-                  color="#166534"
+                  color={colors.success}
                   style={{
                     position: "absolute",
                     bottom: 10,
@@ -124,18 +127,21 @@ export default function WalletModal({ visible, onClose }) {
               <View
                 style={[
                   styles.statBox,
-                  { backgroundColor: "#EFF6FF", borderColor: "#BFDBFE" },
+                  {
+                    backgroundColor: colors.infoLight,
+                    borderColor: colors.info,
+                  },
                 ]}
               >
-                <Text style={[styles.statLabel, { color: "#1E40AF" }]}>
+                <Text style={[styles.statLabel, { color: colors.info }]}>
                   Total Earned
                 </Text>
-                <Text style={[styles.statValue, { color: "#1E40AF" }]}>
+                <Text style={[styles.statValue, { color: colors.info }]}>
                   {wallet?.total_earned || 0}
                 </Text>
                 <ArrowUp
                   size={16}
-                  color="#1E40AF"
+                  color={colors.info}
                   style={{
                     position: "absolute",
                     bottom: 10,
@@ -159,8 +165,8 @@ export default function WalletModal({ visible, onClose }) {
                     style={[
                       styles.transactionItem,
                       {
-                        backgroundColor: colors.surface || "#FFF",
-                        borderColor: colors.border || "#E5E7EB",
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
                       },
                     ]}
                   >
@@ -254,7 +260,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 20,
-    backgroundColor: "#FFF",
   },
   header: {
     flexDirection: "row",

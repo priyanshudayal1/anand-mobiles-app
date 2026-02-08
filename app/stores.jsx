@@ -26,6 +26,7 @@ import { usePageContent } from "../store/usePageContent";
 export default function StoresScreen() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
+  const isDark = isDarkMode();
   const { stores, storesLoading, fetchStores } = usePageContent();
 
   const [refreshing, setRefreshing] = useState(false);
@@ -249,7 +250,7 @@ export default function StoresScreen() {
       style={{ flex: 1, backgroundColor: colors.background }}
       edges={["top"]}
     >
-      <StatusBar style={isDarkMode ? "light" : "dark"} />
+      <StatusBar style={isDark ? "light" : "dark"} />
 
       {/* Header */}
       <View

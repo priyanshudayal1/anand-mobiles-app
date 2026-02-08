@@ -252,7 +252,7 @@ export default function HomeHeader() {
                   position: "absolute",
                   top: -4,
                   right: -4,
-                  backgroundColor: "#EF4444",
+                  backgroundColor: colors.error,
                   borderRadius: 10,
                   minWidth: 18,
                   height: 18,
@@ -265,7 +265,7 @@ export default function HomeHeader() {
               >
                 <Text
                   style={{
-                    color: "#fff",
+                    color: colors.white,
                     fontSize: 10,
                     fontWeight: "700",
                   }}

@@ -105,7 +105,7 @@ export default function WalletScreen() {
         style={[styles.container, { backgroundColor: colors.background }]}
       >
         <View style={styles.emptyState}>
-          <Wallet size={64} color={colors.textSecondary || "#999"} />
+          <Wallet size={64} color={colors.textSecondary} />
           <Text style={[styles.emptyStateTitle, { color: colors.text }]}>
             Login Required
           </Text>
@@ -145,13 +145,8 @@ export default function WalletScreen() {
     <View style={styles.tabContent}>
       {/* Stats Cards */}
       <View style={styles.statsGrid}>
-        <View
-          style={[
-            styles.statCard,
-            { backgroundColor: colors.surface || "#FFF" },
-          ]}
-        >
-          <Coins size={28} color="#FFD700" />
+        <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
+          <Coins size={28} color={colors.warning} />
           <Text style={[styles.statValue, { color: colors.text }]}>
             {coinBalance.toLocaleString()}
           </Text>
@@ -160,12 +155,7 @@ export default function WalletScreen() {
           </Text>
         </View>
 
-        <View
-          style={[
-            styles.statCard,
-            { backgroundColor: colors.surface || "#FFF" },
-          ]}
-        >
+        <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
           <Star size={28} color={levelInfo.color} />
           <Text style={[styles.statValue, { color: colors.text }]}>
             {gamificationStatus?.level || "Bronze"}
@@ -175,13 +165,8 @@ export default function WalletScreen() {
           </Text>
         </View>
 
-        <View
-          style={[
-            styles.statCard,
-            { backgroundColor: colors.surface || "#FFF" },
-          ]}
-        >
-          <Calendar size={28} color="#4CAF50" />
+        <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
+          <Calendar size={28} color={colors.success} />
           <Text style={[styles.statValue, { color: colors.text }]}>
             {gamificationStatus?.login_streak || 0}
           </Text>
@@ -190,12 +175,7 @@ export default function WalletScreen() {
           </Text>
         </View>
 
-        <View
-          style={[
-            styles.statCard,
-            { backgroundColor: colors.surface || "#FFF" },
-          ]}
-        >
+        <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
           <Trophy size={28} color={colors.primary} />
           <Text style={[styles.statValue, { color: colors.text }]}>
             {achievements?.length || 0}
@@ -207,12 +187,7 @@ export default function WalletScreen() {
       </View>
 
       {/* Level Progress */}
-      <View
-        style={[
-          styles.progressCard,
-          { backgroundColor: colors.surface || "#FFF" },
-        ]}
-      >
+      <View style={[styles.progressCard, { backgroundColor: colors.surface }]}>
         <View style={styles.progressHeader}>
           <Text style={[styles.progressTitle, { color: colors.text }]}>
             Level Progress
@@ -223,10 +198,7 @@ export default function WalletScreen() {
         </View>
 
         <View
-          style={[
-            styles.progressBarBg,
-            { backgroundColor: colors.border || "#E0E0E0" },
-          ]}
+          style={[styles.progressBarBg, { backgroundColor: colors.border }]}
         >
           <View
             style={[
@@ -250,12 +222,7 @@ export default function WalletScreen() {
       </View>
 
       {/* Quick Actions */}
-      <View
-        style={[
-          styles.actionsCard,
-          { backgroundColor: colors.surface || "#FFF" },
-        ]}
-      >
+      <View style={[styles.actionsCard, { backgroundColor: colors.surface }]}>
         <Text style={[styles.actionsTitle, { color: colors.text }]}>
           Quick Actions
         </Text>
@@ -267,13 +234,13 @@ export default function WalletScreen() {
               {
                 backgroundColor: gamificationStatus?.daily_spin_available
                   ? colors.primary
-                  : colors.border || "#E0E0E0",
+                  : colors.border,
               },
             ]}
             disabled={!gamificationStatus?.daily_spin_available}
             onPress={() => setShowSpinWheel(true)}
           >
-            <Gift size={20} color="#FFF" />
+            <Gift size={20} color={colors.white} />
             <Text style={styles.actionButtonText}>
               {gamificationStatus?.daily_spin_available
                 ? "Daily Spin!"
@@ -282,18 +249,21 @@ export default function WalletScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: "#2563EB" }]}
+            style={[
+              styles.actionButton,
+              { backgroundColor: colors.primaryDark },
+            ]}
             onPress={() => setShowWalletModal(true)}
           >
-            <Coins size={20} color="#FFF" />
+            <Coins size={20} color={colors.white} />
             <Text style={styles.actionButtonText}>View Wallet</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: "#7C3AED" }]}
+            style={[styles.actionButton, { backgroundColor: colors.accent }]}
             onPress={handleShare}
           >
-            <Share2 size={20} color="#FFF" />
+            <Share2 size={20} color={colors.white} />
             <Text style={styles.actionButtonText}>Refer Friends</Text>
           </TouchableOpacity>
         </View>
@@ -314,7 +284,7 @@ export default function WalletScreen() {
               key={index}
               style={[
                 styles.achievementCard,
-                { backgroundColor: colors.surface || "#FFF" },
+                { backgroundColor: colors.surface },
               ]}
             >
               <Text style={styles.achievementIcon}>
@@ -334,7 +304,7 @@ export default function WalletScreen() {
               <View
                 style={[
                   styles.achievementReward,
-                  { backgroundColor: "#4CAF50" },
+                  { backgroundColor: colors.success },
                 ]}
               >
                 <Text style={styles.achievementRewardText}>
@@ -346,7 +316,7 @@ export default function WalletScreen() {
         </View>
       ) : (
         <View style={styles.emptyState}>
-          <Trophy size={48} color={colors.textSecondary || "#999"} />
+          <Trophy size={48} color={colors.textSecondary} />
           <Text
             style={[styles.emptyStateText, { color: colors.textSecondary }]}
           >
@@ -367,7 +337,7 @@ export default function WalletScreen() {
         <View
           style={[
             styles.leaderboardContainer,
-            { backgroundColor: colors.surface || "#FFF" },
+            { backgroundColor: colors.surface },
           ]}
         >
           {leaderboard.map((user, index) => (
@@ -377,7 +347,7 @@ export default function WalletScreen() {
                 styles.leaderboardItem,
                 index !== leaderboard.length - 1 && {
                   borderBottomWidth: 1,
-                  borderBottomColor: colors.border || "#E0E0E0",
+                  borderBottomColor: colors.border,
                 },
               ]}
             >
@@ -387,14 +357,14 @@ export default function WalletScreen() {
                     styles.rankBadge,
                     {
                       backgroundColor:
-                        index < 3 ? "#FFD700" : colors.background,
+                        index < 3 ? colors.warning : colors.background,
                     },
                   ]}
                 >
                   <Text
                     style={[
                       styles.rankText,
-                      { color: index < 3 ? "#FFF" : colors.text },
+                      { color: index < 3 ? colors.white : colors.text },
                     ]}
                   >
                     {index + 1}
@@ -434,7 +404,7 @@ export default function WalletScreen() {
         </View>
       ) : (
         <View style={styles.emptyState}>
-          <Users size={48} color={colors.textSecondary || "#999"} />
+          <Users size={48} color={colors.textSecondary} />
           <Text
             style={[styles.emptyStateText, { color: colors.textSecondary }]}
           >
@@ -452,12 +422,7 @@ export default function WalletScreen() {
       </Text>
 
       {/* Referral Section */}
-      <View
-        style={[
-          styles.rewardCard,
-          { backgroundColor: colors.surface || "#FFF" },
-        ]}
-      >
+      <View style={[styles.rewardCard, { backgroundColor: colors.surface }]}>
         <View style={styles.rewardHeader}>
           <Users size={24} color={colors.primary} />
           <Text style={[styles.rewardTitle, { color: colors.text }]}>
@@ -493,10 +458,13 @@ export default function WalletScreen() {
                   </Text>
                 </View>
                 <TouchableOpacity
-                  style={[styles.copyButton, { backgroundColor: "#4B5563" }]} // Dark gray for better visibility
+                  style={[
+                    styles.copyButton,
+                    { backgroundColor: colors.surfaceSecondary },
+                  ]}
                   onPress={copyReferralCode}
                 >
-                  <Copy size={16} color="#FFF" />
+                  <Copy size={16} color={colors.white} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -558,7 +526,7 @@ export default function WalletScreen() {
               style={[styles.shareButton, { backgroundColor: colors.primary }]}
               onPress={handleShare}
             >
-              <Share2 size={18} color="#FFF" />
+              <Share2 size={18} color={colors.white} />
               <Text style={styles.shareButtonText}>Share Referral Link</Text>
             </TouchableOpacity>
           </View>
@@ -568,12 +536,7 @@ export default function WalletScreen() {
       </View>
 
       {/* Daily Rewards */}
-      <View
-        style={[
-          styles.rewardCard,
-          { backgroundColor: colors.surface || "#FFF" },
-        ]}
-      >
+      <View style={[styles.rewardCard, { backgroundColor: colors.surface }]}>
         <View style={styles.rewardHeader}>
           <Gift size={24} color={colors.primary} />
           <Text style={[styles.rewardTitle, { color: colors.text }]}>
@@ -648,7 +611,7 @@ export default function WalletScreen() {
 
           {/* Coin Balance Badge */}
           <View style={[styles.coinBadge, { backgroundColor: colors.primary }]}>
-            <Coins size={18} color="#FFF" />
+            <Coins size={18} color={colors.white} />
             <Text style={styles.coinBadgeText}>
               {coinBalance.toLocaleString()}
             </Text>
@@ -672,18 +635,19 @@ export default function WalletScreen() {
                 style={[
                   styles.tab,
                   {
-                    backgroundColor: isActive
-                      ? colors.primary
-                      : colors.surface || "#FFF",
+                    backgroundColor: isActive ? colors.primary : colors.surface,
                   },
                 ]}
                 onPress={() => setActiveTab(tab.id)}
               >
-                <TabIcon size={18} color={isActive ? "#FFF" : colors.text} />
+                <TabIcon
+                  size={18}
+                  color={isActive ? colors.white : colors.text}
+                />
                 <Text
                   style={[
                     styles.tabLabel,
-                    { color: isActive ? "#FFF" : colors.text },
+                    { color: isActive ? colors.white : colors.text },
                   ]}
                   numberOfLines={1}
                 >

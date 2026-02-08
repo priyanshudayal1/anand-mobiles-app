@@ -34,7 +34,8 @@ import FrequentlyBoughtTogether from "../../components/product/FrequentlyBoughtT
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
+  const isDark = isDarkMode();
 
   const {
     currentProduct,
@@ -445,10 +446,13 @@ export default function ProductDetailScreen() {
 
   return (
     <SafeAreaView
-      style={{ flex: 1, backgroundColor: colors.white }}
+      style={{ flex: 1, backgroundColor: colors.background }}
       edges={["top"]}
     >
-      <StatusBar style="dark" backgroundColor={colors.white} />
+      <StatusBar
+        style={isDark ? "light" : "dark"}
+        backgroundColor={colors.background}
+      />
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* Header */}
@@ -474,7 +478,7 @@ export default function ProductDetailScreen() {
           style={{
             flex: 1,
             flexDirection: "row",
-            backgroundColor: colors.white,
+            backgroundColor: colors.surface,
             marginHorizontal: 12,
             borderRadius: 8,
             paddingHorizontal: 12,
@@ -543,7 +547,7 @@ export default function ProductDetailScreen() {
             paddingHorizontal: 16,
             paddingTop: 12,
             paddingBottom: 8,
-            backgroundColor: colors.white,
+            backgroundColor: colors.surface,
           }}
         >
           <View
@@ -588,10 +592,10 @@ export default function ProductDetailScreen() {
                   <Star
                     key={i}
                     size={14}
-                    color="#FFA41C"
+                    color={colors.warning}
                     fill={
                       i <= Math.round(normalizedProduct.rating || 0)
-                        ? "#FFA41C"
+                        ? colors.warning
                         : "transparent"
                     }
                     strokeWidth={1}
@@ -599,7 +603,9 @@ export default function ProductDetailScreen() {
                   />
                 ))}
               </View>
-              <Text style={{ fontSize: 13, marginLeft: 4, color: "#007185" }}>
+              <Text
+                style={{ fontSize: 13, marginLeft: 4, color: colors.primary }}
+              >
                 ({normalizedProduct.reviews || 0})
               </Text>
             </View>

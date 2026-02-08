@@ -137,7 +137,7 @@ export default function Wishlist() {
           borderRadius: 8,
         }}
       >
-        <Text style={{ color: "#FFF", fontWeight: "600" }}>
+        <Text style={{ color: colors.white, fontWeight: "600" }}>
           Continue Shopping
         </Text>
       </TouchableOpacity>
@@ -174,7 +174,7 @@ export default function Wishlist() {
                 width: 100,
                 height: 100,
                 borderRadius: 8,
-                backgroundColor: colors.white || "#FFF",
+                backgroundColor: colors.cardBg,
                 padding: 8,
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: 1 },
@@ -367,19 +367,19 @@ export default function Wishlist() {
                   {isAddingToCart ? (
                     <ActivityIndicator
                       size="small"
-                      color={inStock ? "#FFF" : colors.textSecondary}
+                      color={inStock ? colors.white : colors.textSecondary}
                     />
                   ) : (
                     <>
                       <Feather
                         name="shopping-cart"
                         size={16}
-                        color={inStock ? "#FFF" : colors.textSecondary}
+                        color={inStock ? colors.white : colors.textSecondary}
                       />
                       <Text
                         style={{
                           marginLeft: 8,
-                          color: inStock ? "#FFF" : colors.textSecondary,
+                          color: inStock ? colors.white : colors.textSecondary,
                           fontWeight: "600",
                           fontSize: 14,
                         }}

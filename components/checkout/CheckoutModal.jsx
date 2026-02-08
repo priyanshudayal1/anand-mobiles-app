@@ -332,15 +332,19 @@ export default function CheckoutModal({ visible, onClose, totalAmount }) {
               }}
             >
               {isProcessingPayment ? (
-                <ActivityIndicator color="#FFF" />
+                <ActivityIndicator color={colors.white} />
               ) : (
                 <>
                   <Text
-                    style={{ color: "#FFF", fontSize: 16, fontWeight: "bold" }}
+                    style={{
+                      color: colors.white,
+                      fontSize: 16,
+                      fontWeight: "bold",
+                    }}
                   >
                     Pay Now
                   </Text>
-                  <Feather name="lock" size={18} color="#FFF" />
+                  <Feather name="lock" size={18} color={colors.white} />
                 </>
               )}
             </TouchableOpacity>

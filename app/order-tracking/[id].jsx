@@ -770,7 +770,7 @@ export default function OrderTracking() {
                       width: 64,
                       height: 64,
                       borderRadius: 8,
-                      backgroundColor: colors.white,
+                      backgroundColor: colors.cardBg,
                       overflow: "hidden",
                       marginRight: 12,
                     }}

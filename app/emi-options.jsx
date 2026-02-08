@@ -21,7 +21,8 @@ import EMIService from "../services/emiService";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 export default function EMIOptionsScreen() {
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
+  const isDark = isDarkMode();
   const router = useRouter();
   const { price, product_id } = useLocalSearchParams();
   const itemPrice = parseFloat(price) || 0;
@@ -135,7 +136,10 @@ export default function EMIOptionsScreen() {
         style={{ flex: 1, backgroundColor: colors.background }}
         edges={["top"]}
       >
-        <StatusBar style="dark" backgroundColor={colors.background} />
+        <StatusBar
+          style={isDark ? "light" : "dark"}
+          backgroundColor={colors.background}
+        />
         <View
           style={{
             flex: 1,
@@ -159,7 +163,10 @@ export default function EMIOptionsScreen() {
         style={{ flex: 1, backgroundColor: colors.background }}
         edges={["top"]}
       >
-        <StatusBar style="dark" backgroundColor={colors.background} />
+        <StatusBar
+          style={isDark ? "light" : "dark"}
+          backgroundColor={colors.background}
+        />
         <View
           style={{
             flex: 1,
@@ -184,7 +191,10 @@ export default function EMIOptionsScreen() {
       style={{ flex: 1, backgroundColor: colors.background }}
       edges={["top"]}
     >
-      <StatusBar style="dark" backgroundColor={colors.background} />
+      <StatusBar
+        style={isDark ? "light" : "dark"}
+        backgroundColor={colors.background}
+      />
       <View style={{ flex: 1, backgroundColor: colors.background }}>
         {/* Header with Search Bar */}
         <View
@@ -212,7 +222,7 @@ export default function EMIOptionsScreen() {
             style={{
               flex: 1,
               flexDirection: "row",
-              backgroundColor: colors.white,
+              backgroundColor: colors.surface,
               marginHorizontal: 12,
               borderRadius: 8,
               paddingHorizontal: 12,
@@ -322,7 +332,7 @@ export default function EMIOptionsScreen() {
             alignItems: "center",
             paddingHorizontal: 16,
             paddingVertical: 12,
-            backgroundColor: colors.white,
+            backgroundColor: colors.surface,
             borderBottomWidth: 1,
             borderBottomColor: colors.border,
           }}
@@ -366,7 +376,7 @@ export default function EMIOptionsScreen() {
             style={{
               marginBottom: 16,
               padding: 12,
-              backgroundColor: colors.white,
+              backgroundColor: colors.cardBg,
               borderRadius: 8,
             }}
           >
@@ -416,7 +426,7 @@ export default function EMIOptionsScreen() {
                     borderColor: isExpanded ? colors.primary : colors.border,
                     borderRadius: 8,
                     overflow: "hidden",
-                    backgroundColor: colors.white,
+                    backgroundColor: colors.cardBg,
                   }}
                 >
                   <TouchableOpacity
@@ -477,7 +487,7 @@ export default function EMIOptionsScreen() {
 
                   {/* EMI Plans Table */}
                   {isExpanded && (
-                    <View style={{ backgroundColor: colors.white }}>
+                    <View style={{ backgroundColor: colors.cardBg }}>
                       {/* No Cost EMI Plans */}
                       {noCost.length > 0 && (
                         <View>

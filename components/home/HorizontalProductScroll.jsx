@@ -1,5 +1,11 @@
 import React, { useCallback } from "react";
-import { View, Text, TouchableOpacity, FlatList, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  Dimensions,
+} from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { Star, ChevronRight } from "lucide-react-native";
@@ -9,15 +15,18 @@ const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.4;
 
 const ProductCard = ({ product, colors, onPress }) => {
-  const discountPrice = product?.discount_price || product?.discounted_price || product?.price || 0;
+  const discountPrice =
+    product?.discount_price || product?.discounted_price || product?.price || 0;
   const originalPrice = product?.price || 0;
-  const hasDiscount = originalPrice && discountPrice && originalPrice > discountPrice;
+  const hasDiscount =
+    originalPrice && discountPrice && originalPrice > discountPrice;
   const discountPercent = hasDiscount
     ? Math.round(((originalPrice - discountPrice) / originalPrice) * 100)
     : 0;
 
   // Get product name safely
-  const productName = product?.name ||
+  const productName =
+    product?.name ||
     [product?.brand, product?.model].filter(Boolean).join(" ") ||
     "Product";
 
@@ -41,7 +50,7 @@ const ProductCard = ({ product, colors, onPress }) => {
       <View
         style={{
           height: 100,
-          backgroundColor: colors.white,
+          backgroundColor: colors.cardBg,
           justifyContent: "center",
           alignItems: "center",
           padding: 8,
@@ -49,7 +58,10 @@ const ProductCard = ({ product, colors, onPress }) => {
       >
         <Image
           source={{
-            uri: product?.image || product?.images?.[0] || "https://via.placeholder.com/150",
+            uri:
+              product?.image ||
+              product?.images?.[0] ||
+              "https://via.placeholder.com/150",
           }}
           style={{ width: "100%", height: "100%" }}
           contentFit="contain"
@@ -67,7 +79,9 @@ const ProductCard = ({ product, colors, onPress }) => {
               borderRadius: 4,
             }}
           >
-            <Text style={{ color: colors.white, fontSize: 9, fontWeight: "bold" }}>
+            <Text
+              style={{ color: colors.white, fontSize: 9, fontWeight: "bold" }}
+            >
               {discountPercent}% OFF
             </Text>
           </View>
@@ -89,16 +103,30 @@ const ProductCard = ({ product, colors, onPress }) => {
         </Text>
 
         {rating > 0 ? (
-          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: 4,
+            }}
+          >
             <Star size={10} color={colors.warning} fill={colors.warning} />
-            <Text style={{ fontSize: 10, color: colors.textSecondary, marginLeft: 2 }}>
+            <Text
+              style={{
+                fontSize: 10,
+                color: colors.textSecondary,
+                marginLeft: 2,
+              }}
+            >
               {rating.toFixed(1)}
             </Text>
           </View>
         ) : null}
 
         <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-          <Text style={{ fontSize: 13, fontWeight: "bold", color: colors.text }}>
+          <Text
+            style={{ fontSize: 13, fontWeight: "bold", color: colors.text }}
+          >
             ₹{discountPrice.toLocaleString()}
           </Text>
           {hasDiscount ? (
@@ -137,9 +165,12 @@ export default function HorizontalProductScroll({
   const { colors } = useTheme();
   const router = useRouter();
 
-  const handleProductPress = useCallback((product) => {
-    router.push(`/product/${product?.id || product?.product_id || "0"}`);
-  }, [router]);
+  const handleProductPress = useCallback(
+    (product) => {
+      router.push(`/product/${product?.id || product?.product_id || "0"}`);
+    },
+    [router],
+  );
 
   const handleSeeAll = useCallback(() => {
     if (onSeeAll) {
@@ -149,12 +180,19 @@ export default function HorizontalProductScroll({
     }
   }, [onSeeAll, router]);
 
-  const renderItem = useCallback(({ item }) => (
-    <MemoizedProductCard product={item} colors={colors} onPress={handleProductPress} />
-  ), [colors, handleProductPress]);
+  const renderItem = useCallback(
+    ({ item }) => (
+      <MemoizedProductCard
+        product={item}
+        colors={colors}
+        onPress={handleProductPress}
+      />
+    ),
+    [colors, handleProductPress],
+  );
 
   const keyExtractor = useCallback(
-    (item, index) => (item?.id?.toString() || index.toString()),
+    (item, index) => item?.id?.toString() || index.toString(),
     [],
   );
 
@@ -163,7 +201,13 @@ export default function HorizontalProductScroll({
   }
 
   return (
-    <View style={{ marginTop: 8, paddingVertical: 16, backgroundColor: colors.cardBg }}>
+    <View
+      style={{
+        marginTop: 8,
+        paddingVertical: 16,
+        backgroundColor: colors.cardBg,
+      }}
+    >
       {showHeader && title ? (
         <View
           style={{
@@ -175,7 +219,9 @@ export default function HorizontalProductScroll({
           }}
         >
           <View>
-            <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.text }}>
+            <Text
+              style={{ fontSize: 18, fontWeight: "bold", color: colors.text }}
+            >
               {title}
             </Text>
             <View
@@ -188,7 +234,13 @@ export default function HorizontalProductScroll({
               }}
             />
             {description ? (
-              <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 4 }}>
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: colors.textSecondary,
+                  marginTop: 4,
+                }}
+              >
                 {description}
               </Text>
             ) : null}
@@ -197,7 +249,9 @@ export default function HorizontalProductScroll({
             onPress={handleSeeAll}
             style={{ flexDirection: "row", alignItems: "center" }}
           >
-            <Text style={{ fontWeight: "500", color: colors.primary }}>See All</Text>
+            <Text style={{ fontWeight: "500", color: colors.primary }}>
+              See All
+            </Text>
             <ChevronRight size={16} color={colors.primary} />
           </TouchableOpacity>
         </View>

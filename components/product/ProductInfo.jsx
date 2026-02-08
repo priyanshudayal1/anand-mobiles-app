@@ -72,7 +72,7 @@ const ProductInfo = ({ product, selectedVariant, productId }) => {
         icon: null,
       };
     }
-    return { text: "In stock", color: "#007600", icon: null };
+    return { text: "In stock", color: colors.success, icon: null };
   };
 
   const stockStatus = getStockStatus();
@@ -82,14 +82,14 @@ const ProductInfo = ({ product, selectedVariant, productId }) => {
       style={{
         paddingHorizontal: 16,
         paddingBottom: 12,
-        backgroundColor: colors.white,
+        backgroundColor: colors.surface,
       }}
     >
       {/* Separator */}
       <View
         style={{
           height: 1,
-          backgroundColor: "#e7e7e7",
+          backgroundColor: colors.border,
           width: "100%",
           marginBottom: 12,
         }}
@@ -108,7 +108,7 @@ const ProductInfo = ({ product, selectedVariant, productId }) => {
             <Text
               style={{
                 fontSize: 26,
-                color: "#CC0C39",
+                color: colors.error,
                 fontWeight: "300",
                 marginRight: 8,
                 marginTop: -2, // Optical alignment
@@ -145,11 +145,13 @@ const ProductInfo = ({ product, selectedVariant, productId }) => {
 
         {hasDiscount && (
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={{ color: "#565959", fontSize: 12 }}>M.R.P.: </Text>
+            <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
+              M.R.P.:{" "}
+            </Text>
             <Text
               style={{
                 textDecorationLine: "line-through",
-                color: "#565959",
+                color: colors.textSecondary,
                 fontSize: 12,
               }}
             >
@@ -188,7 +190,7 @@ const ProductInfo = ({ product, selectedVariant, productId }) => {
             <Text
               style={{
                 fontSize: 14,
-                color: "#007185",
+                color: colors.primary,
                 textDecorationLine: "none",
               }}
             >

@@ -19,6 +19,7 @@ import CustomModal from "../components/common/CustomModal";
 
 export default function NotificationsScreen() {
   const { colors, isDarkMode } = useTheme();
+  const isDark = isDarkMode();
   const router = useRouter();
   const {
     notifications,
@@ -269,7 +270,7 @@ export default function NotificationsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      <StatusBar style={isDarkMode ? "light" : "dark"} />
+      <StatusBar style={isDark ? "light" : "dark"} />
 
       {/* Header */}
       <View
@@ -310,7 +311,9 @@ export default function NotificationsScreen() {
                 marginLeft: 8,
               }}
             >
-              <Text style={{ color: "#fff", fontSize: 12, fontWeight: "600" }}>
+              <Text
+                style={{ color: colors.white, fontSize: 12, fontWeight: "600" }}
+              >
                 {unreadCount}
               </Text>
             </View>

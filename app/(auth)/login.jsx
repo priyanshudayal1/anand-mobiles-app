@@ -161,9 +161,9 @@ const Login = () => {
         />
 
         <View className="my-5 flex-row items-center">
-          <View className="flex-1 h-[1px] bg-gray-300" />
-          <Text className="mx-4 text-gray-500">OR</Text>
-          <View className="flex-1 h-[1px] bg-gray-300" />
+          <View className="flex-1 h-[1px]" style={{ backgroundColor: colors.border }} />
+          <Text className="mx-4" style={{ color: colors.textSecondary }}>OR</Text>
+          <View className="flex-1 h-[1px]" style={{ backgroundColor: colors.border }} />
         </View>
 
         <GoogleAuthButton

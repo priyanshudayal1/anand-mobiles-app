@@ -29,6 +29,7 @@ import api from "../services/api";
 export default function BulkOrderScreen() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
+  const isDark = isDarkMode();
 
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -190,7 +191,7 @@ Additional Info: ${formData.additionalInfo || "None"}
       style={{ flex: 1, backgroundColor: colors.background }}
       edges={["top"]}
     >
-      <StatusBar style={isDarkMode ? "light" : "dark"} />
+      <StatusBar style={isDark ? "light" : "dark"} />
 
       {/* Header */}
       <View

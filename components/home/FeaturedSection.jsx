@@ -44,7 +44,7 @@ const ProductCard = React.memo(({ product, colors, onPress }) => {
       <View
         style={{
           height: 160,
-          backgroundColor: colors.white,
+          backgroundColor: colors.cardBg,
           justifyContent: "center",
           alignItems: "center",
           padding: 8,

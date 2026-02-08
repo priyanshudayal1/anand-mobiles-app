@@ -167,8 +167,8 @@ export default function Profile() {
         {isIncomplete && (
           <View
             style={{
-              backgroundColor: "#fff3cd",
-              borderColor: "#ffaa00",
+              backgroundColor: colors.warningLight,
+              borderColor: colors.warning,
               borderWidth: 1,
               padding: 12,
               borderRadius: 8,
@@ -176,11 +176,17 @@ export default function Profile() {
             }}
           >
             <Text
-              style={{ color: "#856404", fontWeight: "bold", marginBottom: 4 }}
+              style={{
+                color: colors.warning,
+                fontWeight: "bold",
+                marginBottom: 4,
+              }}
             >
               ⚠️ Incomplete Profile
             </Text>
-            <Text style={{ color: "#856404", fontSize: 13, marginBottom: 8 }}>
+            <Text
+              style={{ color: colors.warning, fontSize: 13, marginBottom: 8 }}
+            >
               Your profile is missing important information. Please complete
               your profile.
             </Text>
@@ -196,7 +202,11 @@ export default function Profile() {
                 }}
               >
                 <Text
-                  style={{ color: "#fff", fontSize: 12, fontWeight: "600" }}
+                  style={{
+                    color: colors.white,
+                    fontSize: 12,
+                    fontWeight: "600",
+                  }}
                 >
                   Complete Profile Now
                 </Text>
@@ -493,9 +503,15 @@ export default function Profile() {
                   gap: 8,
                 }}
               >
-                {isLoading && <ActivityIndicator color="#fff" size="small" />}
+                {isLoading && (
+                  <ActivityIndicator color={colors.white} size="small" />
+                )}
                 <Text
-                  style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}
+                  style={{
+                    color: colors.white,
+                    fontWeight: "bold",
+                    fontSize: 16,
+                  }}
                 >
                   Save Changes
                 </Text>

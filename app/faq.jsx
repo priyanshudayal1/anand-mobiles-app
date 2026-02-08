@@ -22,6 +22,7 @@ import { usePageContent } from "../store/usePageContent";
 export default function FAQScreen() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
+  const isDark = isDarkMode();
   const { contactInfo, fetchContactInfo } = usePageContent();
 
   const [loading, setLoading] = useState(true);
@@ -237,7 +238,7 @@ export default function FAQScreen() {
         style={{ flex: 1, backgroundColor: colors.background }}
         edges={["top"]}
       >
-        <StatusBar style={isDarkMode ? "light" : "dark"} />
+        <StatusBar style={isDark ? "light" : "dark"} />
         <View
           style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
         >
@@ -252,7 +253,7 @@ export default function FAQScreen() {
       style={{ flex: 1, backgroundColor: colors.background }}
       edges={["top"]}
     >
-      <StatusBar style={isDarkMode ? "light" : "dark"} />
+      <StatusBar style={isDark ? "light" : "dark"} />
 
       {/* Header */}
       <View

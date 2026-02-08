@@ -15,9 +15,9 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: colors.tabBarBg || "#FFFFFF",
+          backgroundColor: colors.tabBarBg,
           borderTopWidth: 1,
-          borderTopColor: colors.border || "#E5E5E5",
+          borderTopColor: colors.border,
           height: 56 + bottomPadding,
           paddingBottom: bottomPadding,
           paddingTop: 8,
@@ -27,8 +27,8 @@ export default function TabLayout() {
           shadowOpacity: 0.1,
           shadowRadius: 4,
         },
-        tabBarActiveTintColor: colors.primary || "#FF8C00",
-        tabBarInactiveTintColor: colors.tabBarInactive || "#666666",
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.tabBarInactive,
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: "500",
@@ -43,9 +43,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color, size }) => (
-            <House size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <House size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -59,9 +57,7 @@ export default function TabLayout() {
         name="wallet"
         options={{
           title: "Wallet",
-          tabBarIcon: ({ color, size }) => (
-            <Wallet size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Wallet size={size} color={color} />,
         }}
       />
       <Tabs.Screen

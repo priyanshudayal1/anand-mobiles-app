@@ -156,7 +156,7 @@ function ProductCard({
       <View
         style={{
           height: imageHeight,
-          backgroundColor: colors.white,
+          backgroundColor: colors.cardBg,
           justifyContent: "center",
           alignItems: "center",
           padding: 8,
@@ -260,7 +260,7 @@ function ProductCard({
           >
             <View
               style={{
-                backgroundColor: "#374151",
+                backgroundColor: colors.surfaceSecondary,
                 paddingHorizontal: 8,
                 paddingVertical: 4,
                 borderRadius: 4,

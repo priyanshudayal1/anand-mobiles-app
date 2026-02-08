@@ -131,7 +131,7 @@ const ProductAccordions = ({ product }) => {
       {/* Customers usually keep this item */}
       <View
         style={{
-          backgroundColor: colors.white,
+          backgroundColor: colors.surface,
           borderWidth: 1,
           borderColor: colors.success,
           borderRadius: 8,
@@ -527,7 +527,7 @@ const ProductAccordions = ({ product }) => {
         style={{
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
-          backgroundColor: colors.white,
+          backgroundColor: colors.surface,
         }}
       >
         <TouchableOpacity
@@ -537,7 +537,9 @@ const ProductAccordions = ({ product }) => {
             alignItems: "center",
             justifyContent: "space-between",
             padding: 16,
-            backgroundColor: isOpen ? colors.background + "50" : colors.white,
+            backgroundColor: isOpen
+              ? colors.backgroundSecondary
+              : colors.surface,
           }}
           activeOpacity={0.7}
         >
@@ -578,7 +580,7 @@ const ProductAccordions = ({ product }) => {
   };
 
   return (
-    <View style={{ backgroundColor: colors.white }}>
+    <View style={{ backgroundColor: colors.surface }}>
       <AccordionSection id="description" label="Description" icon={FileText}>
         {renderDescription()}
       </AccordionSection>

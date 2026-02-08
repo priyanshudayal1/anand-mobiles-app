@@ -197,7 +197,7 @@ export default function SearchBar({
         >
           <View
             style={{
-              backgroundColor: mode === "dark" ? colors.surface : "#fff",
+              backgroundColor: colors.surface,
               padding: 24,
               borderRadius: 16,
               alignItems: "center",
@@ -255,10 +255,9 @@ export default function SearchBar({
           alignItems: "center",
           paddingHorizontal: 12,
           height: 48,
-          backgroundColor:
-            mode === "dark" ? colors.surfaceSecondary : "#f3f4f6",
+          backgroundColor: colors.surfaceSecondary,
           borderWidth: 1,
-          borderColor: mode === "dark" ? colors.border : "#e5e7eb",
+          borderColor: colors.border,
           // Remove bottom corners if suggestions are shown
           borderBottomLeftRadius:
             showSuggestions && suggestions.length > 0 ? 0 : 12,
@@ -339,12 +338,12 @@ export default function SearchBar({
             top: 48,
             left: 0,
             right: 0,
-            backgroundColor: mode === "dark" ? colors.surfaceSecondary : "#fff",
+            backgroundColor: colors.surface,
             borderBottomLeftRadius: 12,
             borderBottomRightRadius: 12,
             borderWidth: 1,
             borderTopWidth: 0,
-            borderColor: mode === "dark" ? colors.border : "#e5e7eb",
+            borderColor: colors.border,
             elevation: 5,
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 4 },
@@ -365,8 +364,7 @@ export default function SearchBar({
                   paddingVertical: 12,
                   paddingHorizontal: 16,
                   borderBottomWidth: index === suggestions.length - 1 ? 0 : 1,
-                  borderBottomColor:
-                    mode === "dark" ? colors.border : "#f3f4f6",
+                  borderBottomColor: colors.borderLight,
                 }}
               >
                 <TrendingUp

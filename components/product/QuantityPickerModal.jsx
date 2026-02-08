@@ -37,7 +37,7 @@ const QuantityPickerModal = ({
       >
         <View
           style={{
-            backgroundColor: colors.white,
+            backgroundColor: colors.surface,
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
             maxHeight: "60%",

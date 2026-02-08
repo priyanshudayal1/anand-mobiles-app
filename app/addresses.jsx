@@ -390,7 +390,9 @@ export default function Addresses() {
           borderRadius: 8,
         }}
       >
-        <Text style={{ color: "#FFF", fontWeight: "600" }}>Add Address</Text>
+        <Text style={{ color: colors.white, fontWeight: "600" }}>
+          Add Address
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -641,7 +643,7 @@ export default function Addresses() {
                 }}
               >
                 {formData.is_default && (
-                  <Ionicons name="checkmark" size={16} color="#FFF" />
+                  <Ionicons name="checkmark" size={16} color={colors.white} />
                 )}
               </View>
               <Text style={{ color: colors.text, fontSize: 14 }}>
@@ -682,11 +684,11 @@ export default function Addresses() {
                 {isSubmitting && (
                   <ActivityIndicator
                     size="small"
-                    color="#FFF"
+                    color={colors.white}
                     style={{ marginRight: 8 }}
                   />
                 )}
-                <Text style={{ color: "#FFF", fontWeight: "600" }}>
+                <Text style={{ color: colors.white, fontWeight: "600" }}>
                   {editingAddress ? "Update Address" : "Save Address"}
                 </Text>
               </TouchableOpacity>
@@ -739,10 +741,10 @@ export default function Addresses() {
               borderRadius: 20,
             }}
           >
-            <Ionicons name="add" size={18} color="#FFF" />
+            <Ionicons name="add" size={18} color={colors.white} />
             <Text
               style={{
-                color: "#FFF",
+                color: colors.white,
                 marginLeft: 4,
                 fontWeight: "600",
                 fontSize: 13,

@@ -32,6 +32,7 @@ import { useToast } from "../store/useToast";
 export default function ContactScreen() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
+  const isDark = isDarkMode();
   const {
     contactInfo,
     contactHero,
@@ -128,7 +129,7 @@ export default function ContactScreen() {
       style={{ flex: 1, backgroundColor: colors.background }}
       edges={["top"]}
     >
-      <StatusBar style={isDarkMode ? "light" : "dark"} />
+      <StatusBar style={isDark ? "light" : "dark"} />
 
       {/* Header */}
       <View
@@ -325,7 +326,7 @@ export default function ContactScreen() {
                 }}
                 style={{
                   flex: 1,
-                  backgroundColor: "#25D366",
+                  backgroundColor: colors.success,
                   paddingVertical: 14,
                   borderRadius: 12,
                   flexDirection: "row",
