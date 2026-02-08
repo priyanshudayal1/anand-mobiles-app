@@ -23,7 +23,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 export default function EMIOptionsScreen() {
   const { colors } = useTheme();
   const router = useRouter();
-  const { price } = useLocalSearchParams();
+  const { price, product_id } = useLocalSearchParams();
   const itemPrice = parseFloat(price) || 0;
   const { cartItems } = useCartStore();
 
@@ -105,7 +105,10 @@ export default function EMIOptionsScreen() {
       if (itemPrice >= 3000) {
         setLoading(true);
         try {
-          const data = await EMIService.getEMIOffers(itemPrice);
+          const data = await EMIService.getEMIOffers(
+            itemPrice,
+            product_id || null,
+          );
           setEmiData(data);
 
           // Auto-select first available tab from backend metadata

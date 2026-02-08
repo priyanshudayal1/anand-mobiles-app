@@ -5,7 +5,7 @@ import { AlertTriangle, CheckCircle, Info } from "lucide-react-native";
 import EMIOffers from "../home/EMIOffers";
 import EMIService from "../../services/emiService";
 
-const ProductInfo = ({ product, selectedVariant }) => {
+const ProductInfo = ({ product, selectedVariant, productId }) => {
   const { colors } = useTheme();
 
   // Get current price based on selected variant or default
@@ -27,7 +27,10 @@ const ProductInfo = ({ product, selectedVariant }) => {
     const fetchMinEMI = async () => {
       if (currentPrice >= 3000) {
         try {
-          const emiData = await EMIService.getEMIOffers(currentPrice);
+          const emiData = await EMIService.getEMIOffers(
+            currentPrice,
+            productId,
+          );
           if (emiData?.offers?.length) {
             let lowestEMI = Infinity;
             emiData.offers.forEach((bank) => {
@@ -49,7 +52,7 @@ const ProductInfo = ({ product, selectedVariant }) => {
     };
 
     fetchMinEMI();
-  }, [currentPrice]);
+  }, [currentPrice, productId]);
 
   // Calculate discount
   const hasDiscount =
@@ -181,7 +184,7 @@ const ProductInfo = ({ product, selectedVariant }) => {
             <Text style={{ fontWeight: "bold" }}>EMI</Text> from ₹
             {Math.round(minEMI).toLocaleString()}. No Cost EMI available.{" "}
           </Text>
-          <EMIOffers price={currentPrice}>
+          <EMIOffers price={currentPrice} productId={productId}>
             <Text
               style={{
                 fontSize: 14,
@@ -194,7 +197,6 @@ const ProductInfo = ({ product, selectedVariant }) => {
           </EMIOffers>
         </View>
       )}
-      
 
       {/* Stock Status */}
       <View style={{ marginTop: 4 }}>

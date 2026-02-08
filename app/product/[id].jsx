@@ -639,6 +639,7 @@ export default function ProductDetailScreen() {
           product={normalizedProduct}
           selectedVariant={selectedVariant}
           onShare={handleShare}
+          productId={normalizedProduct.id}
         />
 
         {/* Frequently Bought Together */}

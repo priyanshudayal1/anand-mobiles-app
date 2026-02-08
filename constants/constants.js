@@ -1,4 +1,5 @@
-export const BACKEND_URL = "https://anandmobiles.com/api";
+export const BACKEND_URL = "http://192.168.29.7:8000/api";
+// export const BACKEND_URL = "http://192.168.29.7:8000/api";
 
 // WebSocket URL for real-time notifications
 export const getWebSocketURL = () => {

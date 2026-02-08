@@ -9,7 +9,18 @@
     "scheme": "anandmobiles",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "plugins": ["@react-native-google-signin/google-signin"],
+    "plugins": [
+      "@react-native-google-signin/google-signin",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/logo.png",
+          "color": "#FF6B35",
+          "defaultChannel": "order_updates",
+          "sounds": []
+        }
+      ]
+    ],
     "android": {
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {

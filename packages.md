@@ -43,7 +43,7 @@ EXPO_PUBLIC_BACKEND_URL=http://your-backend-ip:8000/api
 
 Update `constants/constants.js` with your backend URL:
 ```javascript
-export const BACKEND_URL = "https://anandmobiles.com/api";
+export const BACKEND_URL = "http://192.168.29.7:8000/api";
 ```
 
 ---

@@ -5,7 +5,7 @@ import { useTheme } from "../../store/useTheme";
 import EMIService from "../../services/emiService";
 import { useRouter } from "expo-router";
 
-export default function EMIOffers({ price, children }) {
+export default function EMIOffers({ price, productId, children }) {
   const { colors } = useTheme();
   const router = useRouter();
   const [emiData, setEmiData] = useState(null);
@@ -14,7 +14,7 @@ export default function EMIOffers({ price, children }) {
     const fetchEMIData = async () => {
       try {
         // Calculate offers using the service
-        const data = await EMIService.getEMIOffers(price);
+        const data = await EMIService.getEMIOffers(price, productId);
         setEmiData(data);
       } catch (error) {
         console.error("Error fetching EMI data:", error);
@@ -22,7 +22,7 @@ export default function EMIOffers({ price, children }) {
     };
 
     fetchEMIData();
-  }, [price]);
+  }, [price, productId]);
 
   if (!price || price < 3000 || !emiData?.offers?.length) {
     return null;
@@ -47,7 +47,9 @@ export default function EMIOffers({ price, children }) {
   if (minEMI === Infinity) return null;
 
   const handlePress = () => {
-    router.push(`/emi-options?price=${price}`);
+    router.push(
+      `/emi-options?price=${price}${productId ? `&product_id=${productId}` : ""}`,
+    );
   };
 
   return (

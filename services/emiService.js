@@ -57,12 +57,15 @@ class EMIService {
    * Get EMI offers from backend API
    * Falls back to default data if API fails
    * @param {number} price - The product price
+   * @param {string} [productId] - Optional product ID to filter by product-level EMI config
    * @returns {Promise<Object>} - EMI offers with bank options
    */
-  async getEMIOffers(price) {
+  async getEMIOffers(price, productId = null) {
     try {
+      const params = { price };
+      if (productId) params.product_id = productId;
       const response = await api.get("/admin/emi/offers/", {
-        params: { price },
+        params,
       });
 
       if (response.data && response.data.status === "success") {

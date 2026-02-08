@@ -36,11 +36,16 @@ class WebSocketService {
       }
 
       const wsUrl = `${getWebSocketURL()}?token=${token}`;
+      console.log(
+        "🔌 WebSocket: Connecting to",
+        wsUrl.replace(/token=.*/, "token=***"),
+      );
 
       return new Promise((resolve) => {
         this.socket = new WebSocket(wsUrl);
 
         this.socket.onopen = () => {
+          console.log("🔌 WebSocket: ✅ Connected successfully");
           this.isConnected = true;
           this.isConnecting = false;
           this.reconnectAttempts = 0;
@@ -51,7 +56,12 @@ class WebSocketService {
 
         this.socket.onmessage = (event) => {
           try {
+            console.log("🔌 WebSocket: 📨 RAW MESSAGE RECEIVED:", event.data);
             const data = JSON.parse(event.data);
+            console.log(
+              "🔌 WebSocket: 📦 PARSED MESSAGE:",
+              JSON.stringify(data, null, 2),
+            );
             this.handleMessage(data);
           } catch (error) {
             console.error("🔌 WebSocket: Error parsing message", error);
@@ -59,10 +69,17 @@ class WebSocketService {
         };
 
         this.socket.onerror = (error) => {
+          console.error(
+            "🔌 WebSocket: ❌ Connection error",
+            error?.message || "Unknown error",
+          );
           this.emit("error", error);
         };
 
         this.socket.onclose = (event) => {
+          console.log(
+            `🔌 WebSocket: Disconnected (code: ${event.code}, reason: ${event.reason || "none"})`,
+          );
           this.isConnected = false;
           this.isConnecting = false;
           this.stopPingInterval();
@@ -86,6 +103,7 @@ class WebSocketService {
         // Timeout for connection
         setTimeout(() => {
           if (!this.isConnected && this.isConnecting) {
+            console.error("🔌 WebSocket: ⏱️ Connection timeout after 10s");
             this.socket?.close();
             this.isConnecting = false;
             resolve(false);
@@ -139,17 +157,29 @@ class WebSocketService {
    */
   handleMessage(data) {
     const { type } = data;
+    console.log("🔌 WebSocket: 🎯 HANDLING MESSAGE TYPE:", type);
 
     switch (type) {
       case "connection_established":
+        console.log("🔌 WebSocket: ✅ Connection acknowledged by server");
         break;
 
       case "new_notification":
+        console.log(
+          "🔌 WebSocket: 📬 NEW_NOTIFICATION received:",
+          JSON.stringify(data.notification, null, 2),
+        );
         this.emit("new_notification", data.notification);
+        console.log("🔌 WebSocket: ✅ Emitted 'new_notification' event");
         break;
 
       case "broadcast_notification":
+        console.log(
+          "🔌 WebSocket: 📢 BROADCAST_NOTIFICATION received:",
+          JSON.stringify(data.notification, null, 2),
+        );
         this.emit("broadcast_notification", data.notification);
+        console.log("🔌 WebSocket: ✅ Emitted 'broadcast_notification' event");
         break;
 
       case "notifications_list":
@@ -179,7 +209,7 @@ class WebSocketService {
         break;
 
       default:
-        // Unknown message types are ignored
+      // Unknown message types are ignored
     }
   }
 

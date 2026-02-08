@@ -69,12 +69,12 @@ const showLocalNotification = async (notification) => {
     }
 
     console.log(
-      "[Notification] 📢 Showing local push notification:",
-      notification.title,
+      "[Notification] 📢 showLocalNotification() called with:",
+      JSON.stringify(notification, null, 2),
     );
 
     // Schedule a local notification immediately
-    await Notifications.scheduleNotificationAsync({
+    const notifId = await Notifications.scheduleNotificationAsync({
       content: {
         title: notification.title || "New Notification",
         body: notification.message || notification.body || "",
@@ -86,15 +86,21 @@ const showLocalNotification = async (notification) => {
           product_image: notification.data?.product_image || null,
           product_name: notification.data?.product_name || null,
         },
-        sound: true,
-        priority: Notifications.AndroidNotificationPriority.HIGH,
+        sound: "default",
+        priority: "high",
       },
       trigger: null, // null means show immediately
     });
 
-    console.log("[Notification] ✅ Local push notification displayed");
+    console.log(
+      "[Notification] ✅ Local push notification scheduled, id:",
+      notifId,
+    );
   } catch (error) {
-    console.error("[Notification] ❌ Error showing local notification:", error);
+    console.error(
+      "[Notification] ❌ Error showing local notification:",
+      error.message || error,
+    );
   }
 };
 
@@ -125,8 +131,8 @@ export const useNotificationStore = create((set, get) => ({
       unsubscribers.push(
         webSocketService.on("new_notification", (notification) => {
           console.log(
-            "[Notification] 📨 New notification from WebSocket:",
-            notification,
+            "[Notification] 📨 NEW_NOTIFICATION EVENT RECEIVED IN STORE:",
+            JSON.stringify(notification, null, 2),
           );
 
           set((state) => {
@@ -139,6 +145,7 @@ export const useNotificationStore = create((set, get) => ({
               return state;
             }
 
+            console.log("[Notification] 📢 Calling showLocalNotification()...");
             // Show local push notification
             showLocalNotification(notification);
 
@@ -154,8 +161,8 @@ export const useNotificationStore = create((set, get) => ({
       unsubscribers.push(
         webSocketService.on("broadcast_notification", (notification) => {
           console.log(
-            "[Notification] 📢 Broadcast notification from admin:",
-            notification,
+            "[Notification] 📢 BROADCAST_NOTIFICATION EVENT RECEIVED IN STORE:",
+            JSON.stringify(notification, null, 2),
           );
 
           set((state) => {
@@ -168,6 +175,9 @@ export const useNotificationStore = create((set, get) => ({
               return state;
             }
 
+            console.log(
+              "[Notification] 📢 Calling showLocalNotification() for broadcast...",
+            );
             // Show local push notification
             showLocalNotification(notification);
 
@@ -201,6 +211,9 @@ export const useNotificationStore = create((set, get) => ({
       // Handle connection status
       unsubscribers.push(
         webSocketService.on("connected", () => {
+          console.log(
+            "[Notification] 🔌 WebSocket connected! Requesting notifications...",
+          );
           set({ isWebSocketConnected: true, error: null });
           // Request initial notifications
           webSocketService.requestNotifications(50);
@@ -209,19 +222,26 @@ export const useNotificationStore = create((set, get) => ({
 
       unsubscribers.push(
         webSocketService.on("disconnected", () => {
+          console.log("[Notification] 🔌 WebSocket disconnected");
           set({ isWebSocketConnected: false });
         }),
       );
 
       unsubscribers.push(
         webSocketService.on("error", (error) => {
-          // Silently handle WebSocket errors - we'll fallback to API
+          console.error(
+            "[Notification] 🔌 WebSocket error:",
+            error?.message || error,
+          );
           set({ isWebSocketConnected: false });
         }),
       );
 
       unsubscribers.push(
         webSocketService.on("backend_unavailable", () => {
+          console.warn(
+            "[Notification] 🔌 Backend unavailable (WebSocket 1006), falling back to API",
+          );
           set({ isWebSocketConnected: false });
           // Fetch via API as fallback
           get().fetchNotifications();
@@ -230,6 +250,9 @@ export const useNotificationStore = create((set, get) => ({
 
       unsubscribers.push(
         webSocketService.on("max_reconnect_reached", () => {
+          console.warn(
+            "[Notification] 🔌 Max WebSocket reconnect attempts reached, using API",
+          );
           set({ isWebSocketConnected: false });
           // Fetch via API as fallback
           get().fetchNotifications();
@@ -241,9 +264,14 @@ export const useNotificationStore = create((set, get) => ({
 
       // Connect to WebSocket
       set({ isLoading: true });
+      console.log("[Notification] 🔌 Attempting WebSocket connection...");
       const connected = await webSocketService.connect();
+      console.log("[Notification] 🔌 WebSocket connection result:", connected);
 
       if (!connected) {
+        console.warn(
+          "[Notification] 🔌 WebSocket failed, falling back to API...",
+        );
         // Fall back to API-based notifications
         await get().fetchNotifications();
       }
@@ -276,15 +304,15 @@ export const useNotificationStore = create((set, get) => ({
     set({ wsUnsubscribers: [], isWebSocketConnected: false });
   },
 
-  // Register for push notifications (SDK 54 compatible)
+  // Setup local notifications (permissions + channels)
+  // Push tokens (FCM) are NOT used — real-time delivery is via WebSocket,
+  // and showLocalNotification() displays the system notification locally.
   registerForPushNotifications: async () => {
-    console.log("[Notification] 🔔 Starting push notification registration...");
+    console.log("[Notification] 🔔 Setting up local notification support...");
     try {
       // Check if running in Expo Go
       if (isExpoGo) {
-        console.warn(
-          "[Notification] ⚠️ Cannot register push notifications in Expo Go",
-        );
+        console.warn("[Notification] ⚠️ Cannot setup notifications in Expo Go");
         return null;
       }
 
@@ -294,10 +322,10 @@ export const useNotificationStore = create((set, get) => ({
         return null;
       }
 
-      // Must use physical device for push notifications
+      // Must use physical device
       if (!Device.isDevice) {
         console.warn(
-          "[Notification] ⚠️ Push notifications require a physical device",
+          "[Notification] ⚠️ Notifications require a physical device",
         );
         return null;
       }
@@ -328,113 +356,62 @@ export const useNotificationStore = create((set, get) => ({
       }
       console.log("[Notification] ✅ Notification permissions granted");
 
-      // Get EAS project ID (required for Expo push tokens)
-      const projectId =
-        Constants.expoConfig?.extra?.eas?.projectId ||
-        Constants.easConfig?.projectId;
-
-      console.log("[Notification] EAS Project ID:", projectId);
-      if (!projectId) {
-        console.error("[Notification] ❌ No EAS project ID found in app.json");
-        return null;
-      }
-
-      // Get Expo push token
-      console.log("[Notification] 🎫 Getting Expo push token...");
-      const token = (
-        await Notifications.getExpoPushTokenAsync({
-          projectId: projectId,
-        })
-      ).data;
-
-      console.log("[Notification] ✅ Got Expo push token:", token);
-      set({ expoPushToken: token });
-
-      // Setup Android notification channel (SDK 54 required)
+      // Setup Android notification channels (required for local notifications on Android 8+)
       if (Platform.OS === "android") {
         console.log(
-          "[Notification] 🤖 Setting up Android notification channel...",
+          "[Notification] 🤖 Setting up Android notification channels...",
         );
-        await Notifications.setNotificationChannelAsync("default", {
-          name: "Order Updates",
-          importance: Notifications.AndroidImportance.MAX,
-          vibrationPattern: [0, 250, 250, 250],
-          lightColor: "#FF6B35",
-          sound: "default",
-          enableVibrate: true,
-          enableLights: true,
-          showBadge: true,
-        });
-        console.log(
-          "[Notification] ✅ Android notification channel configured",
-        );
+        try {
+          await Notifications.setNotificationChannelAsync("order_updates", {
+            name: "Order Updates",
+            importance: Notifications.AndroidImportance.MAX,
+            vibrationPattern: [0, 250, 250, 250],
+            lightColor: "#FF6B35",
+            sound: "default",
+            enableVibrate: true,
+            enableLights: true,
+            showBadge: true,
+          });
+          await Notifications.setNotificationChannelAsync("default", {
+            name: "General",
+            importance: Notifications.AndroidImportance.MAX,
+            vibrationPattern: [0, 250, 250, 250],
+            lightColor: "#FF6B35",
+            sound: "default",
+            enableVibrate: true,
+            enableLights: true,
+            showBadge: true,
+          });
+          console.log(
+            "[Notification] ✅ Android notification channels configured",
+          );
+        } catch (channelError) {
+          console.error(
+            "[Notification] ❌ Error setting up notification channels:",
+            channelError.message,
+          );
+        }
       }
 
-      // Register token with backend
-      console.log("[Notification] 📤 Registering token with backend...");
-      await get().registerTokenWithBackend(token);
-      console.log("[Notification] ✅ Push notification registration complete!");
-      return token;
-    } catch (error) {
-      // Silently handle common expected errors
-      const errorMessage = error.message || "";
-
-      // Firebase errors are expected when not using FCM (Expo handles push without FCM)
-      if (
-        errorMessage.includes("FirebaseApp is not initialized") ||
-        errorMessage.includes("FirebaseApp.initializeApp")
-      ) {
-        // Silently ignore - Expo push notifications work without FCM
-        return null;
-      }
-
-      // Expo Go limitations are expected
-      if (
-        errorMessage.includes("Expo Go") ||
-        errorMessage.includes("projectId")
-      ) {
-        console.warn(
-          "[Notification] ⚠️ Project ID issue or Expo Go limitation",
-        );
-        return null;
-      }
-
-      // Log unexpected errors only
-      console.error(
-        "[Notification] ❌ Error registering push notifications:",
-        errorMessage,
+      console.log(
+        "[Notification] ✅ Local notification setup complete! Notifications will be delivered via WebSocket → local push.",
       );
-      set({ error: errorMessage });
+      return "local-notifications-ready";
+    } catch (error) {
+      console.error(
+        "[Notification] ❌ Error setting up notifications:",
+        error.message || error,
+      );
       return null;
     }
   },
 
-  // Register token with backend
+  // Register token with backend (no-op since we use WebSocket, kept for API compatibility)
   registerTokenWithBackend: async (token) => {
-    try {
-      console.log("[Notification] 🔑 Getting user token from storage...");
-      const userToken = await AsyncStorage.getItem("userToken");
-      if (!userToken) {
-        console.warn(
-          "[Notification] ⚠️ No user token found, skipping backend registration",
-        );
-        return;
-      }
-
-      console.log("[Notification] 📤 Sending push token to backend...");
-      const response = await api.post("/users/notifications/register-token/", {
-        fcm_token: token,
-      });
-      console.log(
-        "[Notification] ✅ Token registered with backend:",
-        response.data,
-      );
-    } catch (error) {
-      console.error(
-        "[Notification] ❌ Error registering token with backend:",
-        error.response?.data || error.message,
-      );
-    }
+    // Push tokens are not used — WebSocket handles real-time delivery
+    console.log(
+      "[Notification] ℹ️ Skipping push token registration (using WebSocket for delivery)",
+    );
   },
 
   // Fetch notifications from backend (fallback method, real-time is preferred)
