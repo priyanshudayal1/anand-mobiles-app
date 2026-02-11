@@ -9,7 +9,7 @@ import {
   SectionList,
 } from "react-native";
 import { Image } from "expo-image";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import axios from "axios";
 import { useRouter } from "expo-router";
@@ -96,6 +96,7 @@ const GridItem = React.memo(({ item, onPress, colors }) => (
 export default function Menu() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
+  const insets = useSafeAreaInsets();
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -281,7 +282,7 @@ export default function Menu() {
 
   if (loading) {
     return (
-      <SafeAreaView
+      <View
         style={{
           flex: 1,
           justifyContent: "center",
@@ -291,23 +292,22 @@ export default function Menu() {
       >
         <StatusBar style={isDarkMode() ? "light" : "dark"} />
         <ActivityIndicator size="large" color={colors.primary} />
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      edges={["top"]}
-    >
-      <StatusBar style={isDarkMode() ? "light" : "dark"} />
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <StatusBar style="light" backgroundColor={colors.primary} />
+
+      {/* Status bar fill */}
+      <View style={{ height: insets.top, backgroundColor: colors.primary }} />
+
       {/* Search Bar */}
       <View
         style={{
           padding: 12,
-          backgroundColor: colors.surface,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border,
+          backgroundColor: colors.primary,
           zIndex: 50,
         }}
       >
@@ -459,6 +459,6 @@ export default function Menu() {
           </View>
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

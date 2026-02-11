@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { ArrowLeft, Search, ShoppingCart, Star } from "lucide-react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 
 import { useTheme } from "../../store/useTheme";
@@ -36,6 +36,7 @@ export default function ProductDetailScreen() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
   const isDark = isDarkMode();
+  const insets = useSafeAreaInsets();
 
   const {
     currentProduct,
@@ -83,8 +84,22 @@ export default function ProductDetailScreen() {
         (currentProduct.id || currentProduct.product_id),
     );
     setRelatedProducts(filtered.slice(0, 10));
-    // Set bundle products (first 2-3 related products)
-    setBundleProducts(filtered.slice(0, 3));
+    // Set bundle products — only in-stock items with normalized prices
+    const inStockRelated = filtered.filter((p) => {
+      const s = p.stock ?? p.quantity ?? p.inventory ?? 0;
+      return s > 0;
+    });
+    const normalizedBundles = inStockRelated.slice(0, 3).map((p) => ({
+      ...p,
+      id: p.id || p.product_id,
+      name: p.name || p.title || p.product_name || "Product",
+      price: p.price || 0,
+      originalPrice: p.price || p.original_price || 0,
+      discountPrice: p.discount_price || p.discounted_price || p.price || 0,
+      currentPrice: p.discount_price || p.discounted_price || p.price || 0,
+      image: p.images?.[0] || p.image || p.image_url || null,
+    }));
+    setBundleProducts(normalizedBundles);
   }, [currentProduct?.category, currentProduct?.id, getProductsByCategory]);
 
   // Fetch product on mount or id change
@@ -278,36 +293,38 @@ export default function ProductDetailScreen() {
 
   if (isLoadingProduct && !currentProduct) {
     return (
-      <SafeAreaView
-        style={{ flex: 1, backgroundColor: colors.background }}
-        edges={["top"]}
-      >
-        <StatusBar style="dark" backgroundColor={colors.background} />
+      <View style={{ flex: 1, backgroundColor: colors.primary }}>
+        <StatusBar style="light" backgroundColor={colors.primary} />
+        <View style={{ height: insets.top, backgroundColor: colors.primary }} />
         <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: colors.background,
+          }}
         >
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={{ color: colors.textSecondary, marginTop: 16 }}>
             Loading product...
           </Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (!currentProduct) {
     return (
-      <SafeAreaView
-        style={{ flex: 1, backgroundColor: colors.background }}
-        edges={["top"]}
-      >
-        <StatusBar style="dark" backgroundColor={colors.background} />
+      <View style={{ flex: 1, backgroundColor: colors.primary }}>
+        <StatusBar style="light" backgroundColor={colors.primary} />
+        <View style={{ height: insets.top, backgroundColor: colors.primary }} />
         <View
           style={{
             flex: 1,
             justifyContent: "center",
             alignItems: "center",
             padding: 20,
+            backgroundColor: colors.background,
           }}
         >
           <Text style={{ color: colors.text, fontSize: 18, marginBottom: 8 }}>
@@ -337,7 +354,7 @@ export default function ProductDetailScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -402,12 +419,14 @@ export default function ProductDetailScreen() {
         ? product.reviews.length
         : product.review_count || 0),
     reviewsData: reviewsData,
-    stock:
-      selectedVariant?.stock ??
-      product.stock ??
-      product.quantity ??
-      product.inventory ??
+    stock: Math.max(
       0,
+      selectedVariant?.stock ??
+        product.stock ??
+        product.quantity ??
+        product.inventory ??
+        0,
+    ),
     images: product.images || product.image_urls || product.photos || [],
     videos: product.videos || [],
     features: product.features || product.key_features || [],
@@ -445,14 +464,9 @@ export default function ProductDetailScreen() {
   const isProductInWishlist = isInWishlist(productId);
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      edges={["top"]}
-    >
-      <StatusBar
-        style={isDark ? "light" : "dark"}
-        backgroundColor={colors.background}
-      />
+    <View style={{ flex: 1, backgroundColor: colors.primary }}>
+      <StatusBar style="light" backgroundColor={colors.primary} />
+      <View style={{ height: insets.top, backgroundColor: colors.primary }} />
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* Header */}
@@ -463,13 +477,11 @@ export default function ProductDetailScreen() {
           alignItems: "center",
           paddingHorizontal: 12,
           paddingVertical: 10,
-          backgroundColor: colors.primary + "15",
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border,
+          backgroundColor: colors.primary,
         }}
       >
         <TouchableOpacity onPress={() => router.back()} style={{ padding: 6 }}>
-          <ArrowLeft size={24} color={colors.text} />
+          <ArrowLeft size={24} color={colors.white} />
         </TouchableOpacity>
 
         {/* Search Bar */}
@@ -478,14 +490,12 @@ export default function ProductDetailScreen() {
           style={{
             flex: 1,
             flexDirection: "row",
-            backgroundColor: colors.surface,
+            backgroundColor: colors.white,
             marginHorizontal: 12,
             borderRadius: 8,
             paddingHorizontal: 12,
             paddingVertical: 8,
             alignItems: "center",
-            borderWidth: 1,
-            borderColor: colors.border,
           }}
         >
           <Search size={18} color={colors.textSecondary} />
@@ -501,7 +511,7 @@ export default function ProductDetailScreen() {
           onPress={() => router.push("/cart")}
           style={{ padding: 6, marginRight: 4, position: "relative" }}
         >
-          <ShoppingCart size={24} color={colors.text} />
+          <ShoppingCart size={24} color={colors.white} />
           {cartItemCount > 0 && (
             <View
               style={{
@@ -530,196 +540,204 @@ export default function ProductDetailScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: 40 }}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={colors.primary}
-            colors={[colors.primary]}
-          />
-        }
-      >
-        <View
-          style={{
-            paddingHorizontal: 16,
-            paddingTop: 12,
-            paddingBottom: 8,
-            backgroundColor: colors.surface,
-          }}
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
+            />
+          }
         >
           <View
             style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
+              paddingHorizontal: 16,
+              paddingTop: 12,
+              paddingBottom: 8,
+              backgroundColor: colors.surface,
             }}
           >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "500",
-                color: colors.text,
-                lineHeight: 24,
-                flex: 1,
-                marginRight: 8,
-              }}
-            >
-              {normalizedProduct.name}
-            </Text>
-
             <View
               style={{
                 flexDirection: "row",
-                alignItems: "center",
-                marginTop: 4,
+                justifyContent: "space-between",
+                alignItems: "flex-start",
               }}
             >
               <Text
                 style={{
-                  fontSize: 13,
-                  marginRight: 4,
-                  fontWeight: "400",
+                  fontSize: 16,
+                  fontWeight: "500",
                   color: colors.text,
+                  lineHeight: 24,
+                  flex: 1,
+                  marginRight: 8,
                 }}
               >
-                {normalizedProduct.rating?.toFixed(1) || "0.0"}
+                {normalizedProduct.name}
               </Text>
-              <View style={{ flexDirection: "row" }}>
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Star
-                    key={i}
-                    size={14}
-                    color={colors.warning}
-                    fill={
-                      i <= Math.round(normalizedProduct.rating || 0)
-                        ? colors.warning
-                        : "transparent"
-                    }
-                    strokeWidth={1}
-                    style={{ marginRight: 1 }}
-                  />
-                ))}
-              </View>
-              <Text
-                style={{ fontSize: 13, marginLeft: 4, color: colors.primary }}
-              >
-                ({normalizedProduct.reviews || 0})
-              </Text>
-            </View>
-          </View>
-        </View>
 
-        {/* Product Image Gallery */}
-        <ProductImageGallery
-          images={validImages}
-          videos={validVideos}
-          activeIndex={activeImageIndex}
-          onScroll={(e) => {
-            const slide = Math.round(
-              e.nativeEvent.contentOffset.x /
-                e.nativeEvent.layoutMeasurement.width,
-            );
-            if (slide !== activeImageIndex) setActiveImageIndex(slide);
-          }}
-          discountPercentage={discountPercentage}
-          onWishlistPress={handleWishlistFromGallery}
-          isInWishlist={isProductInWishlist}
-          onSharePress={handleShare}
-        />
-
-        {/* Variant Selector */}
-        {normalizedProduct.validOptions.length > 0 && (
-          <ProductVariantSelector
-            validOptions={normalizedProduct.validOptions}
-            selectedVariant={selectedVariant}
-            onSelect={setSelectedVariant}
-            productImages={normalizedProduct.images}
-          />
-        )}
-
-        {/* Product Info (Price & EMI) */}
-        <ProductInfo
-          product={normalizedProduct}
-          selectedVariant={selectedVariant}
-          onShare={handleShare}
-          productId={normalizedProduct.id}
-        />
-
-        {/* Frequently Bought Together */}
-        <FrequentlyBoughtTogether
-          currentProduct={normalizedProduct}
-          bundleProducts={bundleProducts}
-          onAddBundle={handleAddBundle}
-        />
-
-        {/* Quantity Selector */}
-        <ProductQuantitySelector
-          quantity={quantity}
-          setQuantity={setQuantity}
-          stock={normalizedProduct.stock}
-        />
-
-        {/* Action Buttons */}
-        <ProductActions
-          onAddToCart={handleAddToCart}
-          onBuyNow={handleBuyNow}
-          onAddToWishlist={handleAddToWishlist}
-          isAddingToCart={addingToCart}
-          isBuyingNow={isBuyingNow}
-          isAddingToWishlist={addingToWishlist}
-          inStock={inStock}
-          isInWishlist={isProductInWishlist}
-          price={currentPrice}
-          quantity={quantity}
-          productName={normalizedProduct.name}
-        />
-
-        {/* Separator */}
-        <View
-          style={{ height: 8, backgroundColor: colors.backgroundSecondary }}
-        />
-
-        {/* Product Accordions (Description, Specifications, Reviews) */}
-        <ProductAccordions product={normalizedProduct} />
-
-        {/* Separator */}
-        <View
-          style={{
-            height: 8,
-            backgroundColor: colors.backgroundSecondary,
-            marginTop: 16,
-          }}
-        />
-
-        {/* Related Products */}
-        {relatedProducts.length > 0 && (
-          <View style={{ paddingTop: 16 }}>
-            <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
-              <Text
-                style={{ fontSize: 18, fontWeight: "bold", color: colors.text }}
-              >
-                Customers also viewed
-              </Text>
-              <Text
+              <View
                 style={{
-                  fontSize: 13,
-                  color: colors.textSecondary,
+                  flexDirection: "row",
+                  alignItems: "center",
                   marginTop: 4,
                 }}
               >
-                Similar products you might like
-              </Text>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    marginRight: 4,
+                    fontWeight: "400",
+                    color: colors.text,
+                  }}
+                >
+                  {normalizedProduct.rating?.toFixed(1) || "0.0"}
+                </Text>
+                <View style={{ flexDirection: "row" }}>
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Star
+                      key={i}
+                      size={14}
+                      color={colors.warning}
+                      fill={
+                        i <= Math.round(normalizedProduct.rating || 0)
+                          ? colors.warning
+                          : "transparent"
+                      }
+                      strokeWidth={1}
+                      style={{ marginRight: 1 }}
+                    />
+                  ))}
+                </View>
+                <Text
+                  style={{ fontSize: 13, marginLeft: 4, color: colors.primary }}
+                >
+                  ({normalizedProduct.reviews || 0})
+                </Text>
+              </View>
             </View>
-            <RelatedProducts
-              products={relatedProducts}
-              currentProductId={normalizedProduct.id}
-            />
           </View>
-        )}
-      </ScrollView>
+
+          {/* Product Image Gallery */}
+          <ProductImageGallery
+            images={validImages}
+            videos={validVideos}
+            activeIndex={activeImageIndex}
+            onScroll={(e) => {
+              const slide = Math.round(
+                e.nativeEvent.contentOffset.x /
+                  e.nativeEvent.layoutMeasurement.width,
+              );
+              if (slide !== activeImageIndex) setActiveImageIndex(slide);
+            }}
+            discountPercentage={discountPercentage}
+            onWishlistPress={handleWishlistFromGallery}
+            isInWishlist={isProductInWishlist}
+            onSharePress={handleShare}
+          />
+
+          {/* Variant Selector */}
+          {normalizedProduct.validOptions.length > 0 && (
+            <ProductVariantSelector
+              validOptions={normalizedProduct.validOptions}
+              selectedVariant={selectedVariant}
+              onSelect={setSelectedVariant}
+              productImages={normalizedProduct.images}
+            />
+          )}
+
+          {/* Product Info (Price & EMI) */}
+          <ProductInfo
+            product={normalizedProduct}
+            selectedVariant={selectedVariant}
+            onShare={handleShare}
+            productId={normalizedProduct.id}
+          />
+
+          {/* Frequently Bought Together */}
+          <FrequentlyBoughtTogether
+            currentProduct={normalizedProduct}
+            bundleProducts={bundleProducts}
+            onAddBundle={handleAddBundle}
+          />
+
+          {/* Quantity Selector */}
+          {normalizedProduct.stock > 0 && (
+            <ProductQuantitySelector
+              quantity={quantity}
+              setQuantity={setQuantity}
+              stock={normalizedProduct.stock}
+            />
+          )}
+
+          {/* Action Buttons */}
+          <ProductActions
+            onAddToCart={handleAddToCart}
+            onBuyNow={handleBuyNow}
+            onAddToWishlist={handleAddToWishlist}
+            isAddingToCart={addingToCart}
+            isBuyingNow={isBuyingNow}
+            isAddingToWishlist={addingToWishlist}
+            inStock={inStock}
+            isInWishlist={isProductInWishlist}
+            price={currentPrice}
+            quantity={quantity}
+            productName={normalizedProduct.name}
+          />
+
+          {/* Separator */}
+          <View
+            style={{ height: 8, backgroundColor: colors.backgroundSecondary }}
+          />
+
+          {/* Product Accordions (Description, Specifications, Reviews) */}
+          <ProductAccordions product={normalizedProduct} />
+
+          {/* Separator */}
+          <View
+            style={{
+              height: 8,
+              backgroundColor: colors.backgroundSecondary,
+              marginTop: 16,
+            }}
+          />
+
+          {/* Related Products */}
+          {relatedProducts.length > 0 && (
+            <View style={{ paddingTop: 16 }}>
+              <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
+                <Text
+                  style={{
+                    fontSize: 18,
+                    fontWeight: "bold",
+                    color: colors.text,
+                  }}
+                >
+                  Customers also viewed
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    color: colors.textSecondary,
+                    marginTop: 4,
+                  }}
+                >
+                  Similar products you might like
+                </Text>
+              </View>
+              <RelatedProducts
+                products={relatedProducts}
+                currentProductId={normalizedProduct.id}
+              />
+            </View>
+          )}
+        </ScrollView>
+      </View>
 
       {/* Added to Cart Modal */}
       <CustomModal
@@ -744,6 +762,6 @@ export default function ProductDetailScreen() {
           },
         ]}
       />
-    </SafeAreaView>
+    </View>
   );
 }

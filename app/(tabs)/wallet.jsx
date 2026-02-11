@@ -10,7 +10,10 @@ import {
   Share,
   Alert,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import * as Clipboard from "expo-clipboard";
 import {
   Wallet,
@@ -31,7 +34,8 @@ import SpinWheel from "../../components/gamification/SpinWheel";
 import WalletModal from "../../components/gamification/WalletModal";
 
 export default function WalletScreen() {
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
+  const insets = useSafeAreaInsets();
   const { isAuthenticated, user } = useAuthStore();
   const {
     coinBalance,
@@ -101,8 +105,11 @@ export default function WalletScreen() {
   // Not authenticated state
   if (!isAuthenticated || !user) {
     return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
+      <View
+        style={[
+          styles.container,
+          { backgroundColor: colors.background, paddingTop: insets.top },
+        ]}
       >
         <View style={styles.emptyState}>
           <Wallet size={64} color={colors.textSecondary} />
@@ -115,15 +122,18 @@ export default function WalletScreen() {
             Please login to access gamification features
           </Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   // Loading state - only show on initial load when there's no data yet
   if (isLoading && !refreshing && !gamificationStatus) {
     return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
+      <View
+        style={[
+          styles.container,
+          { backgroundColor: colors.background, paddingTop: insets.top },
+        ]}
       >
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -131,7 +141,7 @@ export default function WalletScreen() {
             Loading gamification data...
           </Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -592,9 +602,10 @@ export default function WalletScreen() {
   );
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View
+        style={{ height: insets.top, backgroundColor: colors.background }}
+      />
       <View style={{ flex: 1 }}>
         {/* Header */}
         <View style={[styles.header, { paddingBottom: 16 }]}>
@@ -691,7 +702,7 @@ export default function WalletScreen() {
         visible={showWalletModal}
         onClose={() => setShowWalletModal(false)}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 

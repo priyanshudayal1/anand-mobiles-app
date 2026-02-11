@@ -8,8 +8,6 @@ export default function TabLayout() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
-  // Calculate bottom padding - use safe area insets for gesture phones, minimum for button phones
-  const bottomPadding = Math.max(insets.bottom, 8);
   return (
     <Tabs
       screenOptions={{
@@ -18,14 +16,18 @@ export default function TabLayout() {
           backgroundColor: colors.tabBarBg,
           borderTopWidth: 1,
           borderTopColor: colors.border,
-          height: 56 + bottomPadding,
-          paddingBottom: bottomPadding,
-          paddingTop: 8,
+          height: 56,
+          paddingBottom: 0,
+          paddingTop: 0,
           elevation: 8,
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
           shadowRadius: 4,
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
         },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.tabBarInactive,

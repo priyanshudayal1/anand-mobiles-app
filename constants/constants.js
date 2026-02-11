@@ -100,4 +100,12 @@ export const API_ENDPOINTS = {
   referrals: "/users/rewards/referrals/",
   spinWheel: "/users/rewards/spin-wheel/",
   loginStreak: "/users/rewards/login-streak/",
+
+  // Coupons
+  activeCoupons: "/admin/coupons/active/",
+  validateCoupon: "/admin/coupons/validate/",
+
+  // Coin Discounts
+  coinEconomy: "/users/coins/economy/",
+  calculateCoinDiscount: "/users/coins/calculate-discount/",
 };

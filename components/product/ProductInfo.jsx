@@ -18,7 +18,10 @@ const ProductInfo = ({ product, selectedVariant, productId }) => {
     0;
 
   const originalPrice = selectedVariant?.price || product.price || 0;
-  const currentStock = selectedVariant?.stock ?? product.stock ?? 0;
+  const currentStock = Math.max(
+    0,
+    selectedVariant?.stock ?? product.stock ?? 0,
+  );
 
   // Calculate EMI starting value
   const [minEMI, setMinEMI] = useState(null);

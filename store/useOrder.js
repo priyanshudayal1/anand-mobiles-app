@@ -110,7 +110,12 @@ export const useOrderStore = create((set, get) => ({
   },
 
   // Place order from cart
-  placeOrderFromCart: async (addressId) => {
+  placeOrderFromCart: async (
+    addressId,
+    gstInfo = null,
+    couponCode = null,
+    coinsInfo = null,
+  ) => {
     set({ isProcessingPayment: true, error: null });
     try {
       if (!addressId) {
@@ -123,6 +128,8 @@ export const useOrderStore = create((set, get) => ({
       }
 
       // Calculate amount in paise
+      // Note: If coupon/coins applied, the backend should ideally recalculate the total
+      // But we pass the cart total here as initial value or if validation fails
       const total = useCartStore.getState().cartTotal;
       const amountInPaise = Math.round(total * 100);
 
@@ -140,6 +147,10 @@ export const useOrderStore = create((set, get) => ({
         amount: amountInPaise,
         currency: "INR",
         product_ids: productIds,
+        gst_info: gstInfo,
+        coupon_code: couponCode,
+        coin_info: coinsInfo, // Helper for backend to know coins used
+        coins_used: coinsInfo?.coins_used || 0, // Explicit field often used
       };
 
       const response = await api.post(
@@ -156,7 +167,7 @@ export const useOrderStore = create((set, get) => ({
       const newOrder = {
         id: razorpayData.app_order_id,
         status: "pending_payment",
-        total_amount: total,
+        total_amount: razorpayData.amount ? razorpayData.amount / 100 : total, // Use backend returned amount if available
         created_at: new Date().toISOString(),
         // ... other details
       };

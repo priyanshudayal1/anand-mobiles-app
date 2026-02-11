@@ -1,10 +1,12 @@
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect, useState, useRef } from "react";
-import { LogBox, View, ActivityIndicator, Platform } from "react-native";
+import { LogBox, View, Platform, Image, Animated } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { StatusBar } from "expo-status-bar";
+import * as NavigationBar from "expo-navigation-bar";
 import "../index.css";
 import { useAuthStore } from "../store/useAuth";
 import { useTheme } from "../store/useTheme";
@@ -222,7 +224,17 @@ function RootLayoutNav() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, segments, isMounted, themeInitialized, authInitialized]);
 
-  // Show loading while theme or auth is initializing
+  // Hide Android navigation bar, make it translucent
+  useEffect(() => {
+    if (Platform.OS === "android") {
+      NavigationBar.setVisibilityAsync("hidden");
+      NavigationBar.setBehaviorAsync("overlay-swipe");
+      NavigationBar.setBackgroundColorAsync("transparent");
+      NavigationBar.setPositionAsync("absolute");
+    }
+  }, []);
+
+  // Show splash screen with logo while initializing
   if (!isMounted || !themeInitialized || !authInitialized) {
     return (
       <View
@@ -230,10 +242,18 @@ function RootLayoutNav() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: colors.background,
+          backgroundColor: colors.primary,
         }}
       >
-        <ActivityIndicator size="large" color={colors.primary} />
+        <StatusBar style="light" backgroundColor={colors.primary} />
+        <Animated.Image
+          source={require("../assets/images/logo.png")}
+          style={{
+            width: 120,
+            height: 120,
+            resizeMode: "contain",
+          }}
+        />
       </View>
     );
   }

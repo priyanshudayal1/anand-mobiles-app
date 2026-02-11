@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   Text,
   RefreshControl,
-  ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MessageCircle, ChevronRight } from "lucide-react-native";
@@ -20,6 +19,7 @@ import BrandsSection from "../../components/home/BrandsSection";
 import ProductCard from "../../components/home/ProductCard";
 import DynamicSection from "../../components/home/DynamicSection";
 import VideoCarousel from "../../components/home/VideoCarousel";
+import { HomeShimmer } from "../../components/common/ShimmerPlaceholder";
 import { useTheme } from "../../store/useTheme";
 import { useHome } from "../../store/useHome";
 import { useProducts } from "../../store/useProducts";
@@ -339,174 +339,170 @@ export default function Home() {
     <View
       style={{
         flex: 1,
-        backgroundColor: colors.backgroundSecondary,
-        paddingTop: insets.top,
+        backgroundColor: colors.primary,
       }}
     >
-      <StatusBar
-        style={mode === "dark" ? "light" : "light"}
-        backgroundColor={colors.primary}
-      />
+      <StatusBar style="light" backgroundColor={colors.primary} />
+
+      {/* Status bar fill */}
+      <View style={{ height: insets.top, backgroundColor: colors.primary }} />
 
       {/* Header with Search - Sticky at top */}
       <HomeHeader />
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: bottomPadding }}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={onRefresh}
-            colors={[colors.primary]}
-            tintColor={colors.primary}
-            progressBackgroundColor={colors.cardBg}
-          />
-        }
-      >
-        {/* Video Section - Like Website */}
-        <VideoCarousel showHeader={false} />
-
-        {/* Loading State */}
-        {isLoading && sortedSections.length === 0 && (
-          <View style={{ padding: 40, alignItems: "center" }}>
-            <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={{ marginTop: 16, color: colors.textSecondary }}>
-              Loading...
-            </Text>
-          </View>
-        )}
-
-        {/* Render sections in backend order */}
-        {sortedSections.length > 0 ? (
-          <>
-            {/* If no hero_banner section, show BannerCarousel as default first */}
-            {!hasHeroBannerSection && banners && banners.length > 0 && (
-              <BannerCarousel />
-            )}
-
-            {/* Render each section based on type */}
-            {sortedSections.map((section) => (
-              <RenderSection
-                key={section.section_id || section.id}
-                section={section}
-                colors={colors}
-                router={router}
-                featuredProducts={featuredProducts}
-              />
-            ))}
-
-            {/* Always show Brands and Videos at end if not in sections */}
-            {!sortedSections.some((s) => s.section_type === "brands") && (
-              <BrandsSection />
-            )}
-            {!sortedSections.some((s) => s.section_type === "whats_trending") &&
-              promotionVideos &&
-              promotionVideos.length > 0 && <VideoCarousel />}
-          </>
-        ) : (
-          /* Fallback static layout when no sections from backend */
-          <>
-            <BannerCarousel />
-            <CategoryGrid />
-            <FeaturedSection />
-            <BrandsSection />
-            <VideoCarousel />
-          </>
-        )}
-
-        {/* All Products Section - Always at bottom */}
-        {allProducts.length > 0 && (
-          <View style={{ backgroundColor: colors.cardBg, marginTop: 0 }}>
-            <SectionHeader
-              title="All Products"
-              subtitle="Explore our complete collection"
-              onSeeAll={handleSeeAllProducts}
-              colors={colors}
+      <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: bottomPadding }}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={onRefresh}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
+              progressBackgroundColor={colors.cardBg}
             />
+          }
+        >
+          {/* Video Section - Like Website */}
+          <VideoCarousel showHeader={false} />
 
-            {/* Products Grid */}
-            <View
-              style={{
-                flexDirection: "row",
-                flexWrap: "wrap",
-                paddingHorizontal: 12,
-                gap: 8,
-              }}
-            >
-              {allProducts.map((product) => (
-                <View
-                  key={product.id || product.product_id}
-                  style={{ width: "48%" }}
-                >
-                  <ProductCard
-                    product={product}
-                    size="medium"
-                    onPress={handleProductPress}
-                  />
-                </View>
+          {/* Loading State - Shimmer */}
+          {isLoading && sortedSections.length === 0 && <HomeShimmer />}
+
+          {/* Render sections in backend order */}
+          {sortedSections.length > 0 ? (
+            <>
+              {/* If no hero_banner section, show BannerCarousel as default first */}
+              {!hasHeroBannerSection && banners && banners.length > 0 && (
+                <BannerCarousel />
+              )}
+
+              {/* Render each section based on type */}
+              {sortedSections.map((section) => (
+                <RenderSection
+                  key={section.section_id || section.id}
+                  section={section}
+                  colors={colors}
+                  router={router}
+                  featuredProducts={featuredProducts}
+                />
               ))}
+
+              {/* Always show Brands and Videos at end if not in sections */}
+              {!sortedSections.some((s) => s.section_type === "brands") && (
+                <BrandsSection />
+              )}
+              {!sortedSections.some(
+                (s) => s.section_type === "whats_trending",
+              ) &&
+                promotionVideos &&
+                promotionVideos.length > 0 && <VideoCarousel />}
+            </>
+          ) : (
+            /* Fallback static layout when no sections from backend */
+            <>
+              <BannerCarousel />
+              <CategoryGrid />
+              <FeaturedSection />
+              <BrandsSection />
+              <VideoCarousel />
+            </>
+          )}
+
+          {/* All Products Section - Always at bottom */}
+          {allProducts.length > 0 && (
+            <View style={{ backgroundColor: colors.cardBg, marginTop: 0 }}>
+              <SectionHeader
+                title="All Products"
+                subtitle="Explore our complete collection"
+                onSeeAll={handleSeeAllProducts}
+                colors={colors}
+              />
+
+              {/* Products Grid */}
+              <View
+                style={{
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  paddingHorizontal: 12,
+                  gap: 8,
+                }}
+              >
+                {allProducts.map((product) => (
+                  <View
+                    key={product.id || product.product_id}
+                    style={{ width: "48%" }}
+                  >
+                    <ProductCard
+                      product={product}
+                      size="medium"
+                      onPress={handleProductPress}
+                    />
+                  </View>
+                ))}
+              </View>
+
+              {/* View All Button */}
+              <TouchableOpacity
+                onPress={handleSeeAllProducts}
+                style={{
+                  marginHorizontal: 16,
+                  marginTop: 8,
+                  marginBottom: 0,
+                  paddingVertical: 12,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: colors.primary,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ color: colors.primary, fontWeight: "600" }}>
+                  View All Products
+                </Text>
+              </TouchableOpacity>
             </View>
+          )}
+        </ScrollView>
 
-            {/* View All Button */}
-            <TouchableOpacity
-              onPress={handleSeeAllProducts}
-              style={{
-                marginHorizontal: 16,
-                marginTop: 8,
-                marginBottom: 0,
-                paddingVertical: 12,
-                borderRadius: 8,
-                borderWidth: 1,
-                borderColor: colors.primary,
-                alignItems: "center",
-              }}
-            >
-              <Text style={{ color: colors.primary, fontWeight: "600" }}>
-                View All Products
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </ScrollView>
-
-      {/* Floating Action Button (Chat) */}
-      <TouchableOpacity
-        onPress={handleChatPress}
-        style={{
-          position: "absolute",
-          bottom: bottomPadding + 8,
-          right: 16,
-          width: 56,
-          height: 56,
-          borderRadius: 28,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: colors.primary,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 8,
-          elevation: 8,
-        }}
-        activeOpacity={0.8}
-      >
-        <MessageCircle size={28} color={colors.white} />
-        <View
+        {/* Floating Action Button (Chat) */}
+        <TouchableOpacity
+          onPress={handleChatPress}
           style={{
             position: "absolute",
-            top: 4,
-            right: 4,
-            width: 12,
-            height: 12,
-            borderRadius: 6,
-            backgroundColor: colors.success,
-            borderWidth: 2,
-            borderColor: colors.white,
+            bottom: bottomPadding + 8,
+            right: 16,
+            width: 56,
+            height: 56,
+            borderRadius: 28,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: colors.primary,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            elevation: 8,
           }}
-        />
-      </TouchableOpacity>
+          activeOpacity={0.8}
+        >
+          <MessageCircle size={28} color={colors.white} />
+          <View
+            style={{
+              position: "absolute",
+              top: 4,
+              right: 4,
+              width: 12,
+              height: 12,
+              borderRadius: 6,
+              backgroundColor: colors.success,
+              borderWidth: 2,
+              borderColor: colors.white,
+            }}
+          />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

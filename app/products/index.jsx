@@ -1,20 +1,25 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
 import { Ionicons } from "@expo/vector-icons";
-import { Filter, X } from "lucide-react-native";
+import { Filter, X, ArrowLeft } from "lucide-react-native";
+import { StatusBar } from "expo-status-bar";
 import { useTheme } from "../../store/useTheme";
 import { useProducts } from "../../store/useProducts";
 import ProductCard from "../../components/home/ProductCard";
 import SearchBar from "../../components/common/SearchBar";
 import ProductFilterModal from "../../components/common/ProductFilterModal";
+import { ProductListShimmer } from "../../components/common/ShimmerPlaceholder";
 
 export default function ProductsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { colors } = useTheme();
+  const { colors, mode } = useTheme();
   const {
     products,
     isLoading,
@@ -137,14 +142,19 @@ export default function ProductsScreen() {
     );
   }, [isLoadingMore, colors]);
 
+  const insets = useSafeAreaInsets();
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <StatusBar style="light" backgroundColor={colors.primary} />
+
+      {/* Status bar fill */}
+      <View style={{ height: insets.top, backgroundColor: colors.primary }} />
+
       {/* Header with Search Bar, Back Button, and Filter */}
       <View
         style={{
-          backgroundColor: colors.surface,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border,
+          backgroundColor: colors.primary,
           paddingHorizontal: 16,
           paddingVertical: 12,
           flexDirection: "row",
@@ -154,7 +164,7 @@ export default function ProductsScreen() {
       >
         {/* Back Button */}
         <TouchableOpacity onPress={handleBack}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <ArrowLeft size={24} color={colors.white} />
         </TouchableOpacity>
 
         {/* Search Bar */}
@@ -170,9 +180,7 @@ export default function ProductsScreen() {
             height: 40,
             borderRadius: 20,
             backgroundColor:
-              activeFilterCount > 0
-                ? colors.primary
-                : colors.backgroundSecondary,
+              activeFilterCount > 0 ? colors.white : "rgba(255,255,255,0.2)",
             justifyContent: "center",
             alignItems: "center",
             position: "relative",
@@ -180,7 +188,7 @@ export default function ProductsScreen() {
         >
           <Filter
             size={20}
-            color={activeFilterCount > 0 ? colors.white : colors.text}
+            color={activeFilterCount > 0 ? colors.primary : colors.white}
           />
           {activeFilterCount > 0 ? (
             <View
@@ -272,11 +280,7 @@ export default function ProductsScreen() {
 
       {/* Content */}
       {isLoading ? (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
+        <ProductListShimmer />
       ) : (
         <FlashList
           data={products}
@@ -328,7 +332,6 @@ export default function ProductsScreen() {
         />
       )}
 
-      {/* Filter Modal */}
       <ProductFilterModal
         visible={showFilterModal}
         onClose={() => setShowFilterModal(false)}
@@ -336,6 +339,6 @@ export default function ProductsScreen() {
           await applyFilters(newFilters);
         }}
       />
-    </SafeAreaView>
+    </View>
   );
 }

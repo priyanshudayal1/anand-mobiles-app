@@ -169,16 +169,17 @@ export const useTheme = create((set, get) => ({
     try {
       const response = await api.get("/admin/theme/public/");
       if (response.data && response.data.success && response.data.theme) {
-        const { colors: backendColors, mode: backendMode } =
-          response.data.theme;
-        const mode = backendMode || "light";
+        const { colors: backendColors } = response.data.theme;
 
-        // Get base colors based on mode
-        const baseColors = mode === "dark" ? darkColors : lightColors;
+        // Use the user's current mode preference, NOT the backend mode
+        const currentMode = get().mode;
+
+        // Get base colors based on user's current mode
+        const baseColors = currentMode === "dark" ? darkColors : lightColors;
 
         // Generate derived colors from primary if primary was updated
         const derivedColors = backendColors?.primary
-          ? generateDerivedColors(backendColors.primary, mode)
+          ? generateDerivedColors(backendColors.primary, currentMode)
           : {};
 
         // Merge: base colors <- derived colors <- backend colors
@@ -188,20 +189,19 @@ export const useTheme = create((set, get) => ({
           ...backendColors,
         };
 
-        // Save to state
+        // Save to state - keep user's mode
         set({
           colors: mergedColors,
-          mode: mode,
           isLoading: false,
           lastFetched: new Date().toISOString(),
         });
 
-        // Persist to AsyncStorage
+        // Persist backend colors to AsyncStorage (without overriding mode)
         await AsyncStorage.setItem(
           THEME_STORAGE_KEY,
           JSON.stringify({
             colors: backendColors,
-            mode: mode,
+            mode: currentMode,
           }),
         );
       } else {

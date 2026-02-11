@@ -364,11 +364,14 @@ export default function Cart() {
   const totalItems = getCartCount();
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      edges={["top"]}
-    >
-      <StatusBar style={isDarkMode() ? "light" : "dark"} />
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <StatusBar
+        style={isDarkMode() ? "light" : "dark"}
+        backgroundColor={colors.surface}
+      />
+
+      {/* Status bar fill */}
+      <View style={{ height: insets.top, backgroundColor: colors.surface }} />
 
       {/* Header */}
       <View
@@ -613,6 +616,6 @@ export default function Cart() {
         onClose={() => setIsCheckoutVisible(false)}
         totalAmount={cartTotal}
       />
-    </SafeAreaView>
+    </View>
   );
 }

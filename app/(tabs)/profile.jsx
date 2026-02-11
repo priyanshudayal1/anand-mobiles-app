@@ -11,7 +11,7 @@ import {
   ToastAndroid,
   Platform,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
@@ -28,8 +28,9 @@ export default function Profile() {
     isLoading,
     error,
   } = useAuthStore();
-  const { colors, isDarkMode, themePreference, setThemePreference } =
+  const { colors, isDarkMode, themePreference, setThemePreference, mode } =
     useTheme();
+  const insets = useSafeAreaInsets();
 
   const [isEditing, setIsEditing] = useState(false);
   const [showThemeModal, setShowThemeModal] = useState(false);
@@ -138,11 +139,14 @@ export default function Profile() {
   const isIncomplete = !user?.firstName || !user?.lastName || !user?.phone;
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      edges={["top"]}
-    >
-      <StatusBar style={isDarkMode() ? "light" : "dark"} />
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <StatusBar
+        style={isDarkMode() ? "light" : "dark"}
+        backgroundColor={colors.surface}
+      />
+
+      {/* Status bar fill */}
+      <View style={{ height: insets.top, backgroundColor: colors.surface }} />
 
       {/* Header */}
       <View
@@ -1118,6 +1122,6 @@ export default function Profile() {
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
