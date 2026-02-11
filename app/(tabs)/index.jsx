@@ -316,7 +316,7 @@ export default function Home() {
   const allProducts = products.slice(0, 6);
 
   // Calculate bottom padding for tab bar
-  const bottomPadding = 56 + Math.max(insets.bottom, 8) + 16;
+  const bottomPadding = 56 + 16;
 
   // Sort sections by display_order
   const sortedSections = sections

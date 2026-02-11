@@ -11,11 +11,12 @@ export default function BrandsSection({ showHeader = true }) {
   const { brands, fetchBrands } = useHome();
   const router = useRouter();
 
-  // Fetch brands if not available - runs only once on mount
+  // Fetch brands on mount and when component becomes visible
   React.useEffect(() => {
-    fetchBrands();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty dependency array to prevent infinite loop
+    if (brands.length === 0) {
+      fetchBrands();
+    }
+  }, [fetchBrands, brands.length]);
 
   // Filter and sort brands similar to web logic
   const displayBrands = React.useMemo(() => {
