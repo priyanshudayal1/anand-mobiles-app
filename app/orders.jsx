@@ -14,6 +14,7 @@ import { Ionicons, Feather } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { useTheme } from "../store/useTheme";
 import { useOrderStore } from "../store/useOrder";
+import { OrdersShimmer } from "../components/common/ShimmerPlaceholder";
 
 // Helper function to convert UTC to IST
 const toIST = (dateString) => {
@@ -120,12 +121,16 @@ export default function Orders() {
               padding: 16,
               borderBottomWidth: 1,
               borderBottomColor: colors.border,
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
             }}
           >
-            <View>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 4,
+              }}
+            >
               <Text
                 style={{ fontSize: 16, fontWeight: "bold", color: colors.text }}
               >
@@ -134,45 +139,44 @@ export default function Orders() {
                   ? item.order_id.slice(0, 8).toUpperCase()
                   : "N/A"}
               </Text>
-              <Text
+              <View
                 style={{
-                  fontSize: 12,
-                  color: colors.textSecondary,
-                  marginTop: 2,
+                  backgroundColor: statusColor + "20", // 20% opacity
+                  paddingHorizontal: 10,
+                  paddingVertical: 5,
+                  borderRadius: 20,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  borderWidth: 1,
+                  borderColor: statusColor + "40",
                 }}
               >
-                {toIST(item.created_at)}
-              </Text>
+                <Feather
+                  name={getStatusIcon(item.status)}
+                  size={12}
+                  color={statusColor}
+                  style={{ marginRight: 4 }}
+                />
+                <Text
+                  style={{
+                    color: statusColor,
+                    fontSize: 12,
+                    fontWeight: "600",
+                    textTransform: "capitalize",
+                  }}
+                >
+                  {item.status?.replace(/_/g, " ")}
+                </Text>
+              </View>
             </View>
-            <View
+            <Text
               style={{
-                backgroundColor: statusColor + "20", // 20% opacity
-                paddingHorizontal: 10,
-                paddingVertical: 5,
-                borderRadius: 20,
-                flexDirection: "row",
-                alignItems: "center",
-                borderWidth: 1,
-                borderColor: statusColor + "40",
+                fontSize: 12,
+                color: colors.textSecondary,
               }}
             >
-              <Feather
-                name={getStatusIcon(item.status)}
-                size={12}
-                color={statusColor}
-                style={{ marginRight: 4 }}
-              />
-              <Text
-                style={{
-                  color: statusColor,
-                  fontSize: 12,
-                  fontWeight: "600",
-                  textTransform: "capitalize",
-                }}
-              >
-                {item.status?.replace(/_/g, " ")}
-              </Text>
-            </View>
+              {toIST(item.created_at)}
+            </Text>
           </View>
 
           {/* Content */}
@@ -261,7 +265,7 @@ export default function Orders() {
                     Expected:{" "}
                     {new Date(
                       new Date(item.estimated_delivery).getTime() +
-                        5.5 * 60 * 60 * 1000,
+                      5.5 * 60 * 60 * 1000,
                     ).toLocaleDateString("en-IN", {
                       day: "2-digit",
                       month: "short",
@@ -385,11 +389,7 @@ export default function Orders() {
 
       {/* List */}
       {isLoading ? (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
+        <OrdersShimmer />
       ) : (
         <FlashList
           data={filteredOrders}

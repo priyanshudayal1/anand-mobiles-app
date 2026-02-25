@@ -16,6 +16,7 @@ import { useTheme } from "../store/useTheme";
 import { useWishlistStore } from "../store/useWishlist";
 import { useCartStore } from "../store/useCart";
 import { useToast } from "../store/useToast";
+import { WishlistShimmer } from "../components/common/ShimmerPlaceholder";
 import CustomModal from "../components/common/CustomModal";
 
 export default function Wishlist() {
@@ -358,7 +359,7 @@ export default function Wishlist() {
                     justifyContent: "center",
                     backgroundColor: inStock
                       ? colors.primary
-                      : colors.backgroundSecondary,
+                      : colors.surfaceSecondary,
                     paddingVertical: 10,
                     borderRadius: 8,
                     opacity: !inStock || isAddingToCart ? 0.7 : 1,
@@ -457,14 +458,7 @@ export default function Wishlist() {
 
       {/* Content */}
       {isLoading && !refreshing && items.length === 0 ? (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={{ marginTop: 16, color: colors.textSecondary }}>
-            Loading wishlist...
-          </Text>
-        </View>
+        <WishlistShimmer />
       ) : (
         <ScrollView
           contentContainerStyle={{ padding: 16, flexGrow: 1 }}

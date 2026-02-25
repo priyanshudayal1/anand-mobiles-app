@@ -32,6 +32,7 @@ import { useGamification } from "../../store/useGamification";
 import { useAuthStore } from "../../store/useAuth";
 import SpinWheel from "../../components/gamification/SpinWheel";
 import WalletModal from "../../components/gamification/WalletModal";
+import { WalletShimmer } from "../../components/common/ShimmerPlaceholder";
 
 export default function WalletScreen() {
   const { colors, isDarkMode } = useTheme();
@@ -135,12 +136,7 @@ export default function WalletScreen() {
           { backgroundColor: colors.background, paddingTop: insets.top },
         ]}
       >
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-            Loading gamification data...
-          </Text>
-        </View>
+        <WalletShimmer />
       </View>
     );
   }
@@ -608,8 +604,8 @@ export default function WalletScreen() {
       />
       <View style={{ flex: 1 }}>
         {/* Header */}
-        <View style={[styles.header, { paddingBottom: 16 }]}>
-          <View>
+        <View style={styles.header}>
+          <View style={{ flex: 1, paddingRight: 12 }}>
             <Text style={[styles.headerTitle, { color: colors.text }]}>
               Gamification Hub
             </Text>
@@ -626,7 +622,6 @@ export default function WalletScreen() {
             <Text style={styles.coinBadgeText}>
               {coinBalance.toLocaleString()}
             </Text>
-            <Text style={styles.coinBadgeLabel}>coins</Text>
           </View>
         </View>
 
@@ -672,7 +667,7 @@ export default function WalletScreen() {
         {/* Tab Content */}
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 100 }}
+          contentContainerStyle={{ paddingBottom: 56 + 10 + insets.bottom }}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -719,11 +714,12 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 14,
   },
+
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
-    padding: 20,
+    alignItems: "center",
+    padding: 16,
     paddingBottom: 10,
   },
   headerTitle: {
@@ -752,12 +748,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   tabsContainer: {
-    marginBottom: 0,
-    flexGrow: 0,
+    marginBottom: 16,
+    flexGrow: 1,
   },
   tabsContent: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     gap: 8,
   },
   tab: {

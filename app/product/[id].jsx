@@ -20,6 +20,7 @@ import { useWishlistStore } from "../../store/useWishlist";
 import { useAuthStore } from "../../store/useAuth";
 import { useToast } from "../../store/useToast";
 import CustomModal from "../../components/common/CustomModal";
+import { ProductDetailShimmer } from "../../components/common/ShimmerPlaceholder";
 
 // Product Components
 import ProductImageGallery from "../../components/product/ProductImageGallery";
@@ -296,19 +297,7 @@ export default function ProductDetailScreen() {
       <View style={{ flex: 1, backgroundColor: colors.primary }}>
         <StatusBar style="light" backgroundColor={colors.primary} />
         <View style={{ height: insets.top, backgroundColor: colors.primary }} />
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: colors.background,
-          }}
-        >
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={{ color: colors.textSecondary, marginTop: 16 }}>
-            Loading product...
-          </Text>
-        </View>
+        <ProductDetailShimmer />
       </View>
     );
   }
@@ -383,16 +372,16 @@ export default function ProductDetailScreen() {
   // Reviews data transformation
   const reviewsData = Array.isArray(product.reviews)
     ? product.reviews.map((review) => ({
-        id: review.id,
-        rating: review.rating,
-        comment: review.comment,
-        user: review.email ? review.email.split("@")[0] : "Anonymous",
-        userEmail: review.email,
-        date: review.created_at,
-        verified: true,
-        helpful_count: review.helpful_count || 0,
-        title: review.title || "",
-      }))
+      id: review.id,
+      rating: review.rating,
+      comment: review.comment,
+      user: review.email ? review.email.split("@")[0] : "Anonymous",
+      userEmail: review.email,
+      date: review.created_at,
+      verified: true,
+      helpful_count: review.helpful_count || 0,
+      title: review.title || "",
+    }))
     : [];
 
   const normalizedProduct = {
@@ -422,10 +411,10 @@ export default function ProductDetailScreen() {
     stock: Math.max(
       0,
       selectedVariant?.stock ??
-        product.stock ??
-        product.quantity ??
-        product.inventory ??
-        0,
+      product.stock ??
+      product.quantity ??
+      product.inventory ??
+      0,
     ),
     images: product.images || product.image_urls || product.photos || [],
     videos: product.videos || [],
@@ -631,7 +620,7 @@ export default function ProductDetailScreen() {
             onScroll={(e) => {
               const slide = Math.round(
                 e.nativeEvent.contentOffset.x /
-                  e.nativeEvent.layoutMeasurement.width,
+                e.nativeEvent.layoutMeasurement.width,
               );
               if (slide !== activeImageIndex) setActiveImageIndex(slide);
             }}

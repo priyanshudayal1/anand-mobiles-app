@@ -4,10 +4,10 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
   RefreshControl,
   useWindowDimensions,
 } from "react-native";
+import { GenericPageShimmer } from "../components/common/ShimmerPlaceholder";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
@@ -186,9 +186,7 @@ export default function AboutScreen() {
           </Text>
 
           {loading ? (
-            <View style={{ padding: 32, alignItems: "center" }}>
-              <ActivityIndicator size="large" color={colors.primary} />
-            </View>
+            <GenericPageShimmer />
           ) : content ? (
             <View>{renderBackendContent(content)}</View>
           ) : (

@@ -17,6 +17,7 @@ import { BACKEND_URL } from "../../constants/constants";
 import { Ionicons } from "@expo/vector-icons";
 import SearchBar from "../../components/common/SearchBar";
 import { useTheme } from "../../store/useTheme";
+import { MenuShimmer } from "../../components/common/ShimmerPlaceholder";
 
 const { width } = Dimensions.get("window");
 
@@ -243,8 +244,7 @@ export default function Menu() {
       <View
         style={{
           paddingHorizontal: 16,
-          paddingTop: 16,
-          paddingBottom: 8,
+          paddingVertical: 12,
           backgroundColor: colors.surface,
         }}
       >
@@ -265,8 +265,14 @@ export default function Menu() {
   );
 
   const renderItem = useCallback(
-    ({ item }) => (
-      <View style={{ flexDirection: "row", paddingHorizontal: 12 }}>
+    ({ item, index }) => (
+      <View
+        style={{
+          flexDirection: "row",
+          paddingHorizontal: 12,
+          marginTop: index === 0 ? 16 : 0,
+        }}
+      >
         {item.items.map((gridItem, index) => (
           <GridItem
             key={gridItem.id || index}
@@ -282,16 +288,13 @@ export default function Menu() {
 
   if (loading) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: colors.background,
-        }}
-      >
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
         <StatusBar style={isDarkMode() ? "light" : "dark"} />
-        <ActivityIndicator size="large" color={colors.primary} />
+        <View style={{ height: insets.top, backgroundColor: colors.primary }} />
+        <View style={{ padding: 12, backgroundColor: colors.primary }}>
+          <SearchBar />
+        </View>
+        <MenuShimmer />
       </View>
     );
   }
@@ -399,7 +402,7 @@ export default function Menu() {
             keyExtractor={(item, index) => item.id}
             renderItem={renderItem}
             renderSectionHeader={renderSectionHeader}
-            contentContainerStyle={{ paddingBottom: 100 }}
+            contentContainerStyle={{ paddingBottom: 56 + 10 + insets.bottom }}
             showsVerticalScrollIndicator={false}
             stickySectionHeadersEnabled={false}
             initialNumToRender={6}

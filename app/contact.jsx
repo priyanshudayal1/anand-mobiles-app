@@ -11,6 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { GenericPageShimmer } from "../components/common/ShimmerPlaceholder";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
@@ -115,11 +116,7 @@ export default function ContactScreen() {
   if (loading && contactInfo.length === 0) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
+        <GenericPageShimmer />
       </SafeAreaView>
     );
   }

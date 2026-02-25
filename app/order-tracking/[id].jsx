@@ -9,6 +9,7 @@ import {
   Animated,
   Linking,
 } from "react-native";
+import { GenericPageShimmer } from "../../components/common/ShimmerPlaceholder";
 import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -230,14 +231,9 @@ export default function OrderTracking() {
         style={{
           flex: 1,
           backgroundColor: colors.background,
-          justifyContent: "center",
-          alignItems: "center",
         }}
       >
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={{ marginTop: 16, color: colors.textSecondary }}>
-          Loading order details...
-        </Text>
+        <GenericPageShimmer />
       </SafeAreaView>
     );
   }
@@ -524,7 +520,7 @@ export default function OrderTracking() {
                 <Text style={{ color: colors.text, fontWeight: "600" }}>
                   {new Date(
                     new Date(currentOrder.estimated_delivery).getTime() +
-                      5.5 * 60 * 60 * 1000,
+                    5.5 * 60 * 60 * 1000,
                   ).toLocaleString("en-IN", {
                     weekday: "short",
                     day: "2-digit",

@@ -18,6 +18,7 @@ import { Feather } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { useTheme } from "../../store/useTheme";
 import { useCartStore } from "../../store/useCart";
+import { CartShimmer } from "../../components/common/ShimmerPlaceholder";
 import CheckoutModal from "../../components/checkout/CheckoutModal";
 
 export default function Cart() {
@@ -392,10 +393,12 @@ export default function Cart() {
           <View
             style={{
               backgroundColor: colors.primary,
-              paddingHorizontal: 8,
-              paddingVertical: 2,
+              width: 24,
+              height: 24,
               borderRadius: 12,
               marginLeft: 8,
+              justifyContent: "center",
+              alignItems: "center",
             }}
           >
             <Text
@@ -408,14 +411,7 @@ export default function Cart() {
       </View>
 
       {isLoading ? (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={{ marginTop: 16, color: colors.textSecondary }}>
-            Loading cart...
-          </Text>
-        </View>
+        <CartShimmer />
       ) : cartItems.length === 0 ? (
         <View
           style={{
@@ -509,7 +505,7 @@ export default function Cart() {
               borderTopColor: colors.border,
               paddingHorizontal: 16,
               paddingTop: 16,
-              paddingBottom: Math.max(insets.bottom, 16),
+              paddingBottom: Math.max(insets.bottom, 16) + 70,
               shadowColor: "#000",
               shadowOffset: { width: 0, height: -4 },
               shadowOpacity: 0.1,

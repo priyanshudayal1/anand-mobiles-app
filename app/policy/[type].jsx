@@ -4,9 +4,9 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
   RefreshControl,
 } from "react-native";
+import { GenericPageShimmer } from "../../components/common/ShimmerPlaceholder";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -387,7 +387,7 @@ export default function PolicyScreen() {
         <View style={{ padding: 16 }}>
           {loading ? (
             <View style={{ padding: 40, alignItems: "center" }}>
-              <ActivityIndicator size="large" color={colors.primary} />
+              <GenericPageShimmer />
             </View>
           ) : (
             <View

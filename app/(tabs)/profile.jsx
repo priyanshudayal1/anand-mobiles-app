@@ -166,7 +166,7 @@ export default function Profile() {
         </Text>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 16 }}>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 56 + 10 + insets.bottom }}>
         {/* Incomplete Profile Banner */}
         {isIncomplete && (
           <View

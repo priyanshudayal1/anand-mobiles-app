@@ -19,6 +19,7 @@ import { useTheme } from "../store/useTheme";
 import { useAddressStore } from "../store/useAddress";
 import { useToast } from "../store/useToast";
 import CustomModal from "../components/common/CustomModal";
+import { AddressesShimmer } from "../components/common/ShimmerPlaceholder";
 
 export default function Addresses() {
   const router = useRouter();
@@ -781,14 +782,7 @@ export default function Addresses() {
 
       {/* Content */}
       {isLoading && !refreshing && addresses.length === 0 ? (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={{ marginTop: 16, color: colors.textSecondary }}>
-            Loading addresses...
-          </Text>
-        </View>
+        <AddressesShimmer />
       ) : (
         <ScrollView
           contentContainerStyle={{ padding: 16, flexGrow: 1 }}
