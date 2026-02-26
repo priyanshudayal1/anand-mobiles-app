@@ -45,7 +45,7 @@ export default function HomeHeader() {
   const router = useRouter();
   // Bottom Sheet Refs
   const bottomSheetModalRef = useRef(null);
-  const snapPoints = useMemo(() => ["50%"], []);
+  const snapPoints = useMemo(() => ["55%", "85%"], []);
 
   useEffect(() => {
     fetchCart();
