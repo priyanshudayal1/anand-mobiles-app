@@ -17,6 +17,122 @@ import { useNotificationStore, getTimeAgo } from "../store/useNotification";
 import * as Haptics from "expo-haptics";
 import CustomModal from "../components/common/CustomModal";
 
+const NotificationItem = React.memo(
+  ({ item, colors, onPress, onDelete }) => {
+    const isUnread = !item.read;
+    const productImage = item?.data?.product_image;
+    const productName = item?.data?.product_name;
+
+    const handlePress = useCallback(() => {
+      onPress(item);
+    }, [onPress, item]);
+
+    const handleLongPress = useCallback(() => {
+      onDelete(item.id);
+    }, [onDelete, item.id]);
+
+    return (
+      <TouchableOpacity
+        onPress={handlePress}
+        onLongPress={handleLongPress}
+        activeOpacity={0.7}
+        style={{
+          paddingVertical: 16,
+          paddingHorizontal: 16,
+          backgroundColor: isUnread ? `${colors.primary}08` : colors.surface,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
+        <View style={{ marginRight: 16 }}>
+          {productImage ? (
+            <Image
+              source={{ uri: productImage }}
+              style={{ width: 44, height: 44 }}
+              resizeMode="contain"
+            />
+          ) : (
+            <View
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 22,
+                backgroundColor: `${colors.primary}15`,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Ionicons
+                name={item.icon || "notifications-outline"}
+                size={22}
+                color={colors.primary}
+              />
+            </View>
+          )}
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+            <Text
+              style={{
+                fontSize: 15,
+                fontWeight: isUnread ? "700" : "500",
+                color: colors.text,
+                flex: 1,
+                marginBottom: 4,
+              }}
+              numberOfLines={1}
+            >
+              {productName || item.title}
+            </Text>
+            {isUnread && (
+              <View
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: colors.primary,
+                  marginLeft: 8,
+                  marginTop: 6,
+                }}
+              />
+            )}
+          </View>
+
+          <Text
+            style={{
+              fontSize: 13,
+              color: colors.textSecondary,
+              marginBottom: 4,
+            }}
+            numberOfLines={2}
+          >
+            {productName ? item.message : item.message}
+          </Text>
+
+          <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+            {getTimeAgo(item.created_at)}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  },
+  (prevProps, nextProps) =>
+    prevProps.item.id === nextProps.item.id &&
+    prevProps.item.read === nextProps.item.read &&
+    prevProps.item.title === nextProps.item.title &&
+    prevProps.item.message === nextProps.item.message &&
+    prevProps.item.created_at === nextProps.item.created_at &&
+    prevProps.item.icon === nextProps.item.icon &&
+    prevProps.item?.data?.product_name === nextProps.item?.data?.product_name &&
+    prevProps.item?.data?.product_image ===
+      nextProps.item?.data?.product_image &&
+    prevProps.colors === nextProps.colors,
+);
+NotificationItem.displayName = "NotificationItem";
+
 export default function NotificationsScreen() {
   const { colors, isDarkMode } = useTheme();
   const isDark = isDarkMode();
@@ -103,105 +219,14 @@ export default function NotificationsScreen() {
   }, [deleteAllNotifications]);
 
   const renderNotification = useCallback(
-    ({ item }) => {
-      const isUnread = !item.read;
-      const productImage = item?.data?.product_image;
-      const productName = item?.data?.product_name;
-
-      return (
-        <TouchableOpacity
-          onPress={() => handleNotificationPress(item)}
-          onLongPress={() => handleDeleteNotification(item.id)}
-          activeOpacity={0.7}
-          style={{
-            paddingVertical: 16,
-            paddingHorizontal: 16,
-            backgroundColor: isUnread ? `${colors.primary}08` : colors.surface,
-            borderBottomWidth: 1,
-            borderBottomColor: colors.border,
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-        >
-          {/* Image / Icon */}
-          <View style={{ marginRight: 16 }}>
-            {productImage ? (
-              <Image
-                source={{ uri: productImage }}
-                style={{ width: 44, height: 44 }}
-                resizeMode="contain"
-              />
-            ) : (
-              <View
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 22,
-                  backgroundColor: `${colors.primary}15`,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Ionicons
-                  name={item.icon || "notifications-outline"}
-                  size={22}
-                  color={colors.primary}
-                />
-              </View>
-            )}
-          </View>
-
-          {/* Content */}
-          <View style={{ flex: 1 }}>
-            <View
-              style={{ flexDirection: "row", justifyContent: "space-between" }}
-            >
-              <Text
-                style={{
-                  fontSize: 15,
-                  fontWeight: isUnread ? "700" : "500",
-                  color: colors.text,
-                  flex: 1,
-                  marginBottom: 4,
-                }}
-                numberOfLines={1}
-              >
-                {productName || item.title}
-              </Text>
-              {isUnread && (
-                <View
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: 4,
-                    backgroundColor: colors.primary,
-                    marginLeft: 8,
-                    marginTop: 6,
-                  }}
-                />
-              )}
-            </View>
-
-            {/* Secondary Text */}
-            <Text
-              style={{
-                fontSize: 13,
-                color: colors.textSecondary,
-                marginBottom: 4,
-              }}
-              numberOfLines={2}
-            >
-              {productName ? item.message : item.message}
-            </Text>
-
-            {/* Time */}
-            <Text style={{ fontSize: 11, color: colors.textSecondary }}>
-              {getTimeAgo(item.created_at)}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      );
-    },
+    ({ item }) => (
+      <NotificationItem
+        item={item}
+        colors={colors}
+        onPress={handleNotificationPress}
+        onDelete={handleDeleteNotification}
+      />
+    ),
     [colors, handleNotificationPress, handleDeleteNotification],
   );
 
