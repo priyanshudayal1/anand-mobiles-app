@@ -4,7 +4,7 @@
     "slug": "anand-mobiles",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.png",
+    "icon": "./assets/images/logo.jpeg",
     "scheme": "anandmobiles",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,7 +14,7 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/logo.png"
+        "foregroundImage": "./assets/images/logo.jpeg"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -27,14 +27,14 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/logo.png"
+      "favicon": "./assets/images/logo.jpeg"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/logo.png",
+          "image": "./assets/images/logo.jpeg",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
@@ -56,7 +56,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/logo.png",
+          "icon": "./assets/images/logo.jpeg",
           "color": "#FF6B35",
           "sounds": [],
           "defaultChannel": "default"

@@ -283,7 +283,7 @@ function RootLayoutNav() {
           }}
         >
           <Animated.Image
-            source={require("../assets/images/logo.png")}
+            source={require("../assets/images/logo.jpeg")}
             style={{
               width: 140,
               height: 140,
