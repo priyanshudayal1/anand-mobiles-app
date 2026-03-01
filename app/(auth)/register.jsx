@@ -158,6 +158,8 @@ const Register = () => {
               icon="user"
               error={errors.firstName}
               required
+              textContentType="givenName"
+              autoComplete="name-given"
             />
           </View>
           <View className="flex-1">
@@ -168,6 +170,8 @@ const Register = () => {
               icon="user"
               error={errors.lastName}
               required
+              textContentType="familyName"
+              autoComplete="name-family"
             />
           </View>
         </View>
@@ -181,6 +185,9 @@ const Register = () => {
           keyboardType="email-address"
           error={errors.email}
           required
+          textContentType="emailAddress"
+          autoComplete="email"
+          autoCapitalize="none"
         />
 
         <CustomInput
@@ -192,6 +199,8 @@ const Register = () => {
           keyboardType="phone-pad"
           error={errors.phone}
           required
+          textContentType="telephoneNumber"
+          autoComplete="tel"
         />
 
         <CustomInput
@@ -203,6 +212,7 @@ const Register = () => {
           secureTextEntry
           error={errors.password}
           required
+          textContentType="password"
         />
 
         <CustomInput
@@ -214,6 +224,7 @@ const Register = () => {
           secureTextEntry
           error={errors.confirmPassword}
           required
+          textContentType="password"
         />
 
         <View className="mt-4 mb-4">

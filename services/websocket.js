@@ -36,7 +36,7 @@ class WebSocketService {
       }
 
       const wsUrl = `${getWebSocketURL()}?token=${token}`;
-      
+
 
       return new Promise((resolve) => {
         this.socket = new WebSocket(wsUrl);
@@ -53,19 +53,18 @@ class WebSocketService {
         this.socket.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
-            
+
             this.handleMessage(data);
           } catch (error) {
           }
         };
 
         this.socket.onerror = (error) => {
-          
-          this.emit("error", error);
+          this.emit("error", "Connection failed or token expired.");
         };
 
         this.socket.onclose = (event) => {
-          
+
           this.isConnected = false;
           this.isConnecting = false;
           this.stopPingInterval();
@@ -147,12 +146,12 @@ class WebSocketService {
         break;
 
       case "new_notification":
-        
+
         this.emit("new_notification", data.notification);
         break;
 
       case "broadcast_notification":
-        
+
         this.emit("broadcast_notification", data.notification);
         break;
 

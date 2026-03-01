@@ -152,24 +152,28 @@ export default function HomeHeader() {
               {item.type || "Address"}
             </Text>
             <Text
-              style={{ color: colors.textSecondary, fontSize: 12 }}
+              style={{ color: colors.textSecondary, fontSize: 12, marginTop: 2 }}
+              numberOfLines={2}
+            >
+              {item.street_address}
+            </Text>
+            <Text
+              style={{ color: colors.textSecondary, fontSize: 12, marginTop: 2, fontWeight: "500" }}
               numberOfLines={1}
             >
-              {item.street_address}, {item.city}
+              {[item.city, item.state, item.pincode].filter(Boolean).join(", ")}
             </Text>
           </View>
           {isSelected && <Check size={20} color={colors.primary} />}
-        </TouchableOpacity>
+        </TouchableOpacity >
       );
     },
     [colors, selectedAddress, handleAddressSelect],
   );
 
-  const displayLabel = selectedAddress
+  const displayLabel = addresses.length > 0 && selectedAddress
     ? `${selectedAddress.street_address?.substring(0, 25)}${selectedAddress.street_address?.length > 25 ? "..." : ""}${selectedAddress.city ? ", " + selectedAddress.city : ""}`
-    : location.city
-      ? `${location.city}, ${location.pincode}`
-      : "Select Location";
+    : "Add Delivery Location";
 
   return (
     <View
@@ -319,12 +323,36 @@ export default function HomeHeader() {
             data={addresses}
             keyExtractor={(item) => item.id.toString()}
             renderItem={renderAddressItem}
-            contentContainerStyle={{ paddingBottom: 20 }}
+            contentContainerStyle={{
+              paddingBottom: 20,
+              flexGrow: 1
+            }}
             ListEmptyComponent={
-              <View style={{ alignItems: "center", padding: 20 }}>
-                <Text style={{ color: colors.textSecondary }}>
-                  No addresses found.
+              <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 32, minHeight: 250 }}>
+                <MapPin size={48} color={colors.textLight} style={{ marginBottom: 16 }} />
+                <Text style={{ color: colors.text, fontSize: 18, fontWeight: "600", marginBottom: 8 }}>
+                  No Addresses Found
                 </Text>
+                <Text style={{ color: colors.textSecondary, textAlign: "center", fontSize: 14, marginBottom: 20 }}>
+                  You don&apos;t have any saved addresses. Add a delivery location to continue.
+                </Text>
+                <TouchableOpacity
+                  onPress={handleAddAddress}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: colors.primary,
+                    paddingVertical: 10,
+                    paddingHorizontal: 16,
+                    borderRadius: 8,
+                  }}
+                >
+                  <Plus size={18} color={colors.white} style={{ marginRight: 6 }} />
+                  <Text style={{ color: colors.white, fontWeight: "600", fontSize: 14 }}>
+                    Add New Address
+                  </Text>
+                </TouchableOpacity>
               </View>
             }
           />

@@ -15,11 +15,12 @@ const CustomInput = ({
   required = false,
   onBlur,
   autoCapitalize = 'none',
+  ...props
 }) => {
   const { colors } = useTheme();
   const [isFocused, setIsFocused] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(!secureTextEntry);
-  
+
   // Toggle password visibility if it's a secure text entry
   const togglePasswordVisibility = () => {
     setIsPasswordVisible(!isPasswordVisible);
@@ -44,15 +45,15 @@ const CustomInput = ({
   return (
     <View className="mb-4">
       {label && (
-        <Text 
+        <Text
           className="text-sm font-medium mb-1.5"
           style={{ color: colors.text }}
         >
           {label} {required && <Text style={{ color: colors.error }}>*</Text>}
         </Text>
       )}
-      
-      <View 
+
+      <View
         className="flex-row items-center border rounded-lg px-3 overflow-hidden"
         style={{
           backgroundColor: colors.inputBg,
@@ -66,7 +67,7 @@ const CustomInput = ({
             {renderIcon()}
           </View>
         )}
-        
+
         <TextInput
           className="flex-1 text-base h-full"
           value={value}
@@ -82,8 +83,9 @@ const CustomInput = ({
           }}
           autoCapitalize={autoCapitalize}
           style={{ color: colors.text }}
+          {...props}
         />
-        
+
         {secureTextEntry && (
           <TouchableOpacity onPress={togglePasswordVisibility} className="p-2">
             {isPasswordVisible ? (
@@ -94,12 +96,12 @@ const CustomInput = ({
           </TouchableOpacity>
         )}
       </View>
-      
+
       {error && (
         <View className="flex-row items-center mt-1">
           <AlertCircle size={14} color={colors.error} />
-          <Text 
-            className="text-xs ml-1" 
+          <Text
+            className="text-xs ml-1"
             style={{ color: colors.error }}
           >
             {error}

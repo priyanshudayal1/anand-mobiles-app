@@ -153,10 +153,13 @@ export const useTheme = create((set, get) => ({
         set({ appearanceSubscription: subscription });
       }
 
-      // Fetch latest theme from backend
-      await get().fetchTheme();
-
+      // Mark as initialized immediately so the UI can mount with cached/system colors
       set({ isInitialized: true, isLoading: false });
+
+      // Fetch latest theme from backend in the background without blocking the UI
+      get().fetchTheme().catch(err => {
+        console.log("Background theme fetch failed, using cached theme.", err);
+      });
     } catch (error) {
       console.error("Failed to initialize theme:", error);
       set({ isInitialized: true, isLoading: false });

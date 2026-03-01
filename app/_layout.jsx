@@ -10,6 +10,7 @@ import * as NavigationBar from "expo-navigation-bar";
 import "../index.css";
 import { useAuthStore } from "../store/useAuth";
 import { useTheme } from "../store/useTheme";
+import { useSiteConfig } from "../store/useSiteConfig";
 import {
   useNotificationStore,
   parseNotificationData,
@@ -17,13 +18,20 @@ import {
 import ThemeProvider from "../components/ThemeProvider";
 import ToastContainer from "../components/common/ToastContainer";
 
+import Constants from "expo-constants";
+
 // Dynamically import expo-notifications to handle Expo Go
 let Notifications = null;
-try {
-  Notifications = require("expo-notifications");
-  console.log("[App Layout] ✅ expo-notifications loaded");
-} catch (error) {
-  console.error("[App Layout] ❌ Failed to load expo-notifications:", error);
+const isExpoGo = Constants.appOwnership === "expo";
+if (!isExpoGo) {
+  try {
+    Notifications = require("expo-notifications");
+    console.log("[App Layout] ✅ expo-notifications loaded");
+  } catch (error) {
+    console.error("[App Layout] ❌ Failed to load expo-notifications:", error.message || error);
+  }
+} else {
+  console.log("[App Layout] ⚠️ Running in Expo Go, skipping expo-notifications load");
 }
 
 // Suppress warnings
@@ -53,6 +61,27 @@ function RootLayoutNav() {
   const [isMounted, setIsMounted] = useState(false);
   const notificationListener = useRef();
   const responseListener = useRef();
+
+  // Animation values
+  const scaleValue = useRef(new Animated.Value(0.5)).current;
+  const opacityValue = useRef(new Animated.Value(0)).current;
+
+  // Run Splash animation
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(opacityValue, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleValue, {
+        toValue: 1,
+        friction: 4,
+        tension: 10,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [opacityValue, scaleValue]);
 
   // Initialize auth on mount
   useEffect(() => {
@@ -228,32 +257,53 @@ function RootLayoutNav() {
   useEffect(() => {
     if (Platform.OS === "android") {
       NavigationBar.setVisibilityAsync("hidden");
-      NavigationBar.setBehaviorAsync("overlay-swipe");
-      NavigationBar.setBackgroundColorAsync("transparent");
-      NavigationBar.setPositionAsync("absolute");
     }
   }, []);
 
-  // Show splash screen with logo while initializing
+  // Show splash screen with logo and smooth animations while initializing
   if (!isMounted || !themeInitialized || !authInitialized) {
+    // Attempt to use Config theme fallback
+    const splashColor = colors?.primary || "#1E3B70";
+
     return (
       <View
         style={{
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: colors.primary,
+          backgroundColor: splashColor,
         }}
       >
-        <StatusBar style="light" backgroundColor={colors.primary} />
-        <Animated.Image
-          source={require("../assets/images/logo.png")}
+        <StatusBar style="light" backgroundColor={splashColor} />
+        <Animated.View
           style={{
-            width: 120,
-            height: 120,
-            resizeMode: "contain",
+            alignItems: "center",
+            opacity: opacityValue,
+            transform: [{ scale: scaleValue }],
           }}
-        />
+        >
+          <Animated.Image
+            source={require("../assets/images/logo.png")}
+            style={{
+              width: 140,
+              height: 140,
+              resizeMode: "contain",
+              marginBottom: 10,
+            }}
+          />
+          <Animated.Text
+            style={{
+              fontSize: 24,
+              fontWeight: "bold",
+              color: "#ffffff",
+              letterSpacing: 1.5,
+              opacity: opacityValue,
+              marginTop: 10,
+            }}
+          >
+            ANAND MOBILES
+          </Animated.Text>
+        </Animated.View>
       </View>
     );
   }
