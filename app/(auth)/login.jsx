@@ -32,7 +32,7 @@ const Login = () => {
       if (result.success) {
         router.replace("/(tabs)");
       } else if (result.redirect_to_signup) {
-        // User doesn't exist — auto-signup with Google
+        // User doesn't exist — auto-signup with Google via Firestore
         const { googleSignup } = useAuthStore.getState();
         const signupResult = await googleSignup(firebaseToken, googleUser);
         if (signupResult.success) {
@@ -41,10 +41,7 @@ const Login = () => {
         }
       }
     } catch (err) {
-      Alert.alert(
-        "Google Login Failed",
-        err.response?.data?.error || err.message || "Something went wrong",
-      );
+      Alert.alert("Google Login Failed", err.message || "Something went wrong");
     }
   };
 
@@ -161,9 +158,17 @@ const Login = () => {
         />
 
         <View className="my-5 flex-row items-center">
-          <View className="flex-1 h-[1px]" style={{ backgroundColor: colors.border }} />
-          <Text className="mx-4" style={{ color: colors.textSecondary }}>OR</Text>
-          <View className="flex-1 h-[1px]" style={{ backgroundColor: colors.border }} />
+          <View
+            className="flex-1 h-[1px]"
+            style={{ backgroundColor: colors.border }}
+          />
+          <Text className="mx-4" style={{ color: colors.textSecondary }}>
+            OR
+          </Text>
+          <View
+            className="flex-1 h-[1px]"
+            style={{ backgroundColor: colors.border }}
+          />
         </View>
 
         <GoogleAuthButton

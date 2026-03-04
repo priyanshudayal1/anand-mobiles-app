@@ -364,6 +364,17 @@ export default function Cart() {
 
   const totalItems = getCartCount();
 
+  // Always compute total directly from cartItems for accuracy
+  const computedTotal = cartItems.reduce((sum, item) => {
+    const product = item.product || item;
+    const price =
+      parseFloat(
+        item.discounted_price || product.discount_price || product.price || 0,
+      ) || 0;
+    const qty = parseInt(item.quantity || 1, 10) || 1;
+    return sum + price * qty;
+  }, 0);
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <StatusBar
@@ -526,7 +537,7 @@ export default function Cart() {
                   Subtotal ({totalItems} items)
                 </Text>
                 <Text style={{ color: colors.text, fontSize: 14 }}>
-                  ₹{cartTotal.toLocaleString()}
+                  ₹{computedTotal.toLocaleString()}
                 </Text>
               </View>
               <View
@@ -574,7 +585,7 @@ export default function Cart() {
                     fontWeight: "bold",
                   }}
                 >
-                  ₹{cartTotal.toLocaleString()}
+                  ₹{computedTotal.toLocaleString()}
                 </Text>
               </View>
             </View>
@@ -610,7 +621,7 @@ export default function Cart() {
       <CheckoutModal
         visible={isCheckoutVisible}
         onClose={() => setIsCheckoutVisible(false)}
-        totalAmount={cartTotal}
+        totalAmount={computedTotal}
       />
     </View>
   );

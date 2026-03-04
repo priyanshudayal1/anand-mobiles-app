@@ -16,7 +16,7 @@ export default function GoogleSignInScreen() {
       if (result.success) {
         router.replace("/(tabs)");
       } else if (result.redirect_to_signup) {
-        // User doesn't exist — auto-signup with Google
+        // User doesn't exist — auto-signup via Firestore directly
         const { googleSignup } = useAuthStore.getState();
         const signupResult = await googleSignup(firebaseToken, googleUser);
         if (signupResult.success) {
@@ -25,10 +25,7 @@ export default function GoogleSignInScreen() {
         }
       }
     } catch (err) {
-      Alert.alert(
-        "Google Login Failed",
-        err.response?.data?.error || err.message || "Something went wrong",
-      );
+      Alert.alert("Google Login Failed", err.message || "Something went wrong");
     }
   };
 

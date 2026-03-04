@@ -36,28 +36,19 @@ const Register = () => {
       if (result.success) {
         Alert.alert("Success", "Account created successfully with Google!");
         router.replace("/(tabs)");
+      } else if (result.already_exists) {
+        // User already exists — auto-login via Firestore
+        const { googleLogin } = useAuthStore.getState();
+        const loginResult = await googleLogin(firebaseToken, googleUser);
+        if (loginResult.success) {
+          router.replace("/(tabs)");
+        }
       }
     } catch (err) {
-      // If user already exists, try login instead
-      if (err.response?.status === 409) {
-        try {
-          const { googleLogin } = useAuthStore.getState();
-          const loginResult = await googleLogin(firebaseToken, googleUser);
-          if (loginResult.success) {
-            router.replace("/(tabs)");
-          }
-        } catch (loginErr) {
-          Alert.alert(
-            "Google Sign-Up Failed",
-            loginErr.response?.data?.error || loginErr.message,
-          );
-        }
-      } else {
-        Alert.alert(
-          "Google Sign-Up Failed",
-          err.response?.data?.error || err.message || "Something went wrong",
-        );
-      }
+      Alert.alert(
+        "Google Sign-Up Failed",
+        err.message || "Something went wrong",
+      );
     }
   };
 
@@ -237,9 +228,17 @@ const Register = () => {
         </View>
 
         <View className="mb-4 flex-row items-center">
-          <View className="flex-1 h-[1px]" style={{ backgroundColor: colors.border }} />
-          <Text className="mx-4" style={{ color: colors.textSecondary }}>OR</Text>
-          <View className="flex-1 h-[1px]" style={{ backgroundColor: colors.border }} />
+          <View
+            className="flex-1 h-[1px]"
+            style={{ backgroundColor: colors.border }}
+          />
+          <Text className="mx-4" style={{ color: colors.textSecondary }}>
+            OR
+          </Text>
+          <View
+            className="flex-1 h-[1px]"
+            style={{ backgroundColor: colors.border }}
+          />
         </View>
 
         <GoogleAuthButton
