@@ -14,6 +14,7 @@ const Register = () => {
   const { colors, mode } = useTheme();
   const {
     register,
+    googleLogin,
     googleSignup,
     error: authError,
     isLoading: authLoading,
@@ -32,15 +33,14 @@ const Register = () => {
 
   const handleGoogleSignup = async (firebaseToken, googleUser) => {
     try {
-      const result = await googleSignup(firebaseToken, googleUser);
+      const result = await googleLogin(firebaseToken, googleUser);
       if (result.success) {
-        Alert.alert("Success", "Account created successfully with Google!");
         router.replace("/(tabs)");
-      } else if (result.already_exists) {
-        // User already exists — auto-login via Firestore
-        const { googleLogin } = useAuthStore.getState();
-        const loginResult = await googleLogin(firebaseToken, googleUser);
-        if (loginResult.success) {
+      } else if (result.redirect_to_signup) {
+        // User doesn't exist — auto-signup via Firestore
+        const signupResult = await googleSignup(firebaseToken, googleUser);
+        if (signupResult.success) {
+          Alert.alert("Welcome!", "Account created successfully with Google!");
           router.replace("/(tabs)");
         }
       }
