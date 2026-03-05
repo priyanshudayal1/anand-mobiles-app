@@ -13,6 +13,8 @@ import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
 import { auth } from "../../services/firebaseConfig";
 import Constants from "expo-constants";
 
+const GOOGLE_ICON = require("../../assets/images/google_icon.png");
+
 // CRITICAL: Must be called at module level for auth redirect to complete
 WebBrowser.maybeCompleteAuthSession();
 
@@ -30,12 +32,10 @@ try {
   );
 }
 
-// Google logo component using base64 encoded PNG
+// Google logo loaded from local asset for consistency across auth screens
 const GoogleLogo = () => (
   <Image
-    source={{
-      uri: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAAXNSR0IArs4c6QAAArNJREFUaEPtmWtI01EUx//nUqZtQj4k04iCSPSIhIqgD9EPUgSGRoZGFGVaGmVGGmV92Qc9KDQjA6NB9KUEgxCjPqRFkRRaCCYqlZm7OXH+c3fD3dZt5+52f9jDOef/P+f/3HPvOZcCg8EwE4Z5hRGsCawJrAmE2ATCo/b/w5E498f3H9E1cB9dvQO409KJq9c6kXn2MlLSM2C328OiD6E2ImwHtrR2oO9uN+pbO5B37hISk1NgsVjCpj9hM+A/6x9A5512VDecR8GZy0hKTjE+A2E14D/r6Z/AzWvtqG44h4KzV5CYfNq4DITNgP+sd3AANa2XUHW+FfnnLhuPgTAb8J/1DAbQcLkDlWdbkH/uMtLSTxuLgbAZUDC9Q/2obL6A8rOtKDh/GampGcFjIKwGfO/wHxpF5ZkLyD9/FWlpZ4PHQFgN+N7BPtS2XkLluRaUn7uC9LTM4DEQVgO+d3AAtVcuovLMReSfu4r09GzDMRBWA753qB83rrah8kwL8s9dMhwDYTXgewf7cO1KB6rOtCD//BXDMxBWA753qA/Xt15C1ZkWlJ+7YmgGwmrA9w71obbtMqrOtqDCNwPhcMAndw8O4GZLJy77ZqC84goyM7OMz0DIE7BP9g30o6m1E5VnW1BRWQ2r1RbyDPgT/uwfQFPzZVSePo+y8iqsWr0GRqMxLAb8Sb+DP2H/0I+6S+dReaoU5eXVSExSC4t+hM2A7x3qR2vbFZScPIuS0iqsXLXasAyE1YDvHezD7baLKD5xBiUlVVi5aq1hGQi7AQUz0DuIm109KD5+BiUlVVi1ao1hGQi7Ad8/OICmF90oOnYGJSUVWL1mnWEZCKsB3z/Uj6bO71EwA3v3H4DRqH6EwX5YDfjjf/z4iW/f/8BmsyMsLMywDIjVABZ7z2BNYE1gzR9I/wHj2vB+6QAAAABJRU5ErkJggg==",
-    }}
+    source={GOOGLE_ICON}
     style={{ width: 20, height: 20, marginRight: 10 }}
   />
 );
@@ -92,10 +92,13 @@ export default function GoogleAuthButton({
 
   // Web client ID, native client IDs, and request config defined below
   // Web client ID (client_type: 3) — works with browser-based OAuth + Expo proxy
-  const WEB_CLIENT_ID = "403268549781-6c4gvnrgol3v8mf81bj025mc8fs04nkh.apps.googleusercontent.com";
+  const WEB_CLIENT_ID =
+    "403268549781-6c4gvnrgol3v8mf81bj025mc8fs04nkh.apps.googleusercontent.com";
   // Native client IDs — only work with native Google Sign-In (SHA-1 verified)
-  const ANDROID_CLIENT_ID = "403268549781-lg7ddkoljh60t54vkfbm4dbd51u5lld6.apps.googleusercontent.com";
-  const IOS_CLIENT_ID = "403268549781-lmnfnklpa9bqs0s3hu2favqen86h8acd.apps.googleusercontent.com";
+  const ANDROID_CLIENT_ID =
+    "403268549781-lg7ddkoljh60t54vkfbm4dbd51u5lld6.apps.googleusercontent.com";
+  const IOS_CLIENT_ID =
+    "403268549781-lmnfnklpa9bqs0s3hu2favqen86h8acd.apps.googleusercontent.com";
 
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     // When using web flow (no native module), use Web client ID for all platforms
@@ -373,4 +376,3 @@ export default function GoogleAuthButton({
     </TouchableOpacity>
   );
 }
-
