@@ -16,6 +16,18 @@ const api = axios.create({
   },
 });
 
+const isFirebaseToken = (token) => {
+  try {
+    if (!token || typeof token !== "string") return false;
+    const parts = token.split(".");
+    if (parts.length !== 3) return false;
+    const payload = JSON.parse(atob(parts[1]));
+    return !!(payload?.iss && payload.iss.includes("securetoken.google.com"));
+  } catch {
+    return false;
+  }
+};
+
 // Add a request interceptor
 api.interceptors.request.use(
   async (config) => {
@@ -27,12 +39,7 @@ api.interceptors.request.use(
       try {
         const freshToken = await auth.currentUser.getIdToken();
         // Only replace if current stored token is a Firebase token (not backend JWT)
-        // Backend JWTs have user_id field, Firebase tokens have iss field
-        const storedPayload = JSON.parse(atob(token.split(".")[1]));
-        if (
-          storedPayload.iss &&
-          storedPayload.iss.includes("securetoken.google.com")
-        ) {
+        if (isFirebaseToken(token)) {
           token = freshToken;
           await AsyncStorage.setItem("userToken", freshToken);
         }
@@ -51,6 +58,18 @@ api.interceptors.request.use(
   },
 );
 
+// Auth endpoints that should NOT trigger auto-logout on 401
+const AUTH_ENDPOINTS = [
+  "/users/google-login",
+  "/users/signup",
+  "/users/login",
+  "/users/send-otp",
+  "/users/verify-otp",
+  "/users/notifications/",
+  "/users/notifications/count/",
+  "/users/notifications/read-all/",
+];
+
 // Add a response interceptor
 api.interceptors.response.use(
   (response) => {
@@ -58,7 +77,9 @@ api.interceptors.response.use(
   },
   async (error) => {
     if (error.response && error.response.status === 401) {
-      if (unauthorizedCallback) {
+      const url = error.config?.url || "";
+      const isAuthEndpoint = AUTH_ENDPOINTS.some((ep) => url.includes(ep));
+      if (unauthorizedCallback && !isAuthEndpoint) {
         unauthorizedCallback();
       }
     }

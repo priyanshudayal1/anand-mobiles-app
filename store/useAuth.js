@@ -31,6 +31,12 @@ export const useAuthStore = create((set, get) => ({
         if (userDoc.exists()) {
           const data = userDoc.data();
           const freshToken = await auth.currentUser.getIdToken();
+          const backendToken = await get()._fetchBackendToken(
+            freshToken,
+            auth.currentUser,
+            uid,
+          );
+          const activeToken = backendToken || freshToken;
           const user = {
             id: uid,
             email: data.email || auth.currentUser.email,
@@ -39,9 +45,9 @@ export const useAuthStore = create((set, get) => ({
             phone: data.phone_number || "",
             photoURL: data.photo_url || auth.currentUser.photoURL || "",
             authProvider: data.auth_provider || "google",
-            token: freshToken,
+            token: activeToken,
           };
-          await AsyncStorage.setItem("userToken", freshToken);
+          await AsyncStorage.setItem("userToken", activeToken);
           await AsyncStorage.setItem("userData", JSON.stringify(user));
           await AsyncStorage.setItem("userId", uid);
           set({ user, isAuthenticated: true });
@@ -133,6 +139,13 @@ export const useAuthStore = create((set, get) => ({
 
       if (userDoc.exists()) {
         const userData = userDoc.data();
+        const backendToken = await get()._fetchBackendToken(
+          firebaseToken,
+          googleUser,
+          uid,
+        );
+        const activeToken = backendToken || firebaseToken;
+
         const user = {
           id: uid,
           email: userData.email || googleUser.email,
@@ -141,17 +154,14 @@ export const useAuthStore = create((set, get) => ({
           phone: userData.phone_number || "",
           photoURL: userData.photo_url || googleUser.photoURL || "",
           authProvider: "google",
-          token: firebaseToken,
+          token: activeToken,
         };
 
-        await AsyncStorage.setItem("userToken", firebaseToken);
+        await AsyncStorage.setItem("userToken", activeToken);
         await AsyncStorage.setItem("userData", JSON.stringify(user));
         await AsyncStorage.setItem("userId", uid);
 
         set({ user, isAuthenticated: true, isLoading: false });
-
-        // Silently fetch backend JWT in background for API compatibility
-        get()._fetchBackendToken(firebaseToken, googleUser, uid);
 
         return { success: true, user };
       } else {
@@ -194,6 +204,13 @@ export const useAuthStore = create((set, get) => ({
 
       await setDoc(userDocRef, firestorePayload);
 
+      const backendToken = await get()._fetchBackendToken(
+        firebaseToken,
+        googleUser,
+        uid,
+      );
+      const activeToken = backendToken || firebaseToken;
+
       const user = {
         id: uid,
         email: firestorePayload.email,
@@ -202,17 +219,14 @@ export const useAuthStore = create((set, get) => ({
         phone: "",
         photoURL: googleUser.photoURL || "",
         authProvider: "google",
-        token: firebaseToken,
+        token: activeToken,
       };
 
-      await AsyncStorage.setItem("userToken", firebaseToken);
+      await AsyncStorage.setItem("userToken", activeToken);
       await AsyncStorage.setItem("userData", JSON.stringify(user));
       await AsyncStorage.setItem("userId", uid);
 
       set({ user, isAuthenticated: true, isLoading: false });
-
-      // Silently fetch backend JWT in background for API compatibility
-      get()._fetchBackendToken(firebaseToken, googleUser, uid);
 
       return { success: true, user };
     } catch (error) {
@@ -237,8 +251,8 @@ export const useAuthStore = create((set, get) => ({
       });
       const data = response.data;
       if (data.token) {
-        await AsyncStorage.setItem("userToken", data.token);
-        console.log("Backend JWT fetched and stored silently");
+        console.log("Backend JWT fetched successfully");
+        return data.token;
       }
     } catch (err) {
       // If backend is down or user not found on backend, try signup endpoint
@@ -255,17 +269,18 @@ export const useAuthStore = create((set, get) => ({
         });
         const data = response.data;
         if (data.token) {
-          await AsyncStorage.setItem("userToken", data.token);
-          console.log("Backend JWT fetched via signup endpoint silently");
+          console.log("Backend JWT fetched via signup endpoint");
+          return data.token;
         }
       } catch (signupErr) {
         console.log(
-          "Silent backend token fetch failed (non-blocking):",
+          "Backend token fetch failed (non-blocking):",
           signupErr.message,
         );
         // Keep using Firebase token — API calls may fail but auth works
       }
     }
+    return null;
   },
 
   logout: async () => {

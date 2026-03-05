@@ -88,13 +88,13 @@ export default function GoogleAuthButton({
       nativeModuleAvailable: !!GoogleSignin,
       platform: Platform.OS,
     });
-  }, [useWebFlow, redirectUri]);
+  }, [isExpoGo, useWebFlow, redirectUri]);
 
   // Web client ID, native client IDs, and request config defined below
   // Web client ID (client_type: 3) — works with browser-based OAuth + Expo proxy
   const WEB_CLIENT_ID = "403268549781-6c4gvnrgol3v8mf81bj025mc8fs04nkh.apps.googleusercontent.com";
   // Native client IDs — only work with native Google Sign-In (SHA-1 verified)
-  const ANDROID_CLIENT_ID = "403268549781-cmp7gl6om3l1d44j5nh40re9aaeis5lp.apps.googleusercontent.com";
+  const ANDROID_CLIENT_ID = "403268549781-lg7ddkoljh60t54vkfbm4dbd51u5lld6.apps.googleusercontent.com";
   const IOS_CLIENT_ID = "403268549781-lmnfnklpa9bqs0s3hu2favqen86h8acd.apps.googleusercontent.com";
 
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
@@ -129,8 +129,6 @@ export default function GoogleAuthButton({
         try {
           GoogleSignin.configure({
             webClientId: WEB_CLIENT_ID, // Must be Web client ID for Firebase token exchange
-            offlineAccess: true,
-            forceCodeForRefreshToken: true,
           });
           console.log("Native Google Sign-In configured successfully");
         } catch (error) {
@@ -358,9 +356,9 @@ export default function GoogleAuthButton({
   return (
     <TouchableOpacity
       onPress={handlePress}
-      disabled={loading || !request}
+      disabled={loading || (useWebFlow && !request)}
       className="w-full bg-white border-2 border-gray-300 rounded-xl py-4 px-6 flex-row items-center justify-center active:opacity-70"
-      style={{ opacity: loading || !request ? 0.5 : 1 }}
+      style={{ opacity: loading || (useWebFlow && !request) ? 0.5 : 1 }}
     >
       {loading ? (
         <ActivityIndicator size="small" color="#4285F4" />
@@ -375,3 +373,4 @@ export default function GoogleAuthButton({
     </TouchableOpacity>
   );
 }
+

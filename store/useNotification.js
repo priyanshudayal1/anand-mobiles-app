@@ -86,7 +86,8 @@ const showLocalNotification = async (notification) => {
           product_image: notification.data?.product_image || null,
           product_name: notification.data?.product_name || null,
         },
-        sound: "default",
+        // On Android, channel sound controls playback; setting "default" here can be treated as custom sound.
+        ...(Platform.OS === "ios" ? { sound: "default" } : {}),
         priority: "high",
       },
       trigger: null, // null means show immediately
@@ -229,7 +230,7 @@ export const useNotificationStore = create((set, get) => ({
 
       unsubscribers.push(
         webSocketService.on("error", (error) => {
-          console.error(
+          console.warn(
             "[Notification] 🔌 WebSocket error:",
             error?.message || error,
           );
@@ -367,7 +368,6 @@ export const useNotificationStore = create((set, get) => ({
             importance: Notifications.AndroidImportance.MAX,
             vibrationPattern: [0, 250, 250, 250],
             lightColor: "#FF6B35",
-            sound: "default",
             enableVibrate: true,
             enableLights: true,
             showBadge: true,
@@ -377,7 +377,6 @@ export const useNotificationStore = create((set, get) => ({
             importance: Notifications.AndroidImportance.MAX,
             vibrationPattern: [0, 250, 250, 250],
             lightColor: "#FF6B35",
-            sound: "default",
             enableVibrate: true,
             enableLights: true,
             showBadge: true,
