@@ -1,6 +1,6 @@
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect, useState, useRef } from "react";
-import { LogBox, View, Platform, Image, Animated } from "react-native";
+import { LogBox, Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
@@ -10,13 +10,14 @@ import * as NavigationBar from "expo-navigation-bar";
 import "../index.css";
 import { useAuthStore } from "../store/useAuth";
 import { useTheme } from "../store/useTheme";
-import { useSiteConfig } from "../store/useSiteConfig";
+
 import {
   useNotificationStore,
   parseNotificationData,
 } from "../store/useNotification";
 import ThemeProvider from "../components/ThemeProvider";
 import ToastContainer from "../components/common/ToastContainer";
+import AnimatedLoader from "../components/common/AnimatedLoader";
 
 import Constants from "expo-constants";
 
@@ -61,27 +62,6 @@ function RootLayoutNav() {
   const [isMounted, setIsMounted] = useState(false);
   const notificationListener = useRef();
   const responseListener = useRef();
-
-  // Animation values
-  const scaleValue = useRef(new Animated.Value(0.5)).current;
-  const opacityValue = useRef(new Animated.Value(0)).current;
-
-  // Run Splash animation
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(opacityValue, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: true,
-      }),
-      Animated.spring(scaleValue, {
-        toValue: 1,
-        friction: 4,
-        tension: 10,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [opacityValue, scaleValue]);
 
   // Initialize auth on mount
   useEffect(() => {
@@ -244,8 +224,8 @@ function RootLayoutNav() {
     const inAuthGroup = segments[0] === "(auth)";
 
     if (!isAuthenticated && !inAuthGroup) {
-      // Redirect to welcome if not authenticated and not in auth group
-      router.replace("/(auth)/welcome");
+      // Redirect to login if not authenticated and not in auth group
+      router.replace("/(auth)/login");
     } else if (isAuthenticated && inAuthGroup) {
       // Redirect to tabs if authenticated and in auth group
       router.replace("/(tabs)");
@@ -262,49 +242,11 @@ function RootLayoutNav() {
 
   // Show splash screen with logo and smooth animations while initializing
   if (!isMounted || !themeInitialized || !authInitialized) {
-    // Attempt to use Config theme fallback
-    const splashColor = colors?.primary || "#1E3B70";
-
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: splashColor,
-        }}
-      >
-        <StatusBar style="light" backgroundColor={splashColor} />
-        <Animated.View
-          style={{
-            alignItems: "center",
-            opacity: opacityValue,
-            transform: [{ scale: scaleValue }],
-          }}
-        >
-          <Animated.Image
-            source={require("../assets/images/logo.jpeg")}
-            style={{
-              width: 140,
-              height: 140,
-              resizeMode: "contain",
-              marginBottom: 10,
-            }}
-          />
-          <Animated.Text
-            style={{
-              fontSize: 24,
-              fontWeight: "bold",
-              color: "#ffffff",
-              letterSpacing: 1.5,
-              opacity: opacityValue,
-              marginTop: 10,
-            }}
-          >
-            ANAND MOBILES
-          </Animated.Text>
-        </Animated.View>
-      </View>
+      <>
+        <StatusBar style="light" backgroundColor={colors?.primary || "#1E3B70"} />
+        <AnimatedLoader />
+      </>
     );
   }
 

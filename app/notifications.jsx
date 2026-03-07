@@ -5,7 +5,6 @@ import {
   FlatList,
   RefreshControl,
   TouchableOpacity,
-  ActivityIndicator,
   Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -16,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNotificationStore, getTimeAgo } from "../store/useNotification";
 import * as Haptics from "expo-haptics";
 import CustomModal from "../components/common/CustomModal";
+import AnimatedLoader from "../components/common/AnimatedLoader";
 
 export default function NotificationsScreen() {
   const { colors, isDarkMode } = useTheme();
@@ -348,14 +348,7 @@ export default function NotificationsScreen() {
 
       {/* Notifications List */}
       {isLoading && notifications.length === 0 ? (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={{ marginTop: 16, color: colors.textSecondary }}>
-            Loading notifications...
-          </Text>
-        </View>
+        <AnimatedLoader message="Loading notifications..." />
       ) : (
         <FlatList
           data={notifications}

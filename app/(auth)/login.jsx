@@ -8,6 +8,7 @@ import CustomButton from "../../components/CustomButton";
 import GoogleAuthButton from "../../components/auth/GoogleAuthButton";
 import { useTheme } from "../../store/useTheme";
 import { useAuthStore } from "../../store/useAuth";
+import { FadeInView, SlideInView } from "../../components/common/AnimationWrappers";
 
 const Login = () => {
   const router = useRouter();
@@ -99,102 +100,110 @@ const Login = () => {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="mb-8">
-          <Text
-            className="text-3xl font-bold mb-2"
-            style={{ color: colors.primary }}
-          >
-            Welcome Back
-          </Text>
-          <Text className="text-base" style={{ color: colors.textSecondary }}>
-            Sign in to continue shopping
-          </Text>
-        </View>
-
-        {authError && (
-          <View
-            className="mb-4 p-3 rounded-lg"
-            style={{ backgroundColor: colors.errorLight }}
-          >
-            <Text style={{ color: colors.error }}>{authError}</Text>
-          </View>
-        )}
-
-        <CustomInput
-          label="Email Address"
-          placeholder="you@gmail.com"
-          value={formData.email}
-          onChangeText={(text) => handleChange("email", text)}
-          icon="mail"
-          keyboardType="email-address"
-          error={errors.email}
-          required
-        />
-
-        <CustomInput
-          label="Password"
-          placeholder="••••••••"
-          value={formData.password}
-          onChangeText={(text) => handleChange("password", text)}
-          icon="lock"
-          secureTextEntry
-          error={errors.password}
-          required
-        />
-
-        <View className="flex-row justify-end mb-6">
-          <TouchableOpacity>
-            <Text className="font-medium" style={{ color: colors.primary }}>
-              Forgot Password?
+        <FadeInView delay={0} duration={500}>
+          <View className="mb-8">
+            <Text
+              className="text-3xl font-bold mb-2"
+              style={{ color: colors.primary }}
+            >
+              Welcome
             </Text>
-          </TouchableOpacity>
-        </View>
+            <Text className="text-base" style={{ color: colors.textSecondary }}>
+              Sign in to continue shopping
+            </Text>
+          </View>
+        </FadeInView>
 
-        <CustomButton
-          title="Sign In"
-          onPress={handleLogin}
-          isLoading={localLoading || authLoading}
-          size="lg"
-        />
+        <FadeInView delay={100} duration={500}>
+          {authError && (
+            <View
+              className="mb-4 p-3 rounded-lg"
+              style={{ backgroundColor: colors.errorLight }}
+            >
+              <Text style={{ color: colors.error }}>{authError}</Text>
+            </View>
+          )}
+        </FadeInView>
 
-        <View className="my-5 flex-row items-center">
-          <View
-            className="flex-1 h-[1px]"
-            style={{ backgroundColor: colors.border }}
+        <SlideInView delay={200} duration={500}>
+          <CustomInput
+            label="Email Address"
+            placeholder="you@gmail.com"
+            value={formData.email}
+            onChangeText={(text) => handleChange("email", text)}
+            icon="mail"
+            keyboardType="email-address"
+            error={errors.email}
+            required
           />
-          <Text className="mx-4" style={{ color: colors.textSecondary }}>
-            OR
-          </Text>
-          <View
-            className="flex-1 h-[1px]"
-            style={{ backgroundColor: colors.border }}
+
+          <CustomInput
+            label="Password"
+            placeholder="••••••••"
+            value={formData.password}
+            onChangeText={(text) => handleChange("password", text)}
+            icon="lock"
+            secureTextEntry
+            error={errors.password}
+            required
           />
-        </View>
 
-        <GoogleAuthButton
-          onSuccess={handleGoogleSuccess}
-          onError={(error) => {
-            console.error("Google auth error:", error);
-            Alert.alert(
-              "Google Sign-In Error",
-              error.message || "Something went wrong",
-            );
-          }}
-          mode="login"
-        />
-
-        <View className="flex-row justify-center mt-8">
-          <Text style={{ color: colors.textSecondary }}>
-            Don&apos;t have an account?{" "}
-          </Text>
-          <Link href="/(auth)/register" asChild>
+          <View className="flex-row justify-end mb-6">
             <TouchableOpacity>
-              <Text className="font-bold" style={{ color: colors.primary }}>
-                Sign Up
+              <Text className="font-medium" style={{ color: colors.primary }}>
+                Forgot Password?
               </Text>
             </TouchableOpacity>
-          </Link>
-        </View>
+          </View>
+
+          <CustomButton
+            title="Sign In"
+            onPress={handleLogin}
+            isLoading={localLoading || authLoading}
+            size="lg"
+          />
+        </SlideInView>
+
+        <FadeInView delay={400} duration={500}>
+          <View className="my-5 flex-row items-center">
+            <View
+              className="flex-1 h-[1px]"
+              style={{ backgroundColor: colors.border }}
+            />
+            <Text className="mx-4" style={{ color: colors.textSecondary }}>
+              OR
+            </Text>
+            <View
+              className="flex-1 h-[1px]"
+              style={{ backgroundColor: colors.border }}
+            />
+          </View>
+
+          <GoogleAuthButton
+            onSuccess={handleGoogleSuccess}
+            onError={(error) => {
+              console.error("Google auth error:", error);
+              Alert.alert(
+                "Google Sign-In Error",
+                error.message || "Something went wrong",
+              );
+            }}
+            mode="login"
+          />
+
+          <View className="flex-row justify-center mt-8">
+            <Text style={{ color: colors.textSecondary }}>
+              Don&apos;t have an account?{" "}
+            </Text>
+            <Link href="/(auth)/register" asChild>
+              <TouchableOpacity>
+                <Text className="font-bold" style={{ color: colors.primary }}>
+                  Sign Up
+                </Text>
+              </TouchableOpacity>
+            </Link>
+          </View>
+        </FadeInView>
       </ScrollView>
     </SafeAreaView>
   );
