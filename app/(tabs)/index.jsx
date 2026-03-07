@@ -29,8 +29,8 @@ const SectionHeader = ({ title, subtitle, onSeeAll, colors }) => (
   <View
     style={{
       paddingHorizontal: 16,
-      paddingTop: 12,
-      paddingBottom: 8,
+      paddingTop: 0,
+      paddingBottom: 0,
       backgroundColor: colors.cardBg,
     }}
   >
@@ -45,7 +45,7 @@ const SectionHeader = ({ title, subtitle, onSeeAll, colors }) => (
       <View style={{ flex: 1 }}>
         <View style={{ alignSelf: "flex-start" }}>
           <Text
-            style={{ fontSize: 18, fontWeight: "bold", color: colors.text }}
+            style={{ fontSize: 18, fontWeight: "bold", color: colors.text, marginTop: 6 }}
           >
             {title}
           </Text>
@@ -53,7 +53,8 @@ const SectionHeader = ({ title, subtitle, onSeeAll, colors }) => (
             style={{
               height: 3,
               width: 40,
-              marginTop: 4,
+              marginTop: 0,
+              marginBottom: subtitle ? 0 : 6,
               backgroundColor: colors.primary,
               borderRadius: 2,
               alignSelf: "flex-start",
@@ -62,7 +63,7 @@ const SectionHeader = ({ title, subtitle, onSeeAll, colors }) => (
         </View>
         {subtitle && (
           <Text
-            style={{ fontSize: 12, color: colors.textSecondary, marginTop: 4 }}
+            style={{ fontSize: 12, color: colors.textSecondary, marginTop: 4, marginBottom: 6 }}
           >
             {subtitle}
           </Text>
@@ -105,7 +106,7 @@ const SectionTitle = ({ section, colors, onSeeAll }) => {
         <View style={{ flex: 1 }}>
           <View style={{ alignSelf: "flex-start" }}>
             <Text
-              style={{ fontSize: 18, fontWeight: "bold", color: colors.text }}
+              style={{ fontSize: 18, fontWeight: "bold", color: colors.text, marginTop: 6 }}
             >
               {section.title || getSectionDefaultTitle(section.section_type)}
             </Text>
@@ -113,7 +114,8 @@ const SectionTitle = ({ section, colors, onSeeAll }) => {
               style={{
                 height: 3,
                 width: 40,
-                marginTop: 4,
+                marginTop: 0,
+                marginBottom: section.description ? 0 : 6,
                 backgroundColor: colors.primary,
                 borderRadius: 2,
                 alignSelf: "flex-start",
@@ -126,6 +128,7 @@ const SectionTitle = ({ section, colors, onSeeAll }) => {
                 fontSize: 12,
                 color: colors.textSecondary,
                 marginTop: 4,
+                marginBottom: 6,
               }}
             >
               {section.description}
@@ -181,7 +184,7 @@ const RenderSection = ({ section, colors, router, featuredProducts }) => {
       return (
         <View
           key={section.section_id}
-          style={{ backgroundColor: colors.cardBg, marginTop: 0 }}
+          style={{ backgroundColor: colors.cardBg, marginTop: 0, marginBottom: 0 }}
         >
           <SectionTitle section={section} colors={colors} />
           <CategoryGrid showHeader={false} />
@@ -192,11 +195,11 @@ const RenderSection = ({ section, colors, router, featuredProducts }) => {
       return (
         <View
           key={section.section_id}
-          style={{ backgroundColor: colors.cardBg, marginTop: 0 }}
+          style={{ backgroundColor: colors.cardBg, marginTop: 0, marginBottom: 0 }}
         >
           <SectionTitle section={section} colors={colors} />
           {(section.config?.products?.length || featuredProducts?.length) >
-          0 ? (
+            0 ? (
             <View
               style={{
                 flexDirection: "row",
@@ -239,7 +242,7 @@ const RenderSection = ({ section, colors, router, featuredProducts }) => {
       return (
         <View
           key={section.section_id}
-          style={{ backgroundColor: colors.cardBg, marginTop: 0 }}
+          style={{ backgroundColor: colors.cardBg, marginTop: 0, marginBottom: 0 }}
         >
           <SectionTitle section={section} colors={colors} />
           <BrandsSection showHeader={false} />
@@ -321,12 +324,12 @@ export default function Home() {
   // Sort sections by display_order
   const sortedSections = sections
     ? [...sections]
-        .filter((s) => s && s.enabled !== false)
-        .sort(
-          (a, b) =>
-            (a.display_order || a.order || 0) -
-            (b.display_order || b.order || 0),
-        )
+      .filter((s) => s && s.enabled !== false)
+      .sort(
+        (a, b) =>
+          (a.display_order || a.order || 0) -
+          (b.display_order || b.order || 0),
+      )
     : [];
 
   // Check if we have hero/banner at top (most common case)
