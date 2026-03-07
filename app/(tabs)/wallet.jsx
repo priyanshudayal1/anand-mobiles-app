@@ -33,6 +33,7 @@ import { useAuthStore } from "../../store/useAuth";
 import SpinWheel from "../../components/gamification/SpinWheel";
 import WalletModal from "../../components/gamification/WalletModal";
 import { WalletShimmer } from "../../components/common/ShimmerPlaceholder";
+import { ScaleInView, SlideInView, FadeInView } from "../../components/common/AnimationWrappers";
 
 export default function WalletScreen() {
   const { colors, isDarkMode } = useTheme();
@@ -151,7 +152,7 @@ export default function WalletScreen() {
     <View style={styles.tabContent}>
       {/* Stats Cards */}
       <View style={styles.statsGrid}>
-        <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
+        <ScaleInView delay={0} style={[styles.statCard, { backgroundColor: colors.surface }]}>
           <Coins size={28} color={colors.warning} />
           <Text style={[styles.statValue, { color: colors.text }]}>
             {coinBalance.toLocaleString()}
@@ -159,9 +160,9 @@ export default function WalletScreen() {
           <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
             Total Coins
           </Text>
-        </View>
+        </ScaleInView>
 
-        <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
+        <ScaleInView delay={100} style={[styles.statCard, { backgroundColor: colors.surface }]}>
           <Star size={28} color={levelInfo.color} />
           <Text style={[styles.statValue, { color: colors.text }]}>
             {gamificationStatus?.level || "Bronze"}
@@ -169,9 +170,9 @@ export default function WalletScreen() {
           <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
             Current Level
           </Text>
-        </View>
+        </ScaleInView>
 
-        <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
+        <ScaleInView delay={200} style={[styles.statCard, { backgroundColor: colors.surface }]}>
           <Calendar size={28} color={colors.success} />
           <Text style={[styles.statValue, { color: colors.text }]}>
             {gamificationStatus?.login_streak || 0}
@@ -179,9 +180,9 @@ export default function WalletScreen() {
           <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
             Day Streak
           </Text>
-        </View>
+        </ScaleInView>
 
-        <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
+        <ScaleInView delay={300} style={[styles.statCard, { backgroundColor: colors.surface }]}>
           <Trophy size={28} color={colors.primary} />
           <Text style={[styles.statValue, { color: colors.text }]}>
             {achievements?.length || 0}
@@ -189,91 +190,95 @@ export default function WalletScreen() {
           <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
             Achievements
           </Text>
-        </View>
+        </ScaleInView>
       </View>
 
       {/* Level Progress */}
-      <View style={[styles.progressCard, { backgroundColor: colors.surface }]}>
-        <View style={styles.progressHeader}>
-          <Text style={[styles.progressTitle, { color: colors.text }]}>
-            Level Progress
-          </Text>
-          <Text style={[styles.progressText, { color: colors.textSecondary }]}>
-            {coinBalance} / {levelInfo.threshold} coins
-          </Text>
-        </View>
+      <SlideInView delay={350}>
+        <View style={[styles.progressCard, { backgroundColor: colors.surface }]}>
+          <View style={styles.progressHeader}>
+            <Text style={[styles.progressTitle, { color: colors.text }]}>
+              Level Progress
+            </Text>
+            <Text style={[styles.progressText, { color: colors.textSecondary }]}>
+              {coinBalance} / {levelInfo.threshold} coins
+            </Text>
+          </View>
 
-        <View
-          style={[styles.progressBarBg, { backgroundColor: colors.border }]}
-        >
           <View
-            style={[
-              styles.progressBarFill,
-              {
-                width: `${Math.max(0, Math.min(100, progressPercentage))}%`,
-                backgroundColor: levelInfo.color,
-              },
-            ]}
-          />
-        </View>
+            style={[styles.progressBarBg, { backgroundColor: colors.border }]}
+          >
+            <View
+              style={[
+                styles.progressBarFill,
+                {
+                  width: `${Math.max(0, Math.min(100, progressPercentage))}%`,
+                  backgroundColor: levelInfo.color,
+                },
+              ]}
+            />
+          </View>
 
-        <View style={styles.progressFooter}>
-          <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>
-            Current: {gamificationStatus?.level || "Bronze"}
-          </Text>
-          <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>
-            Next: {levelInfo.nextLevel}
-          </Text>
+          <View style={styles.progressFooter}>
+            <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>
+              Current: {gamificationStatus?.level || "Bronze"}
+            </Text>
+            <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>
+              Next: {levelInfo.nextLevel}
+            </Text>
+          </View>
         </View>
-      </View>
+      </SlideInView>
 
       {/* Quick Actions */}
-      <View style={[styles.actionsCard, { backgroundColor: colors.surface }]}>
-        <Text style={[styles.actionsTitle, { color: colors.text }]}>
-          Quick Actions
-        </Text>
+      <SlideInView delay={450}>
+        <View style={[styles.actionsCard, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.actionsTitle, { color: colors.text }]}>
+            Quick Actions
+          </Text>
 
-        <View style={styles.actionsGrid}>
-          <TouchableOpacity
-            style={[
-              styles.actionButton,
-              {
-                backgroundColor: gamificationStatus?.daily_spin_available
-                  ? colors.primary
-                  : colors.border,
-              },
-            ]}
-            disabled={!gamificationStatus?.daily_spin_available}
-            onPress={() => setShowSpinWheel(true)}
-          >
-            <Gift size={20} color={colors.white} />
-            <Text style={styles.actionButtonText}>
-              {gamificationStatus?.daily_spin_available
-                ? "Daily Spin!"
-                : "Come Back Tomorrow"}
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.actionsGrid}>
+            <TouchableOpacity
+              style={[
+                styles.actionButton,
+                {
+                  backgroundColor: gamificationStatus?.daily_spin_available
+                    ? colors.primary
+                    : colors.border,
+                },
+              ]}
+              disabled={!gamificationStatus?.daily_spin_available}
+              onPress={() => setShowSpinWheel(true)}
+            >
+              <Gift size={20} color={colors.white} />
+              <Text style={[styles.actionButtonText, { color: colors.white }]}>
+                {gamificationStatus?.daily_spin_available
+                  ? "Daily Spin!"
+                  : "Come Back Tomorrow"}
+              </Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[
-              styles.actionButton,
-              { backgroundColor: colors.primaryDark },
-            ]}
-            onPress={() => setShowWalletModal(true)}
-          >
-            <Coins size={20} color={colors.white} />
-            <Text style={styles.actionButtonText}>View Wallet</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.actionButton,
+                { backgroundColor: colors.primaryDark },
+              ]}
+              onPress={() => setShowWalletModal(true)}
+            >
+              <Coins size={20} color={colors.white} />
+              <Text style={[styles.actionButtonText, { color: colors.white }]}>View Wallet</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: colors.accent }]}
-            onPress={handleShare}
-          >
-            <Share2 size={20} color={colors.white} />
-            <Text style={styles.actionButtonText}>Refer Friends</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.actionButton, { backgroundColor: colors.accent }]}
+              onPress={handleShare}
+            >
+              <Share2 size={20} color={colors.white} />
+              <Text style={[styles.actionButtonText, { color: colors.white }]}>Refer Friends</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </SlideInView>
     </View>
   );
 
@@ -313,7 +318,7 @@ export default function WalletScreen() {
                   { backgroundColor: colors.success },
                 ]}
               >
-                <Text style={styles.achievementRewardText}>
+                <Text style={[styles.achievementRewardText, { color: colors.white }]}>
                   +{achievement.reward_coins || 0} coins
                 </Text>
               </View>
@@ -459,14 +464,14 @@ export default function WalletScreen() {
                     { backgroundColor: colors.primary },
                   ]}
                 >
-                  <Text style={styles.referralCodeText}>
+                  <Text style={[styles.referralCodeText, { color: colors.white }]}>
                     {referralData.referral_code}
                   </Text>
                 </View>
                 <TouchableOpacity
                   style={[
                     styles.copyButton,
-                    { backgroundColor: colors.surfaceSecondary },
+                    { backgroundColor: colors.primary },
                   ]}
                   onPress={copyReferralCode}
                 >
@@ -533,7 +538,7 @@ export default function WalletScreen() {
               onPress={handleShare}
             >
               <Share2 size={18} color={colors.white} />
-              <Text style={styles.shareButtonText}>Share Referral Link</Text>
+              <Text style={[styles.shareButtonText, { color: colors.white }]}>Share Referral Link</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -587,7 +592,7 @@ export default function WalletScreen() {
             }
           }}
         >
-          <Text style={styles.spinButtonText}>
+          <Text style={[styles.spinButtonText, { color: colors.white }]}>
             {gamificationStatus?.daily_spin_available
               ? "🎰 Daily Spin Wheel"
               : "✅ Spin Completed (View)"}
@@ -619,7 +624,7 @@ export default function WalletScreen() {
           {/* Coin Balance Badge */}
           <View style={[styles.coinBadge, { backgroundColor: colors.primary }]}>
             <Coins size={18} color={colors.white} />
-            <Text style={styles.coinBadgeText}>
+            <Text style={[styles.coinBadgeText, { color: colors.white }]}>
               {coinBalance.toLocaleString()}
             </Text>
           </View>
@@ -739,7 +744,6 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   coinBadgeText: {
-    color: "#FFF",
     fontWeight: "bold",
     fontSize: 16,
   },
@@ -865,7 +869,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   actionButtonText: {
-    color: "#FFF",
     fontWeight: "600",
     fontSize: 14,
   },
@@ -908,7 +911,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   achievementRewardText: {
-    color: "#FFF",
     fontSize: 12,
     fontWeight: "600",
   },
@@ -1005,7 +1007,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   referralCodeText: {
-    color: "#FFF",
     fontWeight: "bold",
     fontSize: 16,
     textAlign: "center",
@@ -1047,7 +1048,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   shareButtonText: {
-    color: "#FFF",
     fontWeight: "600",
     fontSize: 14,
   },
@@ -1068,7 +1068,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   spinButtonText: {
-    color: "#FFF",
     fontWeight: "600",
     fontSize: 14,
   },

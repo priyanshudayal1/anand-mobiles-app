@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Dimensions,
   ActivityIndicator,
+  Animated,
 } from "react-native";
 import { Image } from "expo-image";
 import { Star, Heart } from "lucide-react-native";
@@ -23,6 +24,7 @@ function ProductCard({
 }) {
   const { colors } = useTheme();
   const router = useRouter();
+  const scaleAnim = React.useRef(new Animated.Value(1)).current;
   const { items, addToWishlist, removeFromWishlist, isInWishlist } =
     useWishlistStore(
       useShallow((state) => ({
@@ -97,6 +99,24 @@ function ProductCard({
     }
   };
 
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.97,
+      friction: 8,
+      tension: 100,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      friction: 5,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
+  };
+
   const handleWishlistToggle = async () => {
     if (isWishlistLoading) return;
     setIsWishlistLoading(true);
@@ -133,269 +153,273 @@ function ProductCard({
   const reviewsCount = product.reviews_count || 0;
 
   return (
-    <TouchableOpacity
-      onPress={handlePress}
-      style={{
-        width: cardWidth,
-        height: cardHeight,
-        backgroundColor: colors.cardBg,
-        borderRadius: 12,
-        overflow: "hidden",
-        borderWidth: 1,
-        borderColor: colors.border,
-        marginBottom: 12,
-        elevation: 2,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-      }}
-      activeOpacity={0.9}
-    >
-      {/* Product Image Section */}
-      <View
+    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <TouchableOpacity
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
         style={{
-          height: imageHeight,
+          width: cardWidth,
+          height: cardHeight,
           backgroundColor: colors.cardBg,
-          justifyContent: "center",
-          alignItems: "center",
-          padding: 8,
-          position: "relative",
+          borderRadius: 12,
+          overflow: "hidden",
+          borderWidth: 1,
+          borderColor: colors.border,
+          marginBottom: 12,
+          elevation: 2,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.1,
+          shadowRadius: 2,
         }}
+        activeOpacity={0.9}
       >
-        <Image
-          source={{
-            uri:
-              product.image ||
-              product.images?.[0] ||
-              "https://via.placeholder.com/150",
-          }}
-          style={{ width: "100%", height: "100%" }}
-          contentFit="contain"
-          transition={200}
-        />
-
-        {/* Discount Badge */}
-        {discountPercent > 0 && inStock && (
-          <View
-            style={{
-              position: "absolute",
-              top: 8,
-              left: 8,
-              backgroundColor: colors.error,
-              paddingHorizontal: 6,
-              paddingVertical: 3,
-              borderRadius: 4,
-              zIndex: 10,
-            }}
-          >
-            <Text
-              style={{ color: colors.white, fontSize: 10, fontWeight: "bold" }}
-            >
-              {discountPercent}% OFF
-            </Text>
-          </View>
-        )}
-
-        {/* Rating Pill */}
-        {showRating && (
-          <View
-            style={{
-              position: "absolute",
-              bottom: 8,
-              left: 8,
-              flexDirection: "row",
-              alignItems: "center",
-              backgroundColor: colors.cardBg,
-              paddingHorizontal: 6,
-              paddingVertical: 4,
-              borderRadius: 12,
-              borderWidth: 1,
-              borderColor: colors.border,
-              gap: 4,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 11,
-                fontWeight: "700",
-                color: colors.text,
-              }}
-            >
-              {ratingValue.toFixed(1)}
-            </Text>
-            <Star size={10} color={colors.success} fill={colors.success} />
-            {reviewsCount > 0 && (
-              <>
-                <View
-                  style={{
-                    width: 1,
-                    height: 12,
-                    backgroundColor: colors.textSecondary,
-                    marginHorizontal: 2,
-                  }}
-                />
-                <Text style={{ fontSize: 11, color: colors.textSecondary }}>
-                  {reviewsCount}
-                </Text>
-              </>
-            )}
-          </View>
-        )}
-
-        {/* Out of Stock Badge */}
-        {!inStock && (
-          <View
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: "rgba(255,255,255,0.7)",
-              justifyContent: "center",
-              alignItems: "center",
-              zIndex: 20,
-            }}
-          >
-            <View
-              style={{
-                backgroundColor: colors.surfaceSecondary,
-                paddingHorizontal: 8,
-                paddingVertical: 4,
-                borderRadius: 4,
-              }}
-            >
-              <Text
-                style={{
-                  color: colors.white,
-                  fontSize: 11,
-                  fontWeight: "bold",
-                }}
-              >
-                Out of Stock
-              </Text>
-            </View>
-          </View>
-        )}
-      </View>
-
-      {/* Product Info Section */}
-      <View style={{ padding: size === "small" ? 8 : 12 }}>
+        {/* Product Image Section */}
         <View
           style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: 8,
+            height: imageHeight,
+            backgroundColor: colors.cardBg,
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 8,
+            position: "relative",
           }}
         >
-          {/* Text Information */}
-          <View style={{ flex: 1 }}>
-            {/* Title */}
-            <View style={{ height: size === "small" ? 32 : 36, marginTop: 4 }}>
-              <Text
-                style={{
-                  fontSize: size === "small" ? 12 : 13,
-                  fontWeight: "600",
-                  color: colors.text,
-                  lineHeight: size === "small" ? 16 : 18,
-                }}
-                numberOfLines={2}
-                ellipsizeMode="tail"
-              >
-                {displayName}
-              </Text>
-            </View>
+          <Image
+            source={{
+              uri:
+                product.image ||
+                product.images?.[0] ||
+                "https://via.placeholder.com/150",
+            }}
+            style={{ width: "100%", height: "100%" }}
+            contentFit="contain"
+            transition={200}
+          />
 
-            {/* Brand & Category */}
-            <View style={{ height: 16, justifyContent: "center" }}>
-              <Text
-                style={{
-                  fontSize: 10,
-                  color: colors.textSecondary,
-                  lineHeight: 14,
-                }}
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
-                {[brandName, categoryName].filter(Boolean).join(" • ") || " "}
-              </Text>
-            </View>
-
-            {/* Price */}
+          {/* Discount Badge */}
+          {discountPercent > 0 && inStock && (
             <View
               style={{
+                position: "absolute",
+                top: 8,
+                left: 8,
+                backgroundColor: colors.error,
+                paddingHorizontal: 6,
+                paddingVertical: 3,
+                borderRadius: 4,
+                zIndex: 10,
+              }}
+            >
+              <Text
+                style={{ color: colors.white, fontSize: 10, fontWeight: "bold" }}
+              >
+                {discountPercent}% OFF
+              </Text>
+            </View>
+          )}
+
+          {/* Rating Pill */}
+          {showRating && (
+            <View
+              style={{
+                position: "absolute",
+                bottom: 8,
+                left: 8,
                 flexDirection: "row",
                 alignItems: "center",
-                height: 22,
-                marginTop: 4,
+                backgroundColor: colors.cardBg,
+                paddingHorizontal: 6,
+                paddingVertical: 4,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: colors.border,
+                gap: 4,
               }}
             >
               <Text
                 style={{
-                  fontSize: size === "small" ? 14 : 16,
-                  fontWeight: "bold",
+                  fontSize: 11,
+                  fontWeight: "700",
                   color: colors.text,
                 }}
-                numberOfLines={1}
               >
-                ₹{displayPrice.toLocaleString()}
+                {ratingValue.toFixed(1)}
               </Text>
-              <Text
+              <Star size={10} color={colors.success} fill={colors.success} />
+              {reviewsCount > 0 && (
+                <>
+                  <View
+                    style={{
+                      width: 1,
+                      height: 12,
+                      backgroundColor: colors.textSecondary,
+                      marginHorizontal: 2,
+                    }}
+                  />
+                  <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+                    {reviewsCount}
+                  </Text>
+                </>
+              )}
+            </View>
+          )}
+
+          {/* Out of Stock Badge */}
+          {!inStock && (
+            <View
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(255,255,255,0.7)",
+                justifyContent: "center",
+                alignItems: "center",
+                zIndex: 20,
+              }}
+            >
+              <View
                 style={{
-                  fontSize: 11,
-                  color: colors.textSecondary,
-                  textDecorationLine: "line-through",
-                  marginLeft: 6,
+                  backgroundColor: colors.surfaceSecondary,
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  borderRadius: 4,
                 }}
-                numberOfLines={1}
               >
-                ₹{strikePrice.toLocaleString()}
-              </Text>
-              {hasDiscount && (
+                <Text
+                  style={{
+                    color: colors.white,
+                    fontSize: 11,
+                    fontWeight: "bold",
+                  }}
+                >
+                  Out of Stock
+                </Text>
+              </View>
+            </View>
+          )}
+        </View>
+
+        {/* Product Info Section */}
+        <View style={{ padding: size === "small" ? 8 : 12 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 8,
+            }}
+          >
+            {/* Text Information */}
+            <View style={{ flex: 1 }}>
+              {/* Title */}
+              <View style={{ height: size === "small" ? 32 : 36, marginTop: 4 }}>
+                <Text
+                  style={{
+                    fontSize: size === "small" ? 12 : 13,
+                    fontWeight: "600",
+                    color: colors.text,
+                    lineHeight: size === "small" ? 16 : 18,
+                  }}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
+                  {displayName}
+                </Text>
+              </View>
+
+              {/* Brand & Category */}
+              <View style={{ height: 16, justifyContent: "center" }}>
+                <Text
+                  style={{
+                    fontSize: 10,
+                    color: colors.textSecondary,
+                    lineHeight: 14,
+                  }}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {[brandName, categoryName].filter(Boolean).join(" • ") || " "}
+                </Text>
+              </View>
+
+              {/* Price */}
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  height: 22,
+                  marginTop: 4,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: size === "small" ? 14 : 16,
+                    fontWeight: "bold",
+                    color: colors.text,
+                  }}
+                  numberOfLines={1}
+                >
+                  ₹{displayPrice.toLocaleString()}
+                </Text>
                 <Text
                   style={{
                     fontSize: 11,
-                    color: colors.success,
+                    color: colors.textSecondary,
+                    textDecorationLine: "line-through",
                     marginLeft: 6,
                   }}
                   numberOfLines={1}
                 >
-                  {discountPercent}% OFF
+                  ₹{strikePrice.toLocaleString()}
                 </Text>
-              )}
+                {hasDiscount && (
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      color: colors.success,
+                      marginLeft: 6,
+                    }}
+                    numberOfLines={1}
+                  >
+                    {discountPercent}% OFF
+                  </Text>
+                )}
+              </View>
             </View>
-          </View>
 
-          {/* Wishlist Button */}
-          <TouchableOpacity
-            onPress={handleWishlistToggle}
-            disabled={isWishlistLoading}
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: 14,
-              backgroundColor: isWishlisted
-                ? colors.primary + "20"
-                : colors.backgroundSecondary,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            {isWishlistLoading ? (
-              <ActivityIndicator size="small" color={colors.primary} />
-            ) : (
-              <Heart
-                size={16}
-                color={isWishlisted ? colors.primary : colors.textSecondary}
-                fill={isWishlisted ? colors.primary : "transparent"}
-              />
-            )}
-          </TouchableOpacity>
+            {/* Wishlist Button */}
+            <TouchableOpacity
+              onPress={handleWishlistToggle}
+              disabled={isWishlistLoading}
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 14,
+                backgroundColor: isWishlisted
+                  ? colors.primary + "20"
+                  : colors.backgroundSecondary,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              {isWishlistLoading ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : (
+                <Heart
+                  size={16}
+                  color={isWishlisted ? colors.primary : colors.textSecondary}
+                  fill={isWishlisted ? colors.primary : "transparent"}
+                />
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </Animated.View >
   );
 }
 

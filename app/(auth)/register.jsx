@@ -8,6 +8,7 @@ import CustomButton from "../../components/CustomButton";
 import GoogleAuthButton from "../../components/auth/GoogleAuthButton";
 import { useTheme } from "../../store/useTheme";
 import { useAuthStore } from "../../store/useAuth";
+import { FadeInView, SlideInView } from "../../components/common/AnimationWrappers";
 
 const Register = () => {
   const router = useRouter();
@@ -119,152 +120,158 @@ const Register = () => {
         contentContainerStyle={{ flexGrow: 1, padding: 24 }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="mb-6 mt-4">
-          <Text
-            className="text-3xl font-bold mb-2"
-            style={{ color: colors.primary }}
-          >
-            Create Account
-          </Text>
-          <Text className="text-base" style={{ color: colors.textSecondary }}>
-            Join us to start shopping
-          </Text>
-        </View>
-
-        {authError && (
-          <View
-            className="mb-4 p-3 rounded-lg"
-            style={{ backgroundColor: colors.errorLight }}
-          >
-            <Text style={{ color: colors.error }}>{authError}</Text>
+        <FadeInView delay={0} duration={500}>
+          <View className="mb-6 mt-4">
+            <Text
+              className="text-3xl font-bold mb-2"
+              style={{ color: colors.primary }}
+            >
+              Create Account
+            </Text>
+            <Text className="text-base" style={{ color: colors.textSecondary }}>
+              Join us to start shopping
+            </Text>
           </View>
-        )}
 
-        <View className="flex-row gap-4">
-          <View className="flex-1">
-            <CustomInput
-              label="First Name"
-              value={formData.firstName}
-              onChangeText={(text) => handleChange("firstName", text)}
-              icon="user"
-              error={errors.firstName}
-              required
-              textContentType="givenName"
-              autoComplete="name-given"
+          {authError && (
+            <View
+              className="mb-4 p-3 rounded-lg"
+              style={{ backgroundColor: colors.errorLight }}
+            >
+              <Text style={{ color: colors.error }}>{authError}</Text>
+            </View>
+          )}
+        </FadeInView>
+
+        <SlideInView delay={150} duration={500}>
+          <View className="flex-row gap-4">
+            <View className="flex-1">
+              <CustomInput
+                label="First Name"
+                value={formData.firstName}
+                onChangeText={(text) => handleChange("firstName", text)}
+                icon="user"
+                error={errors.firstName}
+                required
+                textContentType="givenName"
+                autoComplete="name-given"
+              />
+            </View>
+            <View className="flex-1">
+              <CustomInput
+                label="Last Name"
+                value={formData.lastName}
+                onChangeText={(text) => handleChange("lastName", text)}
+                icon="user"
+                error={errors.lastName}
+                required
+                textContentType="familyName"
+                autoComplete="name-family"
+              />
+            </View>
+          </View>
+
+          <CustomInput
+            label="Email Address"
+            placeholder="you@gmail.com"
+            value={formData.email}
+            onChangeText={(text) => handleChange("email", text)}
+            icon="mail"
+            keyboardType="email-address"
+            error={errors.email}
+            required
+            textContentType="emailAddress"
+            autoComplete="email"
+            autoCapitalize="none"
+          />
+
+          <CustomInput
+            label="Phone Number"
+            placeholder="9876543210"
+            value={formData.phone}
+            onChangeText={(text) => handleChange("phone", text)}
+            icon="phone"
+            keyboardType="phone-pad"
+            error={errors.phone}
+            required
+            textContentType="telephoneNumber"
+            autoComplete="tel"
+          />
+
+          <CustomInput
+            label="Password"
+            placeholder="••••••••"
+            value={formData.password}
+            onChangeText={(text) => handleChange("password", text)}
+            icon="lock"
+            secureTextEntry
+            error={errors.password}
+            required
+            textContentType="password"
+          />
+
+          <CustomInput
+            label="Confirm Password"
+            placeholder="••••••••"
+            value={formData.confirmPassword}
+            onChangeText={(text) => handleChange("confirmPassword", text)}
+            icon="lock"
+            secureTextEntry
+            error={errors.confirmPassword}
+            required
+            textContentType="password"
+          />
+
+          <View className="mt-4 mb-4">
+            <CustomButton
+              title="Create Account"
+              onPress={handleRegister}
+              isLoading={localLoading || authLoading}
+              size="lg"
             />
           </View>
-          <View className="flex-1">
-            <CustomInput
-              label="Last Name"
-              value={formData.lastName}
-              onChangeText={(text) => handleChange("lastName", text)}
-              icon="user"
-              error={errors.lastName}
-              required
-              textContentType="familyName"
-              autoComplete="name-family"
+        </SlideInView>
+
+        <FadeInView delay={350} duration={500}>
+          <View className="mb-4 flex-row items-center">
+            <View
+              className="flex-1 h-[1px]"
+              style={{ backgroundColor: colors.border }}
+            />
+            <Text className="mx-4" style={{ color: colors.textSecondary }}>
+              OR
+            </Text>
+            <View
+              className="flex-1 h-[1px]"
+              style={{ backgroundColor: colors.border }}
             />
           </View>
-        </View>
 
-        <CustomInput
-          label="Email Address"
-          placeholder="you@gmail.com"
-          value={formData.email}
-          onChangeText={(text) => handleChange("email", text)}
-          icon="mail"
-          keyboardType="email-address"
-          error={errors.email}
-          required
-          textContentType="emailAddress"
-          autoComplete="email"
-          autoCapitalize="none"
-        />
-
-        <CustomInput
-          label="Phone Number"
-          placeholder="9876543210"
-          value={formData.phone}
-          onChangeText={(text) => handleChange("phone", text)}
-          icon="phone"
-          keyboardType="phone-pad"
-          error={errors.phone}
-          required
-          textContentType="telephoneNumber"
-          autoComplete="tel"
-        />
-
-        <CustomInput
-          label="Password"
-          placeholder="••••••••"
-          value={formData.password}
-          onChangeText={(text) => handleChange("password", text)}
-          icon="lock"
-          secureTextEntry
-          error={errors.password}
-          required
-          textContentType="password"
-        />
-
-        <CustomInput
-          label="Confirm Password"
-          placeholder="••••••••"
-          value={formData.confirmPassword}
-          onChangeText={(text) => handleChange("confirmPassword", text)}
-          icon="lock"
-          secureTextEntry
-          error={errors.confirmPassword}
-          required
-          textContentType="password"
-        />
-
-        <View className="mt-4 mb-4">
-          <CustomButton
-            title="Create Account"
-            onPress={handleRegister}
-            isLoading={localLoading || authLoading}
-            size="lg"
+          <GoogleAuthButton
+            onSuccess={handleGoogleSignup}
+            onError={(error) => {
+              console.error("Google auth error:", error);
+              Alert.alert(
+                "Google Sign-Up Error",
+                error.message || "Something went wrong",
+              );
+            }}
+            mode="signup"
           />
-        </View>
 
-        <View className="mb-4 flex-row items-center">
-          <View
-            className="flex-1 h-[1px]"
-            style={{ backgroundColor: colors.border }}
-          />
-          <Text className="mx-4" style={{ color: colors.textSecondary }}>
-            OR
-          </Text>
-          <View
-            className="flex-1 h-[1px]"
-            style={{ backgroundColor: colors.border }}
-          />
-        </View>
-
-        <GoogleAuthButton
-          onSuccess={handleGoogleSignup}
-          onError={(error) => {
-            console.error("Google auth error:", error);
-            Alert.alert(
-              "Google Sign-Up Error",
-              error.message || "Something went wrong",
-            );
-          }}
-          mode="signup"
-        />
-
-        <View className="flex-row justify-center mt-4 mb-6">
-          <Text style={{ color: colors.textSecondary }}>
-            Already have an account?{" "}
-          </Text>
-          <Link href="/(auth)/login" asChild>
-            <TouchableOpacity>
-              <Text className="font-bold" style={{ color: colors.primary }}>
-                Sign In
-              </Text>
-            </TouchableOpacity>
-          </Link>
-        </View>
+          <View className="flex-row justify-center mt-4 mb-6">
+            <Text style={{ color: colors.textSecondary }}>
+              Already have an account?{" "}
+            </Text>
+            <Link href="/(auth)/login" asChild>
+              <TouchableOpacity>
+                <Text className="font-bold" style={{ color: colors.primary }}>
+                  Sign In
+                </Text>
+              </TouchableOpacity>
+            </Link>
+          </View>
+        </FadeInView>
       </ScrollView>
     </SafeAreaView>
   );

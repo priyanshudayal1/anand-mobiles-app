@@ -20,6 +20,7 @@ import { useTheme } from "../../store/useTheme";
 import { useCartStore } from "../../store/useCart";
 import { CartShimmer } from "../../components/common/ShimmerPlaceholder";
 import CheckoutModal from "../../components/checkout/CheckoutModal";
+import { FadeInView, SlideInView } from "../../components/common/AnimationWrappers";
 
 export default function Cart() {
   const router = useRouter();
@@ -424,65 +425,67 @@ export default function Cart() {
       {isLoading ? (
         <CartShimmer />
       ) : cartItems.length === 0 ? (
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 20,
-          }}
-        >
+        <FadeInView duration={500}>
           <View
             style={{
-              width: 100,
-              height: 100,
-              borderRadius: 50,
-              backgroundColor: colors.surface,
+              flex: 1,
               justifyContent: "center",
               alignItems: "center",
-              marginBottom: 20,
+              padding: 20,
             }}
           >
-            <Feather
-              name="shopping-cart"
-              size={50}
-              color={colors.textSecondary}
-            />
-          </View>
-          <Text
-            style={{
-              color: colors.text,
-              fontSize: 20,
-              fontWeight: "bold",
-              marginBottom: 8,
-            }}
-          >
-            Your Cart is Empty
-          </Text>
-          <Text
-            style={{
-              color: colors.textSecondary,
-              fontSize: 14,
-              textAlign: "center",
-              marginBottom: 24,
-            }}
-          >
-            Looks like you haven&apos;t added anything to your cart yet.
-          </Text>
-          <TouchableOpacity
-            onPress={() => router.push("/(tabs)")}
-            style={{
-              backgroundColor: colors.primary,
-              paddingHorizontal: 24,
-              paddingVertical: 12,
-              borderRadius: 8,
-            }}
-          >
-            <Text style={{ color: colors.white, fontWeight: "600" }}>
-              Start Shopping
+            <View
+              style={{
+                width: 100,
+                height: 100,
+                borderRadius: 50,
+                backgroundColor: colors.surface,
+                justifyContent: "center",
+                alignItems: "center",
+                marginBottom: 20,
+              }}
+            >
+              <Feather
+                name="shopping-cart"
+                size={50}
+                color={colors.textSecondary}
+              />
+            </View>
+            <Text
+              style={{
+                color: colors.text,
+                fontSize: 20,
+                fontWeight: "bold",
+                marginBottom: 8,
+              }}
+            >
+              Your Cart is Empty
             </Text>
-          </TouchableOpacity>
-        </View>
+            <Text
+              style={{
+                color: colors.textSecondary,
+                fontSize: 14,
+                textAlign: "center",
+                marginBottom: 24,
+              }}
+            >
+              Looks like you haven&apos;t added anything to your cart yet.
+            </Text>
+            <TouchableOpacity
+              onPress={() => router.push("/(tabs)")}
+              style={{
+                backgroundColor: colors.primary,
+                paddingHorizontal: 24,
+                paddingVertical: 12,
+                borderRadius: 8,
+              }}
+            >
+              <Text style={{ color: colors.white, fontWeight: "600" }}>
+                Start Shopping
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </FadeInView>
       ) : (
         <>
           <FlashList
@@ -505,116 +508,118 @@ export default function Cart() {
           />
 
           {/* Bottom Checkout Section */}
-          <View
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              backgroundColor: colors.surface,
-              borderTopWidth: 1,
-              borderTopColor: colors.border,
-              paddingHorizontal: 16,
-              paddingTop: 16,
-              paddingBottom: Math.max(insets.bottom, 16) + 70,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: -4 },
-              shadowOpacity: 0.1,
-              shadowRadius: 8,
-              elevation: 10,
-            }}
-          >
-            {/* Order Summary */}
-            <View style={{ marginBottom: 16 }}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  marginBottom: 8,
-                }}
-              >
-                <Text style={{ color: colors.textSecondary, fontSize: 14 }}>
-                  Subtotal ({totalItems} items)
-                </Text>
-                <Text style={{ color: colors.text, fontSize: 14 }}>
-                  ₹{computedTotal.toLocaleString()}
-                </Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  marginBottom: 8,
-                }}
-              >
-                <Text style={{ color: colors.textSecondary, fontSize: 14 }}>
-                  Delivery
-                </Text>
-                <Text
+          <SlideInView delay={200} fromY={40}>
+            <View
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                backgroundColor: colors.surface,
+                borderTopWidth: 1,
+                borderTopColor: colors.border,
+                paddingHorizontal: 16,
+                paddingTop: 16,
+                paddingBottom: Math.max(insets.bottom, 16) + 70,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: -4 },
+                shadowOpacity: 0.1,
+                shadowRadius: 8,
+                elevation: 10,
+              }}
+            >
+              {/* Order Summary */}
+              <View style={{ marginBottom: 16 }}>
+                <View
                   style={{
-                    color: colors.success,
-                    fontSize: 14,
-                    fontWeight: "500",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    marginBottom: 8,
                   }}
                 >
-                  FREE
-                </Text>
+                  <Text style={{ color: colors.textSecondary, fontSize: 14 }}>
+                    Subtotal ({totalItems} items)
+                  </Text>
+                  <Text style={{ color: colors.text, fontSize: 14 }}>
+                    ₹{computedTotal.toLocaleString()}
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    marginBottom: 8,
+                  }}
+                >
+                  <Text style={{ color: colors.textSecondary, fontSize: 14 }}>
+                    Delivery
+                  </Text>
+                  <Text
+                    style={{
+                      color: colors.success,
+                      fontSize: 14,
+                      fontWeight: "500",
+                    }}
+                  >
+                    FREE
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    paddingTop: 8,
+                    borderTopWidth: 1,
+                    borderTopColor: colors.border,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: colors.text,
+                      fontSize: 16,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Total
+                  </Text>
+                  <Text
+                    style={{
+                      color: colors.text,
+                      fontSize: 18,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    ₹{computedTotal.toLocaleString()}
+                  </Text>
+                </View>
               </View>
-              <View
+
+              {/* Checkout Button */}
+              <TouchableOpacity
+                onPress={handleCheckout}
                 style={{
+                  backgroundColor: colors.primary,
+                  paddingVertical: 16,
+                  borderRadius: 12,
                   flexDirection: "row",
-                  justifyContent: "space-between",
-                  paddingTop: 8,
-                  borderTopWidth: 1,
-                  borderTopColor: colors.border,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
                 }}
               >
                 <Text
                   style={{
-                    color: colors.text,
+                    color: colors.white,
                     fontSize: 16,
                     fontWeight: "bold",
                   }}
                 >
-                  Total
+                  Proceed to Checkout
                 </Text>
-                <Text
-                  style={{
-                    color: colors.text,
-                    fontSize: 18,
-                    fontWeight: "bold",
-                  }}
-                >
-                  ₹{computedTotal.toLocaleString()}
-                </Text>
-              </View>
+                <Feather name="arrow-right" size={20} color={colors.white} />
+              </TouchableOpacity>
             </View>
-
-            {/* Checkout Button */}
-            <TouchableOpacity
-              onPress={handleCheckout}
-              style={{
-                backgroundColor: colors.primary,
-                paddingVertical: 16,
-                borderRadius: 12,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-              }}
-            >
-              <Text
-                style={{
-                  color: colors.white,
-                  fontSize: 16,
-                  fontWeight: "bold",
-                }}
-              >
-                Proceed to Checkout
-              </Text>
-              <Feather name="arrow-right" size={20} color={colors.white} />
-            </TouchableOpacity>
-          </View>
+          </SlideInView>
         </>
       )}
 
