@@ -33,7 +33,11 @@ import { useAuthStore } from "../../store/useAuth";
 import SpinWheel from "../../components/gamification/SpinWheel";
 import WalletModal from "../../components/gamification/WalletModal";
 import { WalletShimmer } from "../../components/common/ShimmerPlaceholder";
-import { ScaleInView, SlideInView, FadeInView } from "../../components/common/AnimationWrappers";
+import {
+  ScaleInView,
+  SlideInView,
+  FadeInView,
+} from "../../components/common/AnimationWrappers";
 
 export default function WalletScreen() {
   const { colors, isDarkMode } = useTheme();
@@ -152,7 +156,10 @@ export default function WalletScreen() {
     <View style={styles.tabContent}>
       {/* Stats Cards */}
       <View style={styles.statsGrid}>
-        <ScaleInView delay={0} style={[styles.statCard, { backgroundColor: colors.surface }]}>
+        <ScaleInView
+          delay={0}
+          style={[styles.statCard, { backgroundColor: colors.surface }]}
+        >
           <Coins size={28} color={colors.warning} />
           <Text style={[styles.statValue, { color: colors.text }]}>
             {coinBalance.toLocaleString()}
@@ -162,7 +169,10 @@ export default function WalletScreen() {
           </Text>
         </ScaleInView>
 
-        <ScaleInView delay={100} style={[styles.statCard, { backgroundColor: colors.surface }]}>
+        <ScaleInView
+          delay={100}
+          style={[styles.statCard, { backgroundColor: colors.surface }]}
+        >
           <Star size={28} color={levelInfo.color} />
           <Text style={[styles.statValue, { color: colors.text }]}>
             {gamificationStatus?.level || "Bronze"}
@@ -172,7 +182,10 @@ export default function WalletScreen() {
           </Text>
         </ScaleInView>
 
-        <ScaleInView delay={200} style={[styles.statCard, { backgroundColor: colors.surface }]}>
+        <ScaleInView
+          delay={200}
+          style={[styles.statCard, { backgroundColor: colors.surface }]}
+        >
           <Calendar size={28} color={colors.success} />
           <Text style={[styles.statValue, { color: colors.text }]}>
             {gamificationStatus?.login_streak || 0}
@@ -182,7 +195,10 @@ export default function WalletScreen() {
           </Text>
         </ScaleInView>
 
-        <ScaleInView delay={300} style={[styles.statCard, { backgroundColor: colors.surface }]}>
+        <ScaleInView
+          delay={300}
+          style={[styles.statCard, { backgroundColor: colors.surface }]}
+        >
           <Trophy size={28} color={colors.primary} />
           <Text style={[styles.statValue, { color: colors.text }]}>
             {achievements?.length || 0}
@@ -195,12 +211,16 @@ export default function WalletScreen() {
 
       {/* Level Progress */}
       <SlideInView delay={350}>
-        <View style={[styles.progressCard, { backgroundColor: colors.surface }]}>
+        <View
+          style={[styles.progressCard, { backgroundColor: colors.surface }]}
+        >
           <View style={styles.progressHeader}>
             <Text style={[styles.progressTitle, { color: colors.text }]}>
               Level Progress
             </Text>
-            <Text style={[styles.progressText, { color: colors.textSecondary }]}>
+            <Text
+              style={[styles.progressText, { color: colors.textSecondary }]}
+            >
               {coinBalance} / {levelInfo.threshold} coins
             </Text>
           </View>
@@ -220,10 +240,14 @@ export default function WalletScreen() {
           </View>
 
           <View style={styles.progressFooter}>
-            <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>
+            <Text
+              style={[styles.progressLabel, { color: colors.textSecondary }]}
+            >
               Current: {gamificationStatus?.level || "Bronze"}
             </Text>
-            <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>
+            <Text
+              style={[styles.progressLabel, { color: colors.textSecondary }]}
+            >
               Next: {levelInfo.nextLevel}
             </Text>
           </View>
@@ -242,9 +266,8 @@ export default function WalletScreen() {
               style={[
                 styles.actionButton,
                 {
-                  backgroundColor: gamificationStatus?.daily_spin_available
-                    ? colors.primary
-                    : colors.border,
+                  backgroundColor: colors.primary,
+                  opacity: gamificationStatus?.daily_spin_available ? 1 : 0.7,
                 },
               ]}
               disabled={!gamificationStatus?.daily_spin_available}
@@ -259,22 +282,23 @@ export default function WalletScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                styles.actionButton,
-                { backgroundColor: colors.primaryDark },
-              ]}
+              style={[styles.actionButton, { backgroundColor: colors.primary }]}
               onPress={() => setShowWalletModal(true)}
             >
               <Coins size={20} color={colors.white} />
-              <Text style={[styles.actionButtonText, { color: colors.white }]}>View Wallet</Text>
+              <Text style={[styles.actionButtonText, { color: colors.white }]}>
+                View Wallet
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: colors.accent }]}
+              style={[styles.actionButton, { backgroundColor: colors.primary }]}
               onPress={handleShare}
             >
               <Share2 size={20} color={colors.white} />
-              <Text style={[styles.actionButtonText, { color: colors.white }]}>Refer Friends</Text>
+              <Text style={[styles.actionButtonText, { color: colors.white }]}>
+                Refer Friends
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -318,7 +342,12 @@ export default function WalletScreen() {
                   { backgroundColor: colors.success },
                 ]}
               >
-                <Text style={[styles.achievementRewardText, { color: colors.white }]}>
+                <Text
+                  style={[
+                    styles.achievementRewardText,
+                    { color: colors.white },
+                  ]}
+                >
                   +{achievement.reward_coins || 0} coins
                 </Text>
               </View>
@@ -381,9 +410,10 @@ export default function WalletScreen() {
                     {index + 1}
                   </Text>
                 </View>
-                <View>
+                <View style={styles.leaderboardInfo}>
                   <Text
                     style={[styles.leaderboardName, { color: colors.text }]}
+                    numberOfLines={1}
                   >
                     {user.name}
                   </Text>
@@ -464,7 +494,9 @@ export default function WalletScreen() {
                     { backgroundColor: colors.primary },
                   ]}
                 >
-                  <Text style={[styles.referralCodeText, { color: colors.white }]}>
+                  <Text
+                    style={[styles.referralCodeText, { color: colors.white }]}
+                  >
                     {referralData.referral_code}
                   </Text>
                 </View>
@@ -538,7 +570,9 @@ export default function WalletScreen() {
               onPress={handleShare}
             >
               <Share2 size={18} color={colors.white} />
-              <Text style={[styles.shareButtonText, { color: colors.white }]}>Share Referral Link</Text>
+              <Text style={[styles.shareButtonText, { color: colors.white }]}>
+                Share Referral Link
+              </Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -631,46 +665,50 @@ export default function WalletScreen() {
         </View>
 
         {/* Tab Navigation */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.tabsContainer}
-          contentContainerStyle={styles.tabsContent}
-        >
-          {tabs.map((tab) => {
-            const TabIcon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <TouchableOpacity
-                key={tab.id}
-                style={[
-                  styles.tab,
-                  {
-                    backgroundColor: isActive ? colors.primary : colors.surface,
-                  },
-                ]}
-                onPress={() => setActiveTab(tab.id)}
-              >
-                <TabIcon
-                  size={18}
-                  color={isActive ? colors.white : colors.text}
-                />
-                <Text
+        <View style={styles.tabsContainer}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.tabsContent}
+          >
+            {tabs.map((tab) => {
+              const TabIcon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <TouchableOpacity
+                  key={tab.id}
                   style={[
-                    styles.tabLabel,
-                    { color: isActive ? colors.white : colors.text },
+                    styles.tab,
+                    {
+                      backgroundColor: isActive
+                        ? colors.primary
+                        : colors.surface,
+                    },
                   ]}
-                  numberOfLines={1}
+                  onPress={() => setActiveTab(tab.id)}
                 >
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
+                  <TabIcon
+                    size={18}
+                    color={isActive ? colors.white : colors.text}
+                  />
+                  <Text
+                    style={[
+                      styles.tabLabel,
+                      { color: isActive ? colors.white : colors.text },
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {tab.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
 
         {/* Tab Content */}
         <ScrollView
+          style={{ flex: 1 }}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 56 + 10 + insets.bottom }}
           refreshControl={
@@ -752,13 +790,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   tabsContainer: {
-    marginBottom: 16,
-    flexGrow: 1,
+    height: 56,
+    flexShrink: 0,
   },
   tabsContent: {
     paddingHorizontal: 16,
     paddingVertical: 10,
     gap: 8,
+    alignItems: "center",
   },
   tab: {
     flexDirection: "row",
@@ -879,11 +918,13 @@ const styles = StyleSheet.create({
   },
   achievementsGrid: {
     gap: 12,
+    width: "100%",
   },
   achievementCard: {
+    width: "100%",
     padding: 16,
     borderRadius: 12,
-    alignItems: "center",
+    alignItems: "flex-start",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -893,28 +934,33 @@ const styles = StyleSheet.create({
   achievementIcon: {
     fontSize: 36,
     marginBottom: 8,
+    alignSelf: "flex-start",
   },
   achievementTitle: {
+    width: "100%",
     fontSize: 16,
     fontWeight: "600",
-    textAlign: "center",
+    textAlign: "left",
     marginBottom: 4,
   },
   achievementDesc: {
+    width: "100%",
     fontSize: 13,
-    textAlign: "center",
+    textAlign: "left",
     marginBottom: 12,
   },
   achievementReward: {
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
+    alignSelf: "flex-start",
   },
   achievementRewardText: {
     fontSize: 12,
     fontWeight: "600",
   },
   leaderboardContainer: {
+    width: "100%",
     borderRadius: 12,
     overflow: "hidden",
     shadowColor: "#000",
@@ -930,9 +976,15 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   leaderboardLeft: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
+    minWidth: 0,
+  },
+  leaderboardInfo: {
+    flex: 1,
+    minWidth: 0,
   },
   rankBadge: {
     width: 32,
@@ -948,21 +1000,27 @@ const styles = StyleSheet.create({
   leaderboardName: {
     fontSize: 15,
     fontWeight: "500",
+    flexShrink: 1,
   },
   leaderboardLevel: {
     fontSize: 12,
     marginTop: 2,
   },
   leaderboardRight: {
+    minWidth: 82,
+    marginLeft: 12,
     alignItems: "flex-end",
+    flexShrink: 0,
   },
   leaderboardCoins: {
     fontSize: 14,
     fontWeight: "600",
+    textAlign: "right",
   },
   leaderboardPoints: {
     fontSize: 12,
     marginTop: 2,
+    textAlign: "right",
   },
   rewardCard: {
     padding: 16,

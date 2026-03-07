@@ -7,7 +7,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { MessageCircle, ChevronRight } from "lucide-react-native";
+import { ChevronRight } from "lucide-react-native";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 
@@ -45,7 +45,12 @@ const SectionHeader = ({ title, subtitle, onSeeAll, colors }) => (
       <View style={{ flex: 1 }}>
         <View style={{ alignSelf: "flex-start" }}>
           <Text
-            style={{ fontSize: 18, fontWeight: "bold", color: colors.text, marginTop: 6 }}
+            style={{
+              fontSize: 18,
+              fontWeight: "bold",
+              color: colors.text,
+              marginTop: 6,
+            }}
           >
             {title}
           </Text>
@@ -63,7 +68,12 @@ const SectionHeader = ({ title, subtitle, onSeeAll, colors }) => (
         </View>
         {subtitle && (
           <Text
-            style={{ fontSize: 12, color: colors.textSecondary, marginTop: 4, marginBottom: 6 }}
+            style={{
+              fontSize: 12,
+              color: colors.textSecondary,
+              marginTop: 4,
+              marginBottom: 6,
+            }}
           >
             {subtitle}
           </Text>
@@ -106,7 +116,12 @@ const SectionTitle = ({ section, colors, onSeeAll }) => {
         <View style={{ flex: 1 }}>
           <View style={{ alignSelf: "flex-start" }}>
             <Text
-              style={{ fontSize: 18, fontWeight: "bold", color: colors.text, marginTop: 6 }}
+              style={{
+                fontSize: 18,
+                fontWeight: "bold",
+                color: colors.text,
+                marginTop: 6,
+              }}
             >
               {section.title || getSectionDefaultTitle(section.section_type)}
             </Text>
@@ -184,7 +199,11 @@ const RenderSection = ({ section, colors, router, featuredProducts }) => {
       return (
         <View
           key={section.section_id}
-          style={{ backgroundColor: colors.cardBg, marginTop: 0, marginBottom: 0 }}
+          style={{
+            backgroundColor: colors.cardBg,
+            marginTop: 0,
+            marginBottom: 0,
+          }}
         >
           <SectionTitle section={section} colors={colors} />
           <CategoryGrid showHeader={false} />
@@ -195,11 +214,15 @@ const RenderSection = ({ section, colors, router, featuredProducts }) => {
       return (
         <View
           key={section.section_id}
-          style={{ backgroundColor: colors.cardBg, marginTop: 0, marginBottom: 0 }}
+          style={{
+            backgroundColor: colors.cardBg,
+            marginTop: 0,
+            marginBottom: 0,
+          }}
         >
           <SectionTitle section={section} colors={colors} />
           {(section.config?.products?.length || featuredProducts?.length) >
-            0 ? (
+          0 ? (
             <View
               style={{
                 flexDirection: "row",
@@ -242,7 +265,11 @@ const RenderSection = ({ section, colors, router, featuredProducts }) => {
       return (
         <View
           key={section.section_id}
-          style={{ backgroundColor: colors.cardBg, marginTop: 0, marginBottom: 0 }}
+          style={{
+            backgroundColor: colors.cardBg,
+            marginTop: 0,
+            marginBottom: 0,
+          }}
         >
           <SectionTitle section={section} colors={colors} />
           <BrandsSection showHeader={false} />
@@ -310,11 +337,6 @@ export default function Home() {
     router.push("/products");
   };
 
-  // Handle chat press
-  const handleChatPress = () => {
-    // TODO: Implement chat functionality
-  };
-
   // Get products for "All Products" section
   const allProducts = products.slice(0, 6);
 
@@ -324,12 +346,12 @@ export default function Home() {
   // Sort sections by display_order
   const sortedSections = sections
     ? [...sections]
-      .filter((s) => s && s.enabled !== false)
-      .sort(
-        (a, b) =>
-          (a.display_order || a.order || 0) -
-          (b.display_order || b.order || 0),
-      )
+        .filter((s) => s && s.enabled !== false)
+        .sort(
+          (a, b) =>
+            (a.display_order || a.order || 0) -
+            (b.display_order || b.order || 0),
+        )
     : [];
 
   // Check if we have hero/banner at top (most common case)
@@ -468,43 +490,6 @@ export default function Home() {
             </View>
           )}
         </ScrollView>
-
-        {/* Floating Action Button (Chat) */}
-        <TouchableOpacity
-          onPress={handleChatPress}
-          style={{
-            position: "absolute",
-            bottom: bottomPadding + 8,
-            right: 16,
-            width: 56,
-            height: 56,
-            borderRadius: 28,
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: colors.primary,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 8,
-            elevation: 8,
-          }}
-          activeOpacity={0.8}
-        >
-          <MessageCircle size={28} color={colors.white} />
-          <View
-            style={{
-              position: "absolute",
-              top: 4,
-              right: 4,
-              width: 12,
-              height: 12,
-              borderRadius: 6,
-              backgroundColor: colors.success,
-              borderWidth: 2,
-              borderColor: colors.white,
-            }}
-          />
-        </TouchableOpacity>
       </View>
     </View>
   );
