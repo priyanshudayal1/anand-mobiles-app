@@ -457,10 +457,7 @@ export default function ProductFilterModal({ visible, onClose, onApply }) {
                           paddingVertical: 10,
                           fontSize: 14,
                           color: colors.text,
-                          backgroundColor:
-                            mode === "dark"
-                              ? colors.surfaceSecondary
-                              : colors.white,
+                          backgroundColor: colors.inputBg,
                         }}
                         placeholder="₹ 0"
                         placeholderTextColor={colors.textSecondary}
@@ -498,10 +495,7 @@ export default function ProductFilterModal({ visible, onClose, onApply }) {
                           paddingVertical: 10,
                           fontSize: 14,
                           color: colors.text,
-                          backgroundColor:
-                            mode === "dark"
-                              ? colors.surfaceSecondary
-                              : colors.white,
+                          backgroundColor: colors.inputBg,
                         }}
                         placeholder="₹ 10,00,000"
                         placeholderTextColor={colors.textSecondary}

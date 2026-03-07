@@ -54,7 +54,7 @@ const ProductImageGallery = ({
   };
 
   return (
-    <View style={{ backgroundColor: colors.white }}>
+    <View style={{ backgroundColor: colors.surface }}>
       {/* Main Image/Video Carousel */}
       <ScrollView
         horizontal

@@ -8,11 +8,11 @@ import {
   Dimensions,
   Pressable,
   StyleSheet,
-  Alert,
 } from "react-native";
 import { Image } from "expo-image";
 import { X, ChevronLeft, ChevronRight, Play } from "lucide-react-native";
 import { useTheme } from "../../store/useTheme";
+import { useToast } from "../../store/useToast";
 import * as WebBrowser from "expo-web-browser";
 
 const { width, height } = Dimensions.get("window");
@@ -21,6 +21,7 @@ const ImageZoomModal = ({ visible, onClose, media = [], initialIndex = 0 }) => {
   const { colors } = useTheme();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const scrollViewRef = useRef(null);
+  const { error } = useToast();
 
   // Check if media is a video URL
   const isVideo = (url) => {
@@ -38,7 +39,7 @@ const ImageZoomModal = ({ visible, onClose, media = [], initialIndex = 0 }) => {
     try {
       await WebBrowser.openBrowserAsync(url);
     } catch (_error) {
-      Alert.alert("Error", "Unable to open video");
+      error("Unable to open video");
     }
   };
 

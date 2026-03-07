@@ -37,6 +37,7 @@ class WebSocketService {
 
       const wsUrl = `${getWebSocketURL()}?token=${token}`;
 
+
       return new Promise((resolve) => {
         this.socket = new WebSocket(wsUrl);
 
@@ -52,17 +53,18 @@ class WebSocketService {
         this.socket.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
+
             this.handleMessage(data);
           } catch (error) {
-            console.error("🔌 WebSocket: Error parsing message", error);
           }
         };
 
         this.socket.onerror = (error) => {
-          this.emit("error", error);
+          this.emit("error", "Connection failed or token expired.");
         };
 
         this.socket.onclose = (event) => {
+
           this.isConnected = false;
           this.isConnecting = false;
           this.stopPingInterval();
@@ -93,7 +95,6 @@ class WebSocketService {
         }, 10000); // 10 second timeout
       });
     } catch (error) {
-      console.error("❌ WebSocket: Connection error", error);
       this.isConnecting = false;
       return false;
     }
@@ -145,10 +146,12 @@ class WebSocketService {
         break;
 
       case "new_notification":
+
         this.emit("new_notification", data.notification);
         break;
 
       case "broadcast_notification":
+
         this.emit("broadcast_notification", data.notification);
         break;
 
@@ -174,12 +177,11 @@ class WebSocketService {
         break;
 
       case "error":
-        console.error("❌ WebSocket: Server error", data.message);
         this.emit("server_error", data.message);
         break;
 
       default:
-        // Unknown message types are ignored
+      // Unknown message types are ignored
     }
   }
 
@@ -191,7 +193,6 @@ class WebSocketService {
       this.socket.send(JSON.stringify(data));
       return true;
     }
-    console.warn("🔌 WebSocket: Cannot send - not connected");
     return false;
   }
 
@@ -287,7 +288,6 @@ class WebSocketService {
         try {
           callback(data);
         } catch (error) {
-          console.error(`Error in WebSocket listener for ${event}:`, error);
         }
       });
     }

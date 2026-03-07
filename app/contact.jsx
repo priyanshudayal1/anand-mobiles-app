@@ -8,10 +8,10 @@ import {
   ActivityIndicator,
   RefreshControl,
   Linking,
-  Alert,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { GenericPageShimmer } from "../components/common/ShimmerPlaceholder";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
@@ -28,10 +28,12 @@ import {
 } from "lucide-react-native";
 import { useTheme } from "../store/useTheme";
 import { usePageContent } from "../store/usePageContent";
+import { useToast } from "../store/useToast";
 
 export default function ContactScreen() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
+  const isDark = isDarkMode();
   const {
     contactInfo,
     contactHero,
@@ -51,6 +53,7 @@ export default function ContactScreen() {
     subject: "",
     message: "",
   });
+  const { success, error: showError } = useToast();
 
   useEffect(() => {
     fetchContactInfo();
@@ -90,7 +93,7 @@ export default function ContactScreen() {
 
   const handleSubmit = async () => {
     if (!formData.name || !formData.email || !formData.message) {
-      Alert.alert("Error", "Please fill in all required fields");
+      showError("Please fill in all required fields");
       return;
     }
 
@@ -99,13 +102,10 @@ export default function ContactScreen() {
     setSubmitting(false);
 
     if (result.success) {
-      Alert.alert(
-        "Success",
-        "Thank you for your message! We'll get back to you soon.",
-      );
+      success("Thank you for your message! We'll get back to you soon.");
       setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
     } else {
-      Alert.alert("Error", result.error || "Failed to submit message");
+      showError(result.error || "Failed to submit message");
     }
   };
 
@@ -116,11 +116,7 @@ export default function ContactScreen() {
   if (loading && contactInfo.length === 0) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
+        <GenericPageShimmer />
       </SafeAreaView>
     );
   }
@@ -130,7 +126,7 @@ export default function ContactScreen() {
       style={{ flex: 1, backgroundColor: colors.background }}
       edges={["top"]}
     >
-      <StatusBar style={isDarkMode ? "light" : "dark"} />
+      <StatusBar style={isDark ? "light" : "dark"} />
 
       {/* Header */}
       <View
@@ -327,7 +323,7 @@ export default function ContactScreen() {
                 }}
                 style={{
                   flex: 1,
-                  backgroundColor: "#25D366",
+                  backgroundColor: colors.success,
                   paddingVertical: 14,
                   borderRadius: 12,
                   flexDirection: "row",

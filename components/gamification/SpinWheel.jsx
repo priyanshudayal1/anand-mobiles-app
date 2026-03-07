@@ -6,7 +6,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
-  Alert,
 } from "react-native";
 import Svg, { Path, G, Text as SvgText } from "react-native-svg";
 import {
@@ -26,6 +25,8 @@ import Animated, {
   FadeInUp,
 } from "react-native-reanimated";
 import { useGamification } from "../../store/useGamification";
+import { useToast } from "../../store/useToast";
+import { useTheme } from "../../store/useTheme";
 import { X, Sparkles, Loader2, Check, Trophy } from "lucide-react-native";
 
 const { width, height } = Dimensions.get("window");
@@ -170,6 +171,7 @@ export default function SpinWheel({
   onSpinComplete,
   canSpin = true,
 }) {
+  const { colors } = useTheme();
   const { spinWheel, gamificationConfig, fetchGamificationConfig, isLoading } =
     useGamification();
 
@@ -335,10 +337,7 @@ export default function SpinWheel({
 
     if (!canSpin) {
       isSpinning.value = false;
-      Alert.alert(
-        "Already Spun",
-        "You've already spun the wheel today. Come back tomorrow!",
-      );
+      warning("You've already spun the wheel today. Come back tomorrow!");
       return;
     }
 
@@ -382,7 +381,7 @@ export default function SpinWheel({
         if (targetSegmentIndex === -1) {
           targetSegmentIndex = Math.floor(Math.random() * segments.length);
         }
-        
+
         // Always use the segment object for display, not the API reward
         rewardToShow = segments[targetSegmentIndex];
       } else {
@@ -452,7 +451,7 @@ export default function SpinWheel({
           if (finished) {
             isSpinning.value = false;
             setIsSpinningState(false);
-            runOnJS(Alert.alert)("Error", "Failed to spin. Please try again.");
+            runOnJS(showError)("Failed to spin. Please try again.");
           }
         },
       );
@@ -552,6 +551,11 @@ export default function SpinWheel({
                 <TouchableOpacity
                   style={[
                     styles.spinButton,
+                    {
+                      backgroundColor: colors.surface,
+                      borderColor: colors.accent,
+                      shadowColor: colors.accent,
+                    },
                     (!canSpin || isSpinningState) && styles.spinButtonDisabled,
                   ]}
                   onPress={handleSpin}
@@ -561,13 +565,17 @@ export default function SpinWheel({
                   {isSpinningState ? (
                     <Loader2
                       size={24}
-                      color="#7c3aed"
+                      color={colors.accent}
                       style={{ transform: [{ rotate: "45deg" }] }}
                     />
                   ) : canSpin ? (
-                    <Text style={styles.spinButtonText}>SPIN</Text>
+                    <Text
+                      style={[styles.spinButtonText, { color: colors.accent }]}
+                    >
+                      SPIN
+                    </Text>
                   ) : (
-                    <Check size={24} color="#7c3aed" />
+                    <Check size={24} color={colors.accent} />
                   )}
                 </TouchableOpacity>
               </View>
@@ -584,14 +592,36 @@ export default function SpinWheel({
               >
                 <Animated.View
                   entering={FadeInUp.duration(500).springify()}
-                  style={styles.resultCard}
+                  style={[
+                    styles.resultCard,
+                    { backgroundColor: colors.surface },
+                  ]}
                 >
-                  <View style={styles.celebrationIcon}>
-                    <Trophy size={48} color="#7c3aed" />
+                  <View
+                    style={[
+                      styles.celebrationIcon,
+                      { backgroundColor: colors.warningLight },
+                    ]}
+                  >
+                    <Trophy size={48} color={colors.accent} />
                   </View>
-                  <Text style={styles.resultTitle}>Congratulations!</Text>
-                  <Text style={styles.resultSubtitle}>You won</Text>
-                  <View style={styles.rewardBadge}>
+                  <Text style={[styles.resultTitle, { color: colors.success }]}>
+                    Congratulations!
+                  </Text>
+                  <Text
+                    style={[
+                      styles.resultSubtitle,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    You won
+                  </Text>
+                  <View
+                    style={[
+                      styles.rewardBadge,
+                      { backgroundColor: colors.accent },
+                    ]}
+                  >
                     <Text style={styles.resultValue}>{result.label}</Text>
                   </View>
                   <TouchableOpacity
@@ -599,7 +629,11 @@ export default function SpinWheel({
                     onPress={handleClose}
                     activeOpacity={0.9}
                   >
-                    <Text style={styles.claimButtonText}>Close</Text>
+                    <Text
+                      style={[styles.claimButtonText, { color: colors.text }]}
+                    >
+                      Close
+                    </Text>
                   </TouchableOpacity>
                 </Animated.View>
               </Animated.View>

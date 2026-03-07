@@ -4,10 +4,10 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
   RefreshControl,
   useWindowDimensions,
 } from "react-native";
+import { GenericPageShimmer } from "../components/common/ShimmerPlaceholder";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
@@ -28,6 +28,7 @@ import { usePageContent } from "../store/usePageContent";
 export default function AboutScreen() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
+  const isDark = isDarkMode();
   const { width } = useWindowDimensions();
   const { content, loading, fetchPageContent, clearContent } = usePageContent();
   const [refreshing, setRefreshing] = React.useState(false);
@@ -101,7 +102,7 @@ export default function AboutScreen() {
       style={{ flex: 1, backgroundColor: colors.background }}
       edges={["top"]}
     >
-      <StatusBar style={isDarkMode ? "light" : "dark"} />
+      <StatusBar style={isDark ? "light" : "dark"} />
 
       {/* Header */}
       <View
@@ -185,9 +186,7 @@ export default function AboutScreen() {
           </Text>
 
           {loading ? (
-            <View style={{ padding: 32, alignItems: "center" }}>
-              <ActivityIndicator size="large" color={colors.primary} />
-            </View>
+            <GenericPageShimmer />
           ) : content ? (
             <View>{renderBackendContent(content)}</View>
           ) : (

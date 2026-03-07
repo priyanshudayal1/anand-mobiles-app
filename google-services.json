@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "403268549781",
+    "project_id": "anandmobiles-daa8b",
+    "storage_bucket": "anandmobiles-daa8b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:403268549781:android:f92b6637c6d3f35b076f9c",
+        "android_client_info": {
+          "package_name": "com.anandmobiles.anandmobiles"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "403268549781-lg7ddkoljh60t54vkfbm4dbd51u5lld6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.anandmobiles.anandmobiles",
+            "certificate_hash": "83919fa7f394c665e19ec93c7a8a9ae062aec732"
+          }
+        },
+        {
+          "client_id": "403268549781-6c4gvnrgol3v8mf81bj025mc8fs04nkh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_flFSOf9dAkOrU3t66N-_EmwCmMH0i5A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "403268549781-6c4gvnrgol3v8mf81bj025mc8fs04nkh.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "403268549781-lmnfnklpa9bqs0s3hu2favqen86h8acd.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.anandmobiles.anandmobiles"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

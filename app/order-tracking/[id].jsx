@@ -6,10 +6,10 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   RefreshControl,
-  Alert,
   Animated,
   Linking,
 } from "react-native";
+import { GenericPageShimmer } from "../../components/common/ShimmerPlaceholder";
 import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -18,6 +18,7 @@ import { Ionicons, Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as WebBrowser from "expo-web-browser";
 import { useTheme } from "../../store/useTheme";
 import { useOrderStore } from "../../store/useOrder";
+import { useToast } from "../../store/useToast";
 import api from "../../services/api";
 
 export default function OrderTracking() {
@@ -27,6 +28,7 @@ export default function OrderTracking() {
   const { getOrderById, currentOrder, isLoading, error } = useOrderStore();
   const [refreshing, setRefreshing] = useState(false);
   const [downloadingInvoice, setDownloadingInvoice] = useState(false);
+  const { error: showError } = useToast();
 
   // Animation value for progress bar
   const progressAnimation = useRef(new Animated.Value(0)).current;
@@ -206,7 +208,7 @@ export default function OrderTracking() {
       await WebBrowser.openBrowserAsync(invoiceUrl);
     } catch (error) {
       console.error("Error downloading invoice:", error);
-      Alert.alert("Error", "Failed to download invoice. Please try again.");
+      showError("Failed to download invoice. Please try again.");
     } finally {
       setDownloadingInvoice(false);
     }
@@ -229,14 +231,9 @@ export default function OrderTracking() {
         style={{
           flex: 1,
           backgroundColor: colors.background,
-          justifyContent: "center",
-          alignItems: "center",
         }}
       >
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={{ marginTop: 16, color: colors.textSecondary }}>
-          Loading order details...
-        </Text>
+        <GenericPageShimmer />
       </SafeAreaView>
     );
   }
@@ -523,7 +520,7 @@ export default function OrderTracking() {
                 <Text style={{ color: colors.text, fontWeight: "600" }}>
                   {new Date(
                     new Date(currentOrder.estimated_delivery).getTime() +
-                      5.5 * 60 * 60 * 1000,
+                    5.5 * 60 * 60 * 1000,
                   ).toLocaleString("en-IN", {
                     weekday: "short",
                     day: "2-digit",
@@ -769,7 +766,7 @@ export default function OrderTracking() {
                       width: 64,
                       height: 64,
                       borderRadius: 8,
-                      backgroundColor: colors.white,
+                      backgroundColor: colors.cardBg,
                       overflow: "hidden",
                       marginRight: 12,
                     }}

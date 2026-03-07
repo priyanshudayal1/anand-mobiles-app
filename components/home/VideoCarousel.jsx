@@ -199,9 +199,9 @@ export default function VideoCarousel({
             }}
           >
             {isMuted ? (
-              <VolumeX color="#FFF" size={20} />
+              <VolumeX color={colors.white} size={20} />
             ) : (
-              <Volume2 color="#FFF" size={20} />
+              <Volume2 color={colors.white} size={20} />
             )}
           </TouchableOpacity>
         )}
@@ -219,7 +219,7 @@ export default function VideoCarousel({
           {currentItem.title && (
             <Text
               style={{
-                color: "#FFF",
+                color: colors.white,
                 fontSize: 18,
                 fontWeight: "bold",
                 marginBottom: 4,
@@ -259,7 +259,7 @@ export default function VideoCarousel({
                 backgroundColor: "rgba(0,0,0,0.3)",
               }}
             >
-              <ChevronLeft color="#FFF" size={24} />
+              <ChevronLeft color={colors.white} size={24} />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={handleNext}
@@ -273,7 +273,7 @@ export default function VideoCarousel({
                 backgroundColor: "rgba(0,0,0,0.3)",
               }}
             >
-              <ChevronRight color="#FFF" size={24} />
+              <ChevronRight color={colors.white} size={24} />
             </TouchableOpacity>
           </>
         )}
@@ -297,7 +297,9 @@ export default function VideoCarousel({
                   height: index === currentIndex ? 8 : 6,
                   borderRadius: 4,
                   backgroundColor:
-                    index === currentIndex ? "#FFF" : "rgba(255,255,255,0.5)",
+                    index === currentIndex
+                      ? colors.white
+                      : "rgba(255,255,255,0.5)",
                 }}
               />
             ))}

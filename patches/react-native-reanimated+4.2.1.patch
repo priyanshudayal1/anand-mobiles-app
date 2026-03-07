@@ -1,0 +1,12 @@
+diff --git a/node_modules/react-native-reanimated/android/CMakeLists.txt b/node_modules/react-native-reanimated/android/CMakeLists.txt
+index d4731e6..44b5028 100644
+--- a/node_modules/react-native-reanimated/android/CMakeLists.txt
++++ b/node_modules/react-native-reanimated/android/CMakeLists.txt
+@@ -103,6 +103,7 @@ endif()
+ 
+ target_link_libraries(
+   reanimated
++  c++_shared
+   log
+   ReactAndroid::reactnative
+   ReactAndroid::jsi

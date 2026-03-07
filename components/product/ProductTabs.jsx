@@ -110,7 +110,7 @@ const ProductTabs = ({ product }) => {
       {/* Customers usually keep this item */}
       <View
         style={{
-          backgroundColor: colors.white,
+          backgroundColor: colors.surface,
           borderWidth: 1,
           borderColor: colors.success,
           borderRadius: 8,
@@ -512,7 +512,7 @@ const ProductTabs = ({ product }) => {
   };
 
   return (
-    <View style={{ backgroundColor: colors.white }}>
+    <View style={{ backgroundColor: colors.surface }}>
       {/* Tab Headers */}
       <ScrollView
         horizontal

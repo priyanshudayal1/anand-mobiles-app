@@ -4,8 +4,8 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
 } from "react-native";
+import { GenericPageShimmer } from "../components/common/ShimmerPlaceholder";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
@@ -22,6 +22,7 @@ import { usePageContent } from "../store/usePageContent";
 export default function FAQScreen() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
+  const isDark = isDarkMode();
   const { contactInfo, fetchContactInfo } = usePageContent();
 
   const [loading, setLoading] = useState(true);
@@ -237,12 +238,8 @@ export default function FAQScreen() {
         style={{ flex: 1, backgroundColor: colors.background }}
         edges={["top"]}
       >
-        <StatusBar style={isDarkMode ? "light" : "dark"} />
-        <View
-          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-        >
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
+        <StatusBar style={isDark ? "light" : "dark"} />
+        <GenericPageShimmer />
       </SafeAreaView>
     );
   }
@@ -252,7 +249,7 @@ export default function FAQScreen() {
       style={{ flex: 1, backgroundColor: colors.background }}
       edges={["top"]}
     >
-      <StatusBar style={isDarkMode ? "light" : "dark"} />
+      <StatusBar style={isDark ? "light" : "dark"} />
 
       {/* Header */}
       <View

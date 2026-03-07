@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
-import { auth } from "../services/firebaseConfig";
+import { auth, db } from "../services/firebaseConfig";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import api, { setUnauthorizedCallback } from "../services/api";
 import { useCartStore } from "./useCart";
 import { useAddressStore } from "./useAddress";
@@ -23,6 +23,35 @@ export const useAuthStore = create((set, get) => ({
       const userData = await AsyncStorage.getItem("userData");
       if (token && userData) {
         set({ user: JSON.parse(userData), isAuthenticated: true });
+      } else if (auth.currentUser) {
+        // Firebase user exists but no local data — restore from Firestore
+        const uid = auth.currentUser.uid;
+        const userDocRef = doc(db, "users", uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          const freshToken = await auth.currentUser.getIdToken();
+          const backendToken = await get()._fetchBackendToken(
+            freshToken,
+            auth.currentUser,
+            uid,
+          );
+          const activeToken = backendToken || freshToken;
+          const user = {
+            id: uid,
+            email: data.email || auth.currentUser.email,
+            firstName: data.first_name || "",
+            lastName: data.last_name || "",
+            phone: data.phone_number || "",
+            photoURL: data.photo_url || auth.currentUser.photoURL || "",
+            authProvider: data.auth_provider || "google",
+            token: activeToken,
+          };
+          await AsyncStorage.setItem("userToken", activeToken);
+          await AsyncStorage.setItem("userData", JSON.stringify(user));
+          await AsyncStorage.setItem("userId", uid);
+          set({ user, isAuthenticated: true });
+        }
       }
     } catch (e) {
       console.error("Auth initialization failed", e);
@@ -48,7 +77,7 @@ export const useAuthStore = create((set, get) => ({
 
       await AsyncStorage.setItem("userToken", data.token);
       await AsyncStorage.setItem("userData", JSON.stringify(user));
-      await AsyncStorage.setItem("userId", data.user_id); // For Firestore listener
+      await AsyncStorage.setItem("userId", data.user_id);
 
       set({ user, isAuthenticated: true, isLoading: false });
       return user;
@@ -87,7 +116,7 @@ export const useAuthStore = create((set, get) => ({
 
       await AsyncStorage.setItem("userToken", data.token);
       await AsyncStorage.setItem("userData", JSON.stringify(user));
-      await AsyncStorage.setItem("userId", data.user_id); // For Firestore listener
+      await AsyncStorage.setItem("userId", data.user_id);
 
       set({ user, isAuthenticated: true, isLoading: false });
       return user;
@@ -101,75 +130,157 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  googleLogin: async (idToken) => {
+  googleLogin: async (firebaseToken, googleUser) => {
     set({ isLoading: true, error: null });
     try {
-      // 1. Sign in to Firebase with the ID token
-      const credential = GoogleAuthProvider.credential(idToken);
-      const userCredential = await signInWithCredential(auth, credential);
-      const firebaseUser = userCredential.user;
+      const uid = googleUser.uid;
+      const userDocRef = doc(db, "users", uid);
+      const userDoc = await getDoc(userDocRef);
 
-      // 2. Prepare data for backend
-      // Note: We need to get a fresh ID token or reuse the one we have?
-      // The backend expects 'idToken' to verify with Google.
-      // We can use the one passed in, or get a fresh one from firebaseUser.
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const backendToken = await get()._fetchBackendToken(
+          firebaseToken,
+          googleUser,
+          uid,
+        );
+        const activeToken = backendToken || firebaseToken;
 
-      const backendPayload = {
-        idToken: idToken, // Using the token we got from Google Sign-In
-        email: firebaseUser.email,
-        firstName: firebaseUser.displayName?.split(" ")[0] || "",
-        lastName: firebaseUser.displayName?.split(" ").slice(1).join(" ") || "",
-        photoURL: firebaseUser.photoURL,
-        uid: firebaseUser.uid,
-        authProvider: "google",
-      };
+        const user = {
+          id: uid,
+          email: userData.email || googleUser.email,
+          firstName: userData.first_name || "",
+          lastName: userData.last_name || "",
+          phone: userData.phone_number || "",
+          photoURL: userData.photo_url || googleUser.photoURL || "",
+          authProvider: "google",
+          token: activeToken,
+        };
 
-      // 3. Send to backend (Try signup logic first as per web app)
-      let data;
-      try {
-        const response = await api.post("/users/signup", backendPayload);
-        data = response.data;
-      } catch (err) {
-        if (
-          err.response?.status === 409 &&
-          err.response?.data?.code === "USER_ALREADY_EXISTS"
-        ) {
-          // Fallback to login
-          const loginResponse = await api.post("/users/google-login", {
-            idToken,
-          });
-          data = loginResponse.data;
-        } else {
-          throw err;
-        }
+        await AsyncStorage.setItem("userToken", activeToken);
+        await AsyncStorage.setItem("userData", JSON.stringify(user));
+        await AsyncStorage.setItem("userId", uid);
+
+        set({ user, isAuthenticated: true, isLoading: false });
+
+        return { success: true, user };
+      } else {
+        // User not in Firestore — needs signup
+        set({ isLoading: false, error: null });
+        return { success: false, redirect_to_signup: true };
       }
-
-      const user = {
-        id: data.user_id,
-        email: data.email,
-        firstName: data.first_name,
-        lastName: data.last_name,
-        phone: data.phone_number,
-        photoURL: firebaseUser.photoURL,
-        token: data.token,
-      };
-
-      await AsyncStorage.setItem("userToken", data.token);
-      await AsyncStorage.setItem("userData", JSON.stringify(user));
-      await AsyncStorage.setItem("userId", data.user_id); // For Firestore listener
-
-      set({ user, isAuthenticated: true, isLoading: false });
-      return user;
     } catch (error) {
-      console.error("Google Login Flow Failed:", error);
-      const msg =
-        error.response?.data?.error ||
-        error.response?.data?.detail ||
-        error.message ||
-        "Google Login failed";
+      console.error("Google login error:", error);
+      const msg = error.message || "Google login failed";
       set({ error: msg, isLoading: false });
       throw error;
     }
+  },
+
+  googleSignup: async (firebaseToken, googleUser) => {
+    set({ isLoading: true, error: null });
+    try {
+      const uid = googleUser.uid;
+      const userDocRef = doc(db, "users", uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        // User already exists — redirect to login
+        set({ isLoading: false, error: null });
+        return { success: false, already_exists: true };
+      }
+
+      // Write user to Firestore with exact same structure as backend
+      const firestorePayload = {
+        email: googleUser.email || "",
+        first_name: googleUser.displayName?.split(" ")[0] || "",
+        last_name: googleUser.displayName?.split(" ").slice(1).join(" ") || "",
+        phone_number: null,
+        auth_provider: "google",
+        uid: uid,
+        photo_url: googleUser.photoURL || null,
+        created_at: serverTimestamp(),
+      };
+
+      await setDoc(userDocRef, firestorePayload);
+
+      const backendToken = await get()._fetchBackendToken(
+        firebaseToken,
+        googleUser,
+        uid,
+      );
+      const activeToken = backendToken || firebaseToken;
+
+      const user = {
+        id: uid,
+        email: firestorePayload.email,
+        firstName: firestorePayload.first_name,
+        lastName: firestorePayload.last_name,
+        phone: "",
+        photoURL: googleUser.photoURL || "",
+        authProvider: "google",
+        token: activeToken,
+      };
+
+      await AsyncStorage.setItem("userToken", activeToken);
+      await AsyncStorage.setItem("userData", JSON.stringify(user));
+      await AsyncStorage.setItem("userId", uid);
+
+      set({ user, isAuthenticated: true, isLoading: false });
+
+      return { success: true, user };
+    } catch (error) {
+      console.error("Google signup error:", error);
+      const msg = error.message || "Google signup failed";
+      set({ error: msg, isLoading: false });
+      throw error;
+    }
+  },
+
+  // Background helper: fetch backend JWT silently for API calls (cart, orders, etc.)
+  _fetchBackendToken: async (firebaseToken, googleUser, uid) => {
+    try {
+      const response = await api.post("/users/google-login", {
+        idToken: firebaseToken,
+        email: googleUser.email,
+        firstName: googleUser.displayName?.split(" ")[0] || "",
+        lastName: googleUser.displayName?.split(" ").slice(1).join(" ") || "",
+        photoURL: googleUser.photoURL || "",
+        uid: uid,
+        authProvider: "google",
+      });
+      const data = response.data;
+      if (data.token) {
+        console.log("Backend JWT fetched successfully");
+        return data.token;
+      }
+    } catch (err) {
+      // If backend is down or user not found on backend, try signup endpoint
+      try {
+        const response = await api.post("/users/signup", {
+          idToken: firebaseToken,
+          email: googleUser.email,
+          first_name: googleUser.displayName?.split(" ")[0] || "",
+          last_name:
+            googleUser.displayName?.split(" ").slice(1).join(" ") || "",
+          photoURL: googleUser.photoURL || "",
+          uid: uid,
+          authProvider: "google",
+        });
+        const data = response.data;
+        if (data.token) {
+          console.log("Backend JWT fetched via signup endpoint");
+          return data.token;
+        }
+      } catch (signupErr) {
+        console.log(
+          "Backend token fetch failed (non-blocking):",
+          signupErr.message,
+        );
+        // Keep using Firebase token — API calls may fail but auth works
+      }
+    }
+    return null;
   },
 
   logout: async () => {
@@ -177,8 +288,7 @@ export const useAuthStore = create((set, get) => ({
     try {
       await AsyncStorage.removeItem("userToken");
       await AsyncStorage.removeItem("userData");
-      await AsyncStorage.removeItem("userId"); // Clear userId
-      // Ideally sign out from Firebase too
+      await AsyncStorage.removeItem("userId");
       await auth.signOut();
 
       // Reset other stores
@@ -187,7 +297,7 @@ export const useAuthStore = create((set, get) => ({
       useWishlistStore.getState().reset();
       useOrderStore.getState().reset();
       useGamification.getState().reset();
-      useNotificationStore.getState().reset(); // Reset notifications and stop listener
+      useNotificationStore.getState().reset();
 
       set({ user: null, isAuthenticated: false, isLoading: false });
     } catch (error) {
@@ -202,7 +312,6 @@ export const useAuthStore = create((set, get) => ({
       const response = await api.get("/users/profile/");
       const data = response.data;
 
-      // Update user state with fresh data
       set((state) => {
         const updatedUser = { ...state.user, ...data };
         AsyncStorage.setItem("userData", JSON.stringify(updatedUser));
@@ -212,7 +321,6 @@ export const useAuthStore = create((set, get) => ({
       return data;
     } catch (error) {
       console.error("Fetch profile failed", error);
-      // Don't set global error for background fetches to avoid UI disruption
       set({ isLoading: false });
       throw error;
     }
@@ -224,16 +332,13 @@ export const useAuthStore = create((set, get) => ({
       const response = await api.post("/users/profile/update/", profileData);
       const data = response.data;
 
-      // Backend returns { message: "...", user: { ... } } on success
       if (response.status === 200 && data.user) {
-        // Update user state with new data from backend
         set((state) => {
           const updatedUser = {
             ...state.user,
             firstName: data.user.first_name,
             lastName: data.user.last_name,
             phone: data.user.phone_number,
-            // Ensure email is preserved or updated if backend sends it
             email: data.user.email || state.user.email,
           };
           AsyncStorage.setItem("userData", JSON.stringify(updatedUser));
@@ -241,7 +346,6 @@ export const useAuthStore = create((set, get) => ({
         });
         return { success: true, ...data };
       } else if (response.status === 200) {
-        // Fallback if user object isn't returned exactly as expected but status is 200
         set({ isLoading: false });
         return { success: true, ...data };
       }

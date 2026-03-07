@@ -1,9 +1,11 @@
 import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Appearance } from "react-native";
 import api from "../services/api";
 
 // Storage key for persisting theme
 const THEME_STORAGE_KEY = "@anand_mobiles_theme";
+const THEME_PREFERENCE_KEY = "@anand_mobiles_theme_preference";
 
 // Light mode colors - matching backend defaults
 const lightColors = {
@@ -98,31 +100,66 @@ const generateDerivedColors = (primaryColor, mode = "light") => {
 export const useTheme = create((set, get) => ({
   colors: defaultTheme.colors,
   mode: defaultTheme.mode,
+  themePreference: "system", // 'light', 'dark', or 'system'
   isLoading: false,
   isInitialized: false,
   error: null,
   lastFetched: null,
+  appearanceSubscription: null, // Store the subscription reference
 
   // Initialize theme from storage and fetch from backend
   initializeTheme: async () => {
     try {
       set({ isLoading: true });
 
+      // Load theme preference (system/light/dark)
+      const savedPreference = await AsyncStorage.getItem(THEME_PREFERENCE_KEY);
+      const themePreference = savedPreference || "system";
+
+      // Determine actual mode based on preference
+      let actualMode = "light";
+      if (themePreference === "system") {
+        const systemColorScheme = Appearance.getColorScheme();
+        actualMode = systemColorScheme === "dark" ? "dark" : "light";
+      } else {
+        actualMode = themePreference;
+      }
+
       // Try to load cached theme from AsyncStorage
       const cachedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
       if (cachedTheme) {
         const parsed = JSON.parse(cachedTheme);
-        const baseColors = parsed.mode === "dark" ? darkColors : lightColors;
+        const baseColors = actualMode === "dark" ? darkColors : lightColors;
         set({
           colors: { ...baseColors, ...parsed.colors },
-          mode: parsed.mode || "light",
+          mode: actualMode,
+          themePreference: themePreference,
+        });
+      } else {
+        const baseColors = actualMode === "dark" ? darkColors : lightColors;
+        set({
+          mode: actualMode,
+          themePreference: themePreference,
+          colors: baseColors,
         });
       }
 
-      // Fetch latest theme from backend
-      await get().fetchTheme();
+      // Listen to system theme changes if preference is 'system'
+      if (themePreference === "system") {
+        const subscription = Appearance.addChangeListener(({ colorScheme }) => {
+          const newMode = colorScheme === "dark" ? "dark" : "light";
+          get().applyMode(newMode);
+        });
+        set({ appearanceSubscription: subscription });
+      }
 
+      // Mark as initialized immediately so the UI can mount with cached/system colors
       set({ isInitialized: true, isLoading: false });
+
+      // Fetch latest theme from backend in the background without blocking the UI
+      get().fetchTheme().catch(err => {
+        console.log("Background theme fetch failed, using cached theme.", err);
+      });
     } catch (error) {
       console.error("Failed to initialize theme:", error);
       set({ isInitialized: true, isLoading: false });
@@ -135,16 +172,17 @@ export const useTheme = create((set, get) => ({
     try {
       const response = await api.get("/admin/theme/public/");
       if (response.data && response.data.success && response.data.theme) {
-        const { colors: backendColors, mode: backendMode } =
-          response.data.theme;
-        const mode = backendMode || "light";
+        const { colors: backendColors } = response.data.theme;
 
-        // Get base colors based on mode
-        const baseColors = mode === "dark" ? darkColors : lightColors;
+        // Use the user's current mode preference, NOT the backend mode
+        const currentMode = get().mode;
+
+        // Get base colors based on user's current mode
+        const baseColors = currentMode === "dark" ? darkColors : lightColors;
 
         // Generate derived colors from primary if primary was updated
         const derivedColors = backendColors?.primary
-          ? generateDerivedColors(backendColors.primary, mode)
+          ? generateDerivedColors(backendColors.primary, currentMode)
           : {};
 
         // Merge: base colors <- derived colors <- backend colors
@@ -154,21 +192,20 @@ export const useTheme = create((set, get) => ({
           ...backendColors,
         };
 
-        // Save to state
+        // Save to state - keep user's mode
         set({
           colors: mergedColors,
-          mode: mode,
           isLoading: false,
           lastFetched: new Date().toISOString(),
         });
 
-        // Persist to AsyncStorage
+        // Persist backend colors to AsyncStorage (without overriding mode)
         await AsyncStorage.setItem(
           THEME_STORAGE_KEY,
           JSON.stringify({
             colors: backendColors,
-            mode: mode,
-          })
+            mode: currentMode,
+          }),
         );
       } else {
         set({ isLoading: false });
@@ -179,13 +216,9 @@ export const useTheme = create((set, get) => ({
     }
   },
 
-  // Toggle between light and dark mode
-  toggleMode: async () => {
-    const currentMode = get().mode;
-    const newMode = currentMode === "light" ? "dark" : "light";
+  // Helper to apply mode without changing preference
+  applyMode: async (newMode) => {
     const baseColors = newMode === "dark" ? darkColors : lightColors;
-
-    // Get current custom colors (from backend)
     const cachedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
     let customColors = {};
     if (cachedTheme) {
@@ -207,15 +240,46 @@ export const useTheme = create((set, get) => ({
       mode: newMode,
       colors: mergedColors,
     });
+  },
 
-    // Update storage with new mode
-    await AsyncStorage.setItem(
-      THEME_STORAGE_KEY,
-      JSON.stringify({
-        colors: customColors,
-        mode: newMode,
-      })
-    );
+  // Set theme preference (system/light/dark)
+  setThemePreference: async (preference) => {
+    if (!["system", "light", "dark"].includes(preference)) return;
+
+    // Remove existing appearance listener if any
+    const currentSubscription = get().appearanceSubscription;
+    if (currentSubscription) {
+      currentSubscription.remove();
+      set({ appearanceSubscription: null });
+    }
+
+    set({ themePreference: preference });
+    await AsyncStorage.setItem(THEME_PREFERENCE_KEY, preference);
+
+    // Determine actual mode
+    let actualMode = "light";
+    if (preference === "system") {
+      const systemColorScheme = Appearance.getColorScheme();
+      actualMode = systemColorScheme === "dark" ? "dark" : "light";
+
+      // Add listener for system changes
+      const subscription = Appearance.addChangeListener(({ colorScheme }) => {
+        const newMode = colorScheme === "dark" ? "dark" : "light";
+        get().applyMode(newMode);
+      });
+      set({ appearanceSubscription: subscription });
+    } else {
+      actualMode = preference;
+    }
+
+    await get().applyMode(actualMode);
+  },
+
+  // Toggle between light and dark mode (legacy - for manual toggle)
+  toggleMode: async () => {
+    const currentMode = get().mode;
+    const newMode = currentMode === "light" ? "dark" : "light";
+    await get().setThemePreference(newMode);
   },
 
   // Set mode explicitly
@@ -251,7 +315,7 @@ export const useTheme = create((set, get) => ({
       JSON.stringify({
         colors: customColors,
         mode: mode,
-      })
+      }),
     );
   },
 

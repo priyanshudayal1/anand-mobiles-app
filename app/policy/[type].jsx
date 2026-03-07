@@ -4,9 +4,9 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
   RefreshControl,
 } from "react-native";
+import { GenericPageShimmer } from "../../components/common/ShimmerPlaceholder";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -183,6 +183,7 @@ export default function PolicyScreen() {
   const { type } = useLocalSearchParams();
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
+  const isDark = isDarkMode();
   const { content, loading, fetchPageContent, clearContent } = usePageContent();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -298,7 +299,7 @@ export default function PolicyScreen() {
       style={{ flex: 1, backgroundColor: colors.background }}
       edges={["top"]}
     >
-      <StatusBar style={isDarkMode ? "light" : "dark"} />
+      <StatusBar style={isDark ? "light" : "dark"} />
 
       {/* Header */}
       <View
@@ -386,7 +387,7 @@ export default function PolicyScreen() {
         <View style={{ padding: 16 }}>
           {loading ? (
             <View style={{ padding: 40, alignItems: "center" }}>
-              <ActivityIndicator size="large" color={colors.primary} />
+              <GenericPageShimmer />
             </View>
           ) : (
             <View

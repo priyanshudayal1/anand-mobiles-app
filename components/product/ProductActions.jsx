@@ -25,7 +25,7 @@ const ProductActions = ({
 
   if (!inStock) {
     return (
-      <View style={{ padding: 16, backgroundColor: colors.white }}>
+      <View style={{ padding: 16, backgroundColor: colors.surface }}>
         <View
           style={{
             backgroundColor: colors.error + "10",
@@ -96,14 +96,9 @@ const ProductActions = ({
       style={{
         paddingHorizontal: 16,
         marginBottom: 16,
-        backgroundColor: colors.white,
+        backgroundColor: colors.surface,
       }}
     >
-      {/* EMI Offers */}
-      <View style={{ marginBottom: 16 }}>
-        <EMIOffers price={price} />
-      </View>
-
       {/* Price Summary Card */}
       <View
         style={{

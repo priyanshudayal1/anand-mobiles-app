@@ -13,7 +13,8 @@ const QuantityPickerModal = ({
   const { colors } = useTheme();
 
   // Generate quantity options (1 to stock, max 10 for display)
-  const maxDisplay = Math.min(stock, 10);
+  const safeStock = Math.max(0, stock || 0);
+  const maxDisplay = Math.min(safeStock, 10);
   const quantities = Array.from({ length: maxDisplay }, (_, i) => i + 1);
 
   const handleSelect = (qty) => {
@@ -37,7 +38,7 @@ const QuantityPickerModal = ({
       >
         <View
           style={{
-            backgroundColor: colors.white,
+            backgroundColor: colors.surface,
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
             maxHeight: "60%",

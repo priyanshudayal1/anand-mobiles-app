@@ -1,9 +1,10 @@
-export const BACKEND_URL = "http://192.168.29.7:8000/api";
+// export const BACKEND_URL = "http://192.168.29.7:8000/api";
+export const BACKEND_URL = "https://anandmobiles.com/api";
 
 // WebSocket URL for real-time notifications
 export const getWebSocketURL = () => {
-  // Convert HTTP URL to WebSocket URL
-  let wsUrl = BACKEND_URL.replace(/^http/, "ws");
+  // Convert HTTP/HTTPS URL to WebSocket URL (http -> ws, https -> wss)
+  let wsUrl = BACKEND_URL.replace(/^https/, "wss").replace(/^http/, "ws");
   // Remove /api suffix if present to get base URL
   wsUrl = wsUrl.replace(/\/api$/, "");
   return `${wsUrl}/ws/notifications/`;
@@ -27,7 +28,6 @@ export const API_ENDPOINTS = {
   // Auth
   login: "/users/login/",
   register: "/users/register/",
-  googleLogin: "/users/google-login/",
   logout: "/users/logout/",
   profile: "/users/profile/",
 
@@ -100,4 +100,12 @@ export const API_ENDPOINTS = {
   referrals: "/users/rewards/referrals/",
   spinWheel: "/users/rewards/spin-wheel/",
   loginStreak: "/users/rewards/login-streak/",
+
+  // Coupons
+  activeCoupons: "/admin/coupons/active/",
+  validateCoupon: "/admin/coupons/validate/",
+
+  // Coin Discounts
+  coinEconomy: "/users/coins/economy/",
+  calculateCoinDiscount: "/users/coins/calculate-discount/",
 };

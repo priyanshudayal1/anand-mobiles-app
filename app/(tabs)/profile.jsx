@@ -11,7 +11,7 @@ import {
   ToastAndroid,
   Platform,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
@@ -28,9 +28,12 @@ export default function Profile() {
     isLoading,
     error,
   } = useAuthStore();
-  const { colors, isDarkMode } = useTheme();
+  const { colors, isDarkMode, themePreference, setThemePreference, mode } =
+    useTheme();
+  const insets = useSafeAreaInsets();
 
   const [isEditing, setIsEditing] = useState(false);
+  const [showThemeModal, setShowThemeModal] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -136,11 +139,14 @@ export default function Profile() {
   const isIncomplete = !user?.firstName || !user?.lastName || !user?.phone;
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      edges={["top"]}
-    >
-      <StatusBar style={isDarkMode() ? "light" : "dark"} />
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <StatusBar
+        style={isDarkMode() ? "light" : "dark"}
+        backgroundColor={colors.surface}
+      />
+
+      {/* Status bar fill */}
+      <View style={{ height: insets.top, backgroundColor: colors.surface }} />
 
       {/* Header */}
       <View
@@ -160,13 +166,13 @@ export default function Profile() {
         </Text>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 16 }}>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 56 + 10 + insets.bottom }}>
         {/* Incomplete Profile Banner */}
         {isIncomplete && (
           <View
             style={{
-              backgroundColor: "#fff3cd",
-              borderColor: "#ffaa00",
+              backgroundColor: colors.warningLight,
+              borderColor: colors.warning,
               borderWidth: 1,
               padding: 12,
               borderRadius: 8,
@@ -174,11 +180,17 @@ export default function Profile() {
             }}
           >
             <Text
-              style={{ color: "#856404", fontWeight: "bold", marginBottom: 4 }}
+              style={{
+                color: colors.warning,
+                fontWeight: "bold",
+                marginBottom: 4,
+              }}
             >
               ⚠️ Incomplete Profile
             </Text>
-            <Text style={{ color: "#856404", fontSize: 13, marginBottom: 8 }}>
+            <Text
+              style={{ color: colors.warning, fontSize: 13, marginBottom: 8 }}
+            >
               Your profile is missing important information. Please complete
               your profile.
             </Text>
@@ -194,7 +206,11 @@ export default function Profile() {
                 }}
               >
                 <Text
-                  style={{ color: "#fff", fontSize: 12, fontWeight: "600" }}
+                  style={{
+                    color: colors.white,
+                    fontSize: 12,
+                    fontWeight: "600",
+                  }}
                 >
                   Complete Profile Now
                 </Text>
@@ -491,15 +507,98 @@ export default function Profile() {
                   gap: 8,
                 }}
               >
-                {isLoading && <ActivityIndicator color="#fff" size="small" />}
+                {isLoading && (
+                  <ActivityIndicator color={colors.white} size="small" />
+                )}
                 <Text
-                  style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}
+                  style={{
+                    color: colors.white,
+                    fontWeight: "bold",
+                    fontSize: 16,
+                  }}
                 >
                   Save Changes
                 </Text>
               </TouchableOpacity>
             )}
           </View>
+        </View>
+
+        {/* Theme Settings Section */}
+        <View
+          style={{
+            backgroundColor: colors.surface,
+            borderRadius: 12,
+            padding: 16,
+            marginBottom: 20,
+            shadowColor: colors.text,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 2,
+            borderWidth: 1,
+            borderColor: colors.borderLight,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: "600",
+              color: colors.text,
+              marginBottom: 16,
+            }}
+          >
+            Appearance
+          </Text>
+
+          <TouchableOpacity
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingVertical: 8,
+            }}
+            onPress={() => setShowThemeModal(true)}
+          >
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
+            >
+              <Ionicons
+                name={isDarkMode() ? "moon" : "sunny"}
+                size={22}
+                color={colors.primary}
+              />
+              <View>
+                <Text
+                  style={{
+                    fontSize: 15,
+                    color: colors.text,
+                    fontWeight: "500",
+                  }}
+                >
+                  Theme
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    color: colors.textSecondary,
+                    marginTop: 2,
+                  }}
+                >
+                  {themePreference === "system"
+                    ? "System Default"
+                    : themePreference === "dark"
+                      ? "Dark"
+                      : "Light"}
+                </Text>
+              </View>
+            </View>
+            <Ionicons
+              name="chevron-forward"
+              size={18}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
         </View>
 
         {/* Other Sections Links - Grid Layout */}
@@ -764,6 +863,265 @@ export default function Profile() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </SafeAreaView>
+
+      {/* Theme Selection Modal */}
+      <Modal
+        visible={showThemeModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowThemeModal(false)}
+      >
+        <TouchableOpacity
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          activeOpacity={1}
+          onPress={() => setShowThemeModal(false)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            style={{
+              width: "85%",
+              backgroundColor: colors.surface,
+              borderRadius: 16,
+              padding: 20,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: "bold",
+                color: colors.text,
+                marginBottom: 20,
+                textAlign: "center",
+              }}
+            >
+              Choose Theme
+            </Text>
+
+            {/* System Default Option */}
+            <TouchableOpacity
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: 16,
+                borderRadius: 12,
+                backgroundColor:
+                  themePreference === "system"
+                    ? colors.primaryLight
+                    : colors.backgroundSecondary,
+                marginBottom: 12,
+                borderWidth: 2,
+                borderColor:
+                  themePreference === "system" ? colors.primary : "transparent",
+              }}
+              onPress={() => {
+                setThemePreference("system");
+                setShowThemeModal(false);
+              }}
+            >
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
+              >
+                <Ionicons
+                  name="phone-portrait-outline"
+                  size={24}
+                  color={
+                    themePreference === "system" ? colors.primary : colors.text
+                  }
+                />
+                <View>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: "600",
+                      color:
+                        themePreference === "system"
+                          ? colors.primary
+                          : colors.text,
+                    }}
+                  >
+                    System Default
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      color: colors.textSecondary,
+                      marginTop: 2,
+                    }}
+                  >
+                    Follow device settings
+                  </Text>
+                </View>
+              </View>
+              {themePreference === "system" && (
+                <Ionicons
+                  name="checkmark-circle"
+                  size={24}
+                  color={colors.primary}
+                />
+              )}
+            </TouchableOpacity>
+
+            {/* Light Mode Option */}
+            <TouchableOpacity
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: 16,
+                borderRadius: 12,
+                backgroundColor:
+                  themePreference === "light"
+                    ? colors.primaryLight
+                    : colors.backgroundSecondary,
+                marginBottom: 12,
+                borderWidth: 2,
+                borderColor:
+                  themePreference === "light" ? colors.primary : "transparent",
+              }}
+              onPress={() => {
+                setThemePreference("light");
+                setShowThemeModal(false);
+              }}
+            >
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
+              >
+                <Ionicons
+                  name="sunny"
+                  size={24}
+                  color={
+                    themePreference === "light" ? colors.primary : colors.text
+                  }
+                />
+                <View>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: "600",
+                      color:
+                        themePreference === "light"
+                          ? colors.primary
+                          : colors.text,
+                    }}
+                  >
+                    Light Mode
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      color: colors.textSecondary,
+                      marginTop: 2,
+                    }}
+                  >
+                    Bright and clear
+                  </Text>
+                </View>
+              </View>
+              {themePreference === "light" && (
+                <Ionicons
+                  name="checkmark-circle"
+                  size={24}
+                  color={colors.primary}
+                />
+              )}
+            </TouchableOpacity>
+
+            {/* Dark Mode Option */}
+            <TouchableOpacity
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: 16,
+                borderRadius: 12,
+                backgroundColor:
+                  themePreference === "dark"
+                    ? colors.primaryLight
+                    : colors.backgroundSecondary,
+                marginBottom: 16,
+                borderWidth: 2,
+                borderColor:
+                  themePreference === "dark" ? colors.primary : "transparent",
+              }}
+              onPress={() => {
+                setThemePreference("dark");
+                setShowThemeModal(false);
+              }}
+            >
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
+              >
+                <Ionicons
+                  name="moon"
+                  size={24}
+                  color={
+                    themePreference === "dark" ? colors.primary : colors.text
+                  }
+                />
+                <View>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: "600",
+                      color:
+                        themePreference === "dark"
+                          ? colors.primary
+                          : colors.text,
+                    }}
+                  >
+                    Dark Mode
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      color: colors.textSecondary,
+                      marginTop: 2,
+                    }}
+                  >
+                    Easy on the eyes
+                  </Text>
+                </View>
+              </View>
+              {themePreference === "dark" && (
+                <Ionicons
+                  name="checkmark-circle"
+                  size={24}
+                  color={colors.primary}
+                />
+              )}
+            </TouchableOpacity>
+
+            {/* Close Button */}
+            <TouchableOpacity
+              style={{
+                padding: 14,
+                borderRadius: 10,
+                backgroundColor: colors.backgroundSecondary,
+                alignItems: "center",
+              }}
+              onPress={() => setShowThemeModal(false)}
+            >
+              <Text
+                style={{ fontSize: 16, fontWeight: "600", color: colors.text }}
+              >
+                Close
+              </Text>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+    </View>
   );
 }

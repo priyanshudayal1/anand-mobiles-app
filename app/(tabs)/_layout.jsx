@@ -8,27 +8,29 @@ export default function TabLayout() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
-  // Calculate bottom padding - use safe area insets for gesture phones, minimum for button phones
-  const bottomPadding = Math.max(insets.bottom, 8);
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: colors.tabBarBg || "#FFFFFF",
+          backgroundColor: colors.tabBarBg,
           borderTopWidth: 1,
-          borderTopColor: colors.border || "#E5E5E5",
-          height: 56 + bottomPadding,
-          paddingBottom: bottomPadding,
-          paddingTop: 8,
+          borderTopColor: colors.border,
+          height: 56,
+          paddingBottom: 0,
+          paddingTop: 0,
           elevation: 8,
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
           shadowRadius: 4,
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
         },
-        tabBarActiveTintColor: colors.primary || "#FF8C00",
-        tabBarInactiveTintColor: colors.tabBarInactive || "#666666",
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.tabBarInactive,
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: "500",
@@ -43,9 +45,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color, size }) => (
-            <House size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <House size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -59,9 +59,7 @@ export default function TabLayout() {
         name="wallet"
         options={{
           title: "Wallet",
-          tabBarIcon: ({ color, size }) => (
-            <Wallet size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Wallet size={size} color={color} />,
         }}
       />
       <Tabs.Screen

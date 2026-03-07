@@ -38,6 +38,9 @@ yarn-error.*
 *firebase-adminsdk*.json
 *serviceAccountKey*.json
 
+# Google OAuth credentials (sensitive)
+client_secret*.json
+
 # typescript
 *.tsbuildinfo
 
@@ -46,5 +49,3 @@ app-example
 # generated native folders
 /ios
 /android
-google-services.json
-GoogleService-Info.plist
