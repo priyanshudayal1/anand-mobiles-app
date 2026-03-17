@@ -17,6 +17,27 @@ export const APP_CONFIG = {
   version: "1.0.0",
 };
 
+const sanitizePhoneDigits = (value = "") => value.replace(/\D/g, "");
+
+const defaultBusinessPhone = "9535337004";
+const configuredBusinessPhone =
+  process.env.EXPO_PUBLIC_BUSINESS_PHONE || defaultBusinessPhone;
+const businessPhoneDigits =
+  sanitizePhoneDigits(configuredBusinessPhone) ||
+  sanitizePhoneDigits(defaultBusinessPhone);
+
+export const BUSINESS_CONTACT = {
+  phone: configuredBusinessPhone,
+  phoneDigits: businessPhoneDigits,
+  email:
+    process.env.EXPO_PUBLIC_BUSINESS_EMAIL || "anandentblr@gmail.com",
+  whatsapp:
+    process.env.EXPO_PUBLIC_BUSINESS_WHATSAPP ||
+    (businessPhoneDigits.length === 10
+      ? `91${businessPhoneDigits}`
+      : businessPhoneDigits),
+};
+
 // Theme refresh interval (in milliseconds) - refresh every 5 minutes
 export const THEME_REFRESH_INTERVAL = 5 * 60 * 1000;
 

@@ -1,5 +1,49 @@
 import { create } from "zustand";
 import api from "../services/api";
+import { BUSINESS_CONTACT } from "../constants/constants";
+
+const normalizeContactInfo = (contactInfo = []) => {
+  let hasPhone = false;
+  let hasEmail = false;
+
+  const normalized = contactInfo.map((item) => {
+    if (item.icon === "FiPhone") {
+      hasPhone = true;
+      return {
+        ...item,
+        details: [BUSINESS_CONTACT.phone],
+      };
+    }
+
+    if (item.icon === "FiMail") {
+      hasEmail = true;
+      return {
+        ...item,
+        details: [BUSINESS_CONTACT.email],
+      };
+    }
+
+    return item;
+  });
+
+  if (!hasPhone) {
+    normalized.unshift({
+      icon: "FiPhone",
+      title: "Phone Number",
+      details: [BUSINESS_CONTACT.phone],
+    });
+  }
+
+  if (!hasEmail) {
+    normalized.push({
+      icon: "FiMail",
+      title: "Email Address",
+      details: [BUSINESS_CONTACT.email],
+    });
+  }
+
+  return normalized;
+};
 
 export const usePageContent = create((set, get) => ({
   // State
@@ -72,7 +116,7 @@ export const usePageContent = create((set, get) => ({
       if (response.data && response.data.success) {
         const data = response.data.data;
         set({
-          contactInfo: data.contact_info || [],
+          contactInfo: normalizeContactInfo(data.contact_info || []),
           contactHero: data.hero || {
             title: "Contact Us",
             description: "Have questions? We're here to help!",
@@ -87,16 +131,16 @@ export const usePageContent = create((set, get) => ({
       console.error("Error fetching contact info:", error);
       // Use default values if fetch fails
       set({
-        contactInfo: [
+        contactInfo: normalizeContactInfo([
           {
             icon: "FiPhone",
             title: "Phone Number",
-            details: ["+91 98765 43210"],
+            details: [BUSINESS_CONTACT.phone],
           },
           {
             icon: "FiMail",
             title: "Email Address",
-            details: ["support@anandmobiles.com"],
+            details: [BUSINESS_CONTACT.email],
           },
           {
             icon: "FiMapPin",
@@ -108,7 +152,7 @@ export const usePageContent = create((set, get) => ({
             title: "Working Hours",
             details: ["Mon - Sat: 10 AM - 8 PM"],
           },
-        ],
+        ]),
         contactFaq: [
           {
             question: "What is your return policy?",

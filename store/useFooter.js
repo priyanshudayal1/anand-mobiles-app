@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import api from "../services/api";
-import { API_ENDPOINTS } from "../constants/constants";
+import { API_ENDPOINTS, BUSINESS_CONTACT } from "../constants/constants";
 
 export const useFooterStore = create((set, get) => ({
     // State
@@ -44,11 +44,13 @@ export const useFooterStore = create((set, get) => ({
     // Get contact info
     getContactInfo: () => {
         const { footerData } = get();
-        return footerData?.contact_info || {
-            phone: "+91 9876543210",
-            email: "contact@anandmobiles.com",
-            whatsapp: "919876543210",
-            address: "123 Tech Street, Mobile City",
+        return {
+            ...(footerData?.contact_info || {
+                address: "123 Tech Street, Mobile City",
+            }),
+            phone: BUSINESS_CONTACT.phone,
+            email: BUSINESS_CONTACT.email,
+            whatsapp: BUSINESS_CONTACT.whatsapp,
         };
     },
 

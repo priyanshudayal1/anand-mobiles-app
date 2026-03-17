@@ -28,6 +28,7 @@ import {
 } from "lucide-react-native";
 import { useTheme } from "../store/useTheme";
 import { usePageContent } from "../store/usePageContent";
+import { BUSINESS_CONTACT } from "../constants/constants";
 import { useToast } from "../store/useToast";
 
 export default function ContactScreen() {
@@ -319,7 +320,9 @@ export default function ContactScreen() {
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {
-                  Linking.openURL("https://wa.me/919876543210");
+                  Linking.openURL(
+                    `https://wa.me/${BUSINESS_CONTACT.whatsapp}`,
+                  );
                 }}
                 style={{
                   flex: 1,
