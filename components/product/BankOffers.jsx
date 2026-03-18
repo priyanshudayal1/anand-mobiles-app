@@ -111,79 +111,92 @@ export default function BankOffers({ price, productId }) {
         )}
       </View>
 
-      {/* 2x2 Grid */}
-      <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-        {displayOffers.map((offer, idx) => (
-          <TouchableOpacity
-            key={offer.offer_id}
-            onPress={() => setShowModal(true)}
+      {/* 2x2 Grid — split into explicit rows so heights align */}
+      {[displayOffers.slice(0, 2), displayOffers.slice(2, 4)].map((row, rowIdx) =>
+        row.length > 0 ? (
+          <View
+            key={rowIdx}
             style={{
-              width: "50%",
-              padding: 10,
-              borderBottomWidth: idx < 2 ? 1 : 0,
-              borderRightWidth: idx % 2 === 0 ? 1 : 0,
-              borderColor: colors.border,
+              flexDirection: "row",
+              borderBottomWidth: rowIdx === 0 && displayOffers.length > 2 ? 1 : 0,
+              borderBottomColor: colors.border,
             }}
           >
-            {/* Best value badge */}
-            {idx === 0 && offer.is_best_value && (
-              <View
+            {row.map((offer, colIdx) => (
+              <TouchableOpacity
+                key={offer.offer_id}
+                onPress={() => setShowModal(true)}
                 style={{
-                  backgroundColor: "#fef3c7",
-                  borderRadius: 4,
-                  paddingHorizontal: 6,
-                  paddingVertical: 2,
-                  alignSelf: "flex-start",
-                  marginBottom: 5,
-                }}
-              >
-                <Text style={{ fontSize: 9, fontWeight: "700", color: "#92400e" }}>
-                  Best value for you
-                </Text>
-              </View>
-            )}
-
-            {/* Logo + offer title */}
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 3 }}>
-              <BankLogo offer={offer} size={22} />
-              <Text
-                style={{
-                  fontSize: 13,
-                  fontWeight: "700",
-                  color: colors.text,
                   flex: 1,
+                  padding: 10,
+                  borderRightWidth: colIdx === 0 ? 1 : 0,
+                  borderRightColor: colors.border,
                 }}
-                numberOfLines={1}
               >
-                {offer.offer_title}
-              </Text>
-            </View>
+                {/* Badge area — always same height in row 0 to keep cards aligned */}
+                {rowIdx === 0 && (
+                  <View style={{ height: 20, marginBottom: 4, justifyContent: "center" }}>
+                    {offer.is_best_value && (
+                      <View
+                        style={{
+                          backgroundColor: "#fef3c7",
+                          borderRadius: 4,
+                          paddingHorizontal: 6,
+                          paddingVertical: 2,
+                          alignSelf: "flex-start",
+                        }}
+                      >
+                        <Text style={{ fontSize: 9, fontWeight: "700", color: "#92400e" }}>
+                          Best value for you
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                )}
 
-            {/* Bank name */}
-            <Text style={{ fontSize: 11, color: colors.textSecondary, marginBottom: 4 }}>
-              {offer.bank_name}
-            </Text>
+                {/* Logo + offer title */}
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 3 }}>
+                  <BankLogo offer={offer} size={22} />
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      fontWeight: "700",
+                      color: colors.text,
+                      flex: 1,
+                    }}
+                    numberOfLines={1}
+                  >
+                    {offer.offer_title}
+                  </Text>
+                </View>
 
-            {/* Card type row */}
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                borderTopWidth: 1,
-                borderTopColor: colors.border,
-                paddingTop: 4,
-              }}
-            >
-              <Text style={{ fontSize: 10, color: colors.textSecondary }} numberOfLines={1}>
-                {cardTypeLabel(offer.card_types)}
-                {offer.offer_description ? ` · ${offer.offer_description}` : ""}
-              </Text>
-              <ChevronRight size={10} color={colors.textSecondary} />
-            </View>
-          </TouchableOpacity>
-        ))}
-      </View>
+                {/* Bank name */}
+                <Text style={{ fontSize: 11, color: colors.textSecondary, marginBottom: 4 }}>
+                  {offer.bank_name}
+                </Text>
+
+                {/* Card type row */}
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    borderTopWidth: 1,
+                    borderTopColor: colors.border,
+                    paddingTop: 4,
+                  }}
+                >
+                  <Text style={{ fontSize: 10, color: colors.textSecondary }} numberOfLines={1}>
+                    {cardTypeLabel(offer.card_types)}
+                    {offer.offer_description ? ` · ${offer.offer_description}` : ""}
+                  </Text>
+                  <ChevronRight size={10} color={colors.textSecondary} />
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        ) : null,
+      )}
 
       {/* ====== MODAL ====== */}
       <Modal
