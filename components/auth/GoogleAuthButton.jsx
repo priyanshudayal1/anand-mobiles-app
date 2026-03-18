@@ -57,12 +57,16 @@ export default function GoogleAuthButton({
   // If native Google Sign-In module isn't available, we must use the web/proxy flow
   // This covers both Expo Go AND dev builds without native module linked
   const useWebFlow = isExpoGo || !GoogleSignin;
+  const expoOwner = Constants.expoConfig?.owner;
+  const expoSlug = Constants.expoConfig?.slug;
 
   // When using web flow (no native module), we MUST use the Expo auth proxy
   // because Google rejects custom scheme redirects for Web client types,
   // and Android/iOS client IDs don't work with browser-based OAuth
   const redirectUri = useWebFlow
-    ? "https://auth.expo.io/@priyanshudayal1/anand-mobiles"
+    ? expoOwner && expoSlug
+      ? `https://auth.expo.io/@${expoOwner}/${expoSlug}`
+      : "https://auth.expo.io/@priyanshudayal1/anand-mobiles"
     : makeRedirectUri({
         scheme: "anandmobiles",
         path: "auth",
