@@ -51,6 +51,8 @@ export const API_ENDPOINTS = {
   register: "/users/register/",
   logout: "/users/logout/",
   profile: "/users/profile/",
+  sendOtp: "/users/auth/send-otp/",
+  verifyOtp: "/users/auth/verify-otp/",
 
   // Theme
   publicTheme: "/admin/theme/public/",

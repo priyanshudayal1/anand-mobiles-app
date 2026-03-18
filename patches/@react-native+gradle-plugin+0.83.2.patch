@@ -1,0 +1,119 @@
+diff --git a/node_modules/@react-native/gradle-plugin/react-native-gradle-plugin/src/main/kotlin/com/facebook/react/tasks/GenerateAutolinkingNewArchitecturesFileTask.kt b/node_modules/@react-native/gradle-plugin/react-native-gradle-plugin/src/main/kotlin/com/facebook/react/tasks/GenerateAutolinkingNewArchitecturesFileTask.kt
+index 4c36c8a..70e4498 100644
+--- a/node_modules/@react-native/gradle-plugin/react-native-gradle-plugin/src/main/kotlin/com/facebook/react/tasks/GenerateAutolinkingNewArchitecturesFileTask.kt
++++ b/node_modules/@react-native/gradle-plugin/react-native-gradle-plugin/src/main/kotlin/com/facebook/react/tasks/GenerateAutolinkingNewArchitecturesFileTask.kt
+@@ -58,34 +58,34 @@ abstract class GenerateAutolinkingNewArchitecturesFileTask : DefaultTask() {
+           val cmakeListsPath = dep.cmakeListsPath
+           val cxxModuleCMakeListsPath = dep.cxxModuleCMakeListsPath
+           if (libraryName != null && cmakeListsPath != null) {
+-            // If user provided a custom cmakeListsPath, let's honor it.
+             val nativeFolderPath = sanitizeCmakeListsPath(cmakeListsPath)
+             addDirectoryString +=
+-                "add_subdirectory(\"$nativeFolderPath\" ${libraryName}_autolinked_build)"
++                """
++                if(EXISTS "$nativeFolderPath")
++                  add_subdirectory("$nativeFolderPath" ${libraryName}_autolinked_build)
++                  list(APPEND AUTOLINKED_LIBRARIES ${CODEGEN_LIB_PREFIX}${libraryName})
++                endif()
++                """
++                    .trimIndent()
+           }
+-          if (cxxModuleCMakeListsPath != null) {
+-            // If user provided a custom cxxModuleCMakeListsPath, let's honor it.
++          if (libraryName != null &&
++              cxxModuleCMakeListsPath != null &&
++              dep.cxxModuleCMakeListsModuleName != null) {
+             val nativeFolderPath = sanitizeCmakeListsPath(cxxModuleCMakeListsPath)
+             addDirectoryString +=
+-                "\nadd_subdirectory(\"$nativeFolderPath\" ${libraryName}_cxxmodule_autolinked_build)"
++                """
++
++                if(EXISTS "$nativeFolderPath")
++                  add_subdirectory("$nativeFolderPath" ${libraryName}_cxxmodule_autolinked_build)
++                  list(APPEND AUTOLINKED_LIBRARIES ${dep.cxxModuleCMakeListsModuleName})
++                endif()
++                """
++                    .trimIndent()
+           }
+           addDirectoryString
+         }
+ 
+-    val libraryModules =
+-        packages.joinToString("\n  ") { dep ->
+-          var autolinkedLibraries = ""
+-          if (dep.libraryName != null) {
+-            autolinkedLibraries += "$CODEGEN_LIB_PREFIX${dep.libraryName}"
+-          }
+-          if (dep.cxxModuleCMakeListsModuleName != null) {
+-            autolinkedLibraries += "\n${dep.cxxModuleCMakeListsModuleName}"
+-          }
+-          autolinkedLibraries
+-        }
+-
+     return CMAKE_TEMPLATE.replace("{{ libraryIncludes }}", libraryIncludes)
+-        .replace("{{ libraryModules }}", libraryModules)
+   }
+ 
+   internal fun generateCppFileContent(
+@@ -173,11 +173,9 @@ abstract class GenerateAutolinkingNewArchitecturesFileTask : DefaultTask() {
+         # or link against a old prefab target (this is needed for React Native 0.76 on).
+         set(REACTNATIVE_MERGED_SO true)
+ 
+-        {{ libraryIncludes }}
++        set(AUTOLINKED_LIBRARIES)
+ 
+-        set(AUTOLINKED_LIBRARIES
+-          {{ libraryModules }}
+-        )
++        {{ libraryIncludes }}
+         """
+             .trimIndent()
+ 
+diff --git a/node_modules/@react-native/gradle-plugin/react-native-gradle-plugin/src/test/kotlin/com/facebook/react/tasks/GenerateAutolinkingNewArchitecturesFileTaskTest.kt b/node_modules/@react-native/gradle-plugin/react-native-gradle-plugin/src/test/kotlin/com/facebook/react/tasks/GenerateAutolinkingNewArchitecturesFileTaskTest.kt
+index 2b3f17d..4d7a74a 100644
+--- a/node_modules/@react-native/gradle-plugin/react-native-gradle-plugin/src/test/kotlin/com/facebook/react/tasks/GenerateAutolinkingNewArchitecturesFileTaskTest.kt
++++ b/node_modules/@react-native/gradle-plugin/react-native-gradle-plugin/src/test/kotlin/com/facebook/react/tasks/GenerateAutolinkingNewArchitecturesFileTaskTest.kt
+@@ -128,11 +128,7 @@ class GenerateAutolinkingNewArchitecturesFileTaskTest {
+             # or link against a old prefab target (this is needed for React Native 0.76 on).
+             set(REACTNATIVE_MERGED_SO true)
+ 
+-
+-
+-            set(AUTOLINKED_LIBRARIES
+-              
+-            )
++            set(AUTOLINKED_LIBRARIES)
+             """
+                 .trimIndent()
+         )
+@@ -155,15 +151,21 @@ class GenerateAutolinkingNewArchitecturesFileTaskTest {
+             # or link against a old prefab target (this is needed for React Native 0.76 on).
+             set(REACTNATIVE_MERGED_SO true)
+ 
+-            add_subdirectory("./a/directory/" aPackage_autolinked_build)
+-            add_subdirectory("./another/directory/with\ spaces/" anotherPackage_autolinked_build)
+-            add_subdirectory("./another/directory/cxx/" anotherPackage_cxxmodule_autolinked_build)
+-
+-            set(AUTOLINKED_LIBRARIES
+-              react_codegen_aPackage
+-              react_codegen_anotherPackage
+-            another_cxxModule
+-            )
++            set(AUTOLINKED_LIBRARIES)
++
++            if(EXISTS "./a/directory/")
++              add_subdirectory("./a/directory/" aPackage_autolinked_build)
++              list(APPEND AUTOLINKED_LIBRARIES react_codegen_aPackage)
++            endif()
++            if(EXISTS "./another/directory/with\ spaces/")
++              add_subdirectory("./another/directory/with\ spaces/" anotherPackage_autolinked_build)
++              list(APPEND AUTOLINKED_LIBRARIES react_codegen_anotherPackage)
++            endif()
++
++            if(EXISTS "./another/directory/cxx/")
++              add_subdirectory("./another/directory/cxx/" anotherPackage_cxxmodule_autolinked_build)
++              list(APPEND AUTOLINKED_LIBRARIES another_cxxModule)
++            endif()
+             """
+                 .trimIndent()
+         )

@@ -118,13 +118,62 @@ export const useAuthStore = create((set, get) => ({
       await AsyncStorage.setItem("userData", JSON.stringify(user));
       await AsyncStorage.setItem("userId", data.user_id);
 
-      set({ user, isAuthenticated: true, isLoading: false });
+      // Do NOT set isAuthenticated: true here — caller must invoke finalizeAuth()
+      // after any post-signup flows (e.g. spin wheel) complete.
+      set({ user, isLoading: false });
       return user;
     } catch (error) {
       const msg =
         error.response?.data?.error ||
         error.response?.data?.detail ||
         "Registration failed";
+      set({ error: msg, isLoading: false });
+      throw error;
+    }
+  },
+
+  // Call this after post-signup flows (spin wheel, etc.) are done.
+  finalizeAuth: () => {
+    set({ isAuthenticated: true });
+  },
+
+  sendOtp: async (email, name) => {
+    set({ isLoading: true, error: null });
+    try {
+      await api.post("/users/auth/send-otp/", {
+        email: email.toLowerCase().trim(),
+        name: name.trim(),
+        purpose: "registration",
+      });
+      set({ isLoading: false });
+      return { success: true };
+    } catch (error) {
+      const msg =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.response?.data?.detail ||
+        "Failed to send OTP";
+      set({ error: msg, isLoading: false });
+      throw error;
+    }
+  },
+
+  verifyOtp: async (email, otp) => {
+    set({ isLoading: true, error: null });
+    try {
+      await api.post("/users/auth/verify-otp/", {
+        email: email.toLowerCase().trim(),
+        otp,
+        purpose: "registration",
+      });
+      set({ isLoading: false });
+      return { success: true };
+    } catch (error) {
+      const msg =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.response?.data?.detail ||
+        "Invalid or expired OTP";
       set({ error: msg, isLoading: false });
       throw error;
     }
@@ -161,7 +210,8 @@ export const useAuthStore = create((set, get) => ({
         await AsyncStorage.setItem("userData", JSON.stringify(user));
         await AsyncStorage.setItem("userId", uid);
 
-        set({ user, isAuthenticated: true, isLoading: false });
+        // Do NOT set isAuthenticated: true — caller must invoke finalizeAuth().
+        set({ user, isLoading: false });
 
         return { success: true, user };
       } else {
@@ -226,7 +276,8 @@ export const useAuthStore = create((set, get) => ({
       await AsyncStorage.setItem("userData", JSON.stringify(user));
       await AsyncStorage.setItem("userId", uid);
 
-      set({ user, isAuthenticated: true, isLoading: false });
+      // Do NOT set isAuthenticated: true — caller must invoke finalizeAuth() after post-signup flows.
+      set({ user, isLoading: false });
 
       return { success: true, user };
     } catch (error) {

@@ -16,6 +16,7 @@ const Login = () => {
   const {
     login,
     googleLogin,
+    finalizeAuth,
     error: authError,
     isLoading: authLoading,
   } = useAuthStore();
@@ -31,12 +32,14 @@ const Login = () => {
     try {
       const result = await googleLogin(firebaseToken, googleUser);
       if (result.success) {
+        finalizeAuth();
         router.replace("/(tabs)");
       } else if (result.redirect_to_signup) {
         // User doesn't exist — auto-signup with Google via Firestore
         const { googleSignup } = useAuthStore.getState();
         const signupResult = await googleSignup(firebaseToken, googleUser);
         if (signupResult.success) {
+          finalizeAuth();
           Alert.alert("Welcome!", "Account created successfully with Google!");
           router.replace("/(tabs)");
         }

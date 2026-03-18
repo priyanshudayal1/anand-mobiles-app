@@ -4,6 +4,7 @@ import { useTheme } from "../../store/useTheme";
 import { AlertTriangle, CheckCircle, Info } from "lucide-react-native";
 import EMIOffers from "../home/EMIOffers";
 import EMIService from "../../services/emiService";
+import BankOffers from "./BankOffers";
 
 const ProductInfo = ({ product, selectedVariant, productId }) => {
   const { colors } = useTheme();
@@ -202,6 +203,9 @@ const ProductInfo = ({ product, selectedVariant, productId }) => {
           </EMIOffers>
         </View>
       )}
+
+      {/* Bank Offers Section */}
+      <BankOffers price={currentPrice} productId={productId} />
 
       {/* Stock Status */}
       <View style={{ marginTop: 4 }}>
