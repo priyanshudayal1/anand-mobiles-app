@@ -85,7 +85,7 @@ export default function AnimatedLoader({ message, fullScreen = true }) {
                         ]}
                     >
                         <Animated.Image
-                            source={require("../../assets/images/logo.png")}
+                            source={require("../../assets/images/logo.jpeg")}
                             style={styles.logo}
                         />
                     </View>
