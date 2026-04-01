@@ -347,6 +347,8 @@ export default function Home() {
   const sortedSections = sections
     ? [...sections]
         .filter((s) => s && s.enabled !== false)
+        // TODO: Remove this filter after testing carousel - hides Television tabbed section
+        .filter((s) => s.section_type !== "tabbed_banner_grid")
         .sort(
           (a, b) =>
             (a.display_order || a.order || 0) -

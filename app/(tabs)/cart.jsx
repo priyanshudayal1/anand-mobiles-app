@@ -425,7 +425,7 @@ export default function Cart() {
       {isLoading ? (
         <CartShimmer />
       ) : cartItems.length === 0 ? (
-        <FadeInView duration={500}>
+        <FadeInView duration={500} style={{ flex: 1 }}>
           <View
             style={{
               flex: 1,
